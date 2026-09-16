@@ -1,8 +1,17 @@
 # AGENTS.md — ditto
 
 Instruções permanentes para qualquer agente/sessão neste repo. Ler antes de
-qualquer tarefa. Docs de contexto: `doc/00-visao-geral.md` →
-`doc/06-marcos.md` (+ `doc/HANDOFF.md` para histórico de provas).
+qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
+`doc/00-visao-geral.md` → `doc/07-backlog.md` conforme necessário.
+
+## Docs: congelados vs. vivos
+
+- **Congelados (guias, não reescrever):** `doc/00`–`doc/05`. Só mexer na
+  exceção da lei nº 5 (descoberta que contradiz o guia — doc primeiro).
+- **Vivos (atualizar no mesmo passo):** `doc/06-marcos.md` (só carimbo de
+  status: data + resultado + commit), `doc/07-backlog.md` (move item para
+  feito + commit), `doc/HANDOFF.md` (reescrito ao fim da sessão, template
+  abaixo).
 
 ## Stack e comandos
 
@@ -66,3 +75,19 @@ qualquer tarefa. Docs de contexto: `doc/00-visao-geral.md` →
   `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:` + escopo opcional
   (ex.: `feat(winapi): add background key press with activation priming`).
 - Nunca commitar segredos, `.user`, `bin/`, `obj/`.
+
+## Fim de sessão (obrigatório se mexeu no repo)
+
+1. `dotnet build ditto.sln` + `dotnet test` verdes (ou registrar o que quebrou).
+2. Commits por etapa/bloco concluído (regra acima).
+3. Reescrever `doc/HANDOFF.md` neste template, sempre curto (história fica
+   no git log, nunca em prosa acumulada). Sessão só-leitura não precisa disso.
+
+```markdown
+# HANDOFF — estado em <data>, base <commit>
+## Pronto (validado)
+## Pronto (código, pendente de jogo/Windows)
+## Próximo passo
+## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
+## Perguntas abertas
+```

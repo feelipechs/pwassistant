@@ -48,6 +48,9 @@ limitada para o CRUD/Modo Grupo e stacks com distribuição inferior a um
 - Por isso, antes de fechar a arquitetura completa, o próximo passo é
   validar no Windows as premissas técnicas de mais risco — ver
   `03-pesquisa-e-validacoes.md`.
+- **Status (2026-09-16):** arquitetura fechada em `04-arquitetura.md`
+  (premissas do item 1 do `03` validadas); código M1–M6 implementado,
+  aceite contra o jogo pendente no Windows (`06-marcos.md`).
 
 ## Camadas do projeto (proposta)
 

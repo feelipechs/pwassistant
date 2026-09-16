@@ -32,6 +32,10 @@ contida nessa interface, sem reescrever o resto do app.
 Decisão de qual usar (ou uma combinação, por tipo de ação) depende dos
 testes práticos no Windows — ver `03-pesquisa-e-validacoes.md`.
 
+> **Status (2026-09-16):** decidido — `PostMessageBackgroundStrategy`
+> (priming) como implementação padrão e única do v1; `SendInput` virou
+> fallback documentado. Detalhe em `04-arquitetura.md`.
+
 ## Captura de posição de click
 
 - Overlay transparente sobre a janela alvo (ou fullscreen).
