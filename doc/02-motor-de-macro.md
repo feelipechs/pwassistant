@@ -5,8 +5,8 @@
 ```
 IWindowTarget    → abstrai "onde" mandar input (hwnd de uma conta específica)
 IInputStrategy   → abstrai "como" mandar input (PostMessage vs foco+SendInput)
-Acao             → dado puro (tipo, posição/tecla, delay, repetição)
-MacroExecutor    → recebe (IWindowTarget, Acao)[], decide ordem/paralelismo
+Action           → dado puro (tipo, posição/tecla, delay, repetição)
+MacroExecutor    → recebe (IWindowTarget, Action)[], decide ordem/paralelismo
 ```
 
 `IInputStrategy` fica isolada de propósito: ainda não sabemos se
@@ -43,24 +43,23 @@ testes práticos no Windows — ver `03-pesquisa-e-validacoes.md`.
 
 ## Execução de Preset
 
-`MacroExecutor.Executar(preset)`:
+`MacroExecutor.Execute(preset)`:
 
-1. Resolve `Hwnd` atual de cada `ContaId` envolvida (via processo ativo).
-2. Se `ModoExecucao == Sequencial`:
-   - Para cada AcaoPorConta, na ordem definida: aguarda `DelayAntesMs`,
+1. Resolve `Hwnd` atual de cada `AccountId` envolvida (via processo ativo).
+2. Se `ExecutionMode == Sequential`:
+   - Para cada AccountAction, na ordem definida: aguarda `DelayBeforeMs`,
      executa a ação via `IInputStrategy`, segue para a próxima.
-3. Se `ModoExecucao == Simultaneo`:
+3. Se `ExecutionMode == Simultaneous`:
    - Dispara uma task/thread por conta, cada uma aguardando seu próprio
-     `DelayAntesMs` e executando via `IInputStrategy`.
+     `DelayBeforeMs` e executando via `IInputStrategy`.
    - **Só é verdadeiramente simultâneo se a estratégia ativa for
      PostMessage** (sem depender de foco). Com SendInput+foco, o
      "simultâneo" é, na prática, sequencial rápido.
-4. Se `Repeticao` estiver definida na Ação, repete conforme
-   `Vezes`/`IntervaloMs` antes de passar para a próxima conta (sequencial)
+4. Se `Repeat` estiver definida na Action, repete conforme
+   `Times`/`IntervalMs` antes de passar para a próxima conta (sequencial)
    ou dentro da própria task (simultâneo).
 
 ## Hotkey global de disparo de preset
 
 - Registrar hotkey global (via `RegisterHotKey` do WinAPI) para permitir
-  disparar um preset sem precisar estar com o app em foco — equivalente
-  ao "Atalhos Customizáveis" do PW Helper.
+  disparar um preset sem precisar estar com o app em foco.

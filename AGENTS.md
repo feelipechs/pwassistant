@@ -1,0 +1,65 @@
+# AGENTS.md — ditto
+
+Instruções permanentes para qualquer agente/sessão neste repo. Ler antes de
+qualquer tarefa. Docs de contexto: `doc/00-visao-geral.md` →
+`doc/06-marcos.md` (+ `doc/HANDOFF.md` para histórico de provas).
+
+## Stack e comandos
+
+- C# / .NET 8 + WPF. Testes: xUnit. SO de execução/validade: **Windows**
+  (WinAPI + jogo não rodam no Linux).
+- Comandos: `dotnet build ditto.sln`, `dotnet test`, `dotnet publish` (detalhes
+  por marco). PowerShell 5.1 nos scripts de prova (`tools/provas-winapi/`).
+
+## Idioma e estilo (convenção do repo)
+
+- Código 100% em **inglês**: identificadores, arquivos, diretórios, testes,
+  schema de banco/JSON, logs técnicos. Português (pt-BR) **somente** em textos
+  visíveis ao usuário (UI, mensagens apresentadas) e nos docs do repo.
+- Clean code por padrão, sem precisar pedir: SRP, funções pequenas, nomes
+  expressivos, sem duplicação nem código morto, erros tratados com intenção
+  (nunca `catch` vazio), `using`/dispose correto. Calibrado com YAGNI para
+  projeto pessoal/simples: sem camadas especulativas — só o que o marco
+  atual exige.
+- Perguntar antes só em trade-off real (ex.: retry/backoff vs falhar rápido;
+  senha mestra vs DPAPI).
+
+## Leis do projeto (não negociar sem o usuário)
+
+1. **Sem driver kernel, sem injeção/DLL no jogo, sem `SendInput` como padrão.**
+   Caminho único do v1: `PostMessage` com priming (receita exata no
+   `doc/04-arquitetura.md` + skill `pw-winapi`).
+2. **Todo P/Invoke em `src/PwHelper.WinApi`.** Nenhum `DllImport` fora dele.
+   `Core` não conhece WinAPI (fala por `IInputStrategy`/`IWindowTarget`).
+3. **Alvo sempre PID → HWND via `EnumWindows`.** Nunca `MainWindowHandle`
+   cacheado, nunca título como chave, nunca broadcast cego (só HWNDs de PIDs
+   do próprio launcher).
+4. **Segredos nunca em texto puro** (disco, log, exceção). Runtime nunca persiste.
+5. **Docs antes/depois do código:** descoberta que muda comportamento atualiza
+   `doc/` no mesmo passo; `doc/06-marcos.md` marca aceite com data.
+
+## Armadilhas conhecidas (custo já pago — não repetir)
+
+- `lParam = 0` em `WM_KEYDOWN` falha: exige scan code (`MapVirtualKey`).
+- `$Pid` é variável automática reservada no PowerShell (usar `$TargetPid`).
+- `ElementClient Window` não tem filhas: alvo é o top-level.
+- Skills do jogo têm **cooldown** — validar repetibilidade com toggle
+  (F1 montaria), não com skill.
+- Click no chão 3D não passa sem foco (fora do v1); UI-click passa (C4).
+- Retorno `!= 0` de `PostMessage` ≠ efeito no jogo (só prova entrega).
+
+## Fluxo de validação contra o jogo
+
+- Sempre com **foco fora do jogo**, ação de baixo risco primeiro
+  (F1 montaria / UI reversível), countdown ≥ 3 s.
+- Controles: T0 puro deve falhar sem foco (se passar, algo mudou no engine —
+  parar e investigar antes de prosseguir).
+- Registrar resultados no marco correspondente antes de commitar.
+
+## Commits
+
+- Só com pedido explícito. Um commit por marco (mínimo).
+- Padrão: Conventional Commits, tudo em inglês, imperativo, curto:
+  `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:` + escopo opcional
+  (ex.: `feat(winapi): add background key press with activation priming`).
+- Nunca commitar segredos, `.user`, `bin/`, `obj/`.

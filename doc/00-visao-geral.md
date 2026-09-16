@@ -4,8 +4,7 @@
 
 Ferramenta desktop pessoal para gerenciar múltiplas contas do Perfect World
 (servidor privado) e automatizar ações repetitivas (macros de click/tecla)
-em várias contas simultaneamente. Inspirada no PW Helper, mas com escopo
-próprio e sem as limitações de funcionalidades pagas.
+em várias contas simultaneamente. Projeto próprio, escopo definido abaixo.
 
 ## Escopo inicial (v1)
 
@@ -14,19 +13,15 @@ próprio e sem as limitações de funcionalidades pagas.
 - Gravação e execução de macros (click/tecla) por conta
 - Modo Grupo com Presets (ação configurável por conta, disparo em botão)
 
-Fora de escopo por enquanto (features do PW Helper que não são prioridade
-agora): mapa interativo, auto forja, teste de latência, barra de ferramentas
+Fora de escopo por enquanto: mapa interativo, auto forja, teste de latência, barra de ferramentas
 substituindo a do Windows, backup automático.
 
 ## Stack escolhida
 
 **C# / .NET 8 + WPF**
 
-Motivos (contexto: dev vindo de Java/JavaScript, sem experiência prévia em
-C#, mas com IA gerando a maior parte do código):
+Motivos:
 
-- Sintaxe e OOP próximos de Java → curva de aprendizado baixa para revisar
-  o código gerado.
 - P/Invoke para WinAPI (`PostMessage`, `SendMessage`, `FindWindow`,
   `EnumWindows`, `GetWindowRect`, `ScreenToClient`) é maduro e tem grande
   volume de exemplos vindos de ferramentas de automação de MMORPG.
@@ -35,14 +30,13 @@ C#, mas com IA gerando a maior parte do código):
   grupo, editor de presets).
 - Distribuição como `.exe` self-contained, sem depender de runtime externo
   e com menor chance de falso-positivo de antivírus do que executáveis
-  empacotados via PyInstaller (relevante porque a ferramenta faz
+  empacotados por empacotadores genéricos (relevante porque a ferramenta faz
   `PostMessage`/simulação de input, comportamento que AVs costumam
   observar de perto).
 
-Alternativas consideradas e descartadas por ora: AutoHotkey v2 (ótimo para
-macro pura, mas GUI fraca para o CRUD/Modo Grupo), Python + pywin32
-(prototipável no Linux, mas distribuição pior e menos referência
-específica para esse nicho).
+Alternativas consideradas e descartadas: ferramentas de macro com GUI
+limitada para o CRUD/Modo Grupo e stacks com distribuição inferior a um
+`.exe` self-contained.
 
 ## Ambiente de desenvolvimento
 

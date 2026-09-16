@@ -3,57 +3,58 @@
 ## Modelo de dados
 
 ```
-Servidor
+Server
  ├─ Id
- ├─ Nome
- ├─ CaminhoElementClient   (path do element x64 daquele server)
- ├─ ForceServer            (opcional — pula tela de seleção de servidor no jogo)
- └─ Contas: List<Conta>
+ ├─ Name
+ ├─ ElementClientPath   (path do element x64 daquele server)
+ ├─ ForceServer          (opcional — pula tela de seleção de servidor no jogo)
+ └─ Accounts: List<Account>
 
-Conta
+Account
  ├─ Id
- ├─ ServidorId
+ ├─ ServerId
  ├─ Login
- ├─ SenhaCriptografada
- ├─ Role                   (nick do personagem)
- ├─ Tag / Cor              (organização visual, opcional)
- ├─ Favorito: bool
- ├─ TempoTotalJogadoMs     (acumulado, calculado por sessão)
- ---- campos de runtime (não persistidos) ----
+ ├─ EncryptedPassword
+ ├─ Role                 (nick do personagem)
+ ├─ Tag / Color          (organização visual, opcional)
+ ├─ IsFavorite: bool
+ ├─ TotalPlayedTimeMs    (acumulado, calculado por sessão)
+ ---- runtime fields (não persistidos) ----
  ├─ ProcessId: int?
  ├─ Hwnd: IntPtr?
  └─ Status: Online | Offline
 
-Grupo
+Group
  ├─ Id
- ├─ Nome
- └─ ContaIds: List<Guid>   (membros possíveis; nem todos precisam estar online)
+ ├─ Name
+ └─ AccountIds: List<Guid>   (membros possíveis; nem todos precisam estar online)
 
 Preset
  ├─ Id
- ├─ GrupoId
- ├─ Nome
- ├─ Hotkey                 (opcional)
- ├─ ModoExecucao: Sequencial | Simultaneo
- └─ Acoes: List<AcaoPorConta>
+ ├─ GroupId
+ ├─ Name
+ ├─ Hotkey               (opcional)
+ ├─ ExecutionMode: Sequential | Simultaneous
+ └─ Actions: List<AccountAction>
 
-AcaoPorConta
- ├─ ContaId
- └─ Acao: Acao
+AccountAction
+ ├─ AccountId
+ └─ Action: Action
 
-Acao
- ├─ Tipo: Tecla | Click
- ├─ Tecla: string?                    (se Tipo = Tecla)
- ├─ PosicaoRelativa: (x, y)?          (se Tipo = Click; relativa ao client area)
- ├─ DelayAntesMs: int
- └─ Repeticao: (Vezes, IntervaloMs)?  (opcional — combo/loop)
+Action
+ ├─ Type: Key | Click
+ ├─ Key: string?                    (se Type = Key)
+ ├─ RelativePosition: (x, y)?       (se Type = Click; relativa ao client area)
+ ├─ DelayBeforeMs: int
+ └─ Repeat: (Times, IntervalMs)?    (opcional — combo/loop)
 ```
 
 Notas:
-- Senha fica sempre criptografada em disco (AES, chave derivada de senha
-  mestra ou de segredo local da máquina — decidir na implementação).
-- `PosicaoRelativa` é relativa ao client area da janela (via
-  `ScreenToClient`), não à tela. Mesmo com todas as janelas no mesmo
+- Senha fica sempre criptografada em disco (`EncryptedPassword`, AES, chave
+  derivada de senha mestra ou de segredo local da máquina — decidir na
+  implementação).
+- `RelativePosition` é fração da client area da janela (via
+  `ScreenToClient`), não pixel de tela. Mesmo com todas as janelas no mesmo
   tamanho/posição, isso deixa o dado correto por definição, não por
   coincidência de configuração do usuário.
 - Campos de runtime (`ProcessId`, `Hwnd`, `Status`) nunca vão para o JSON
@@ -80,7 +81,7 @@ Notas:
 ### Modo Grupo (janela separada)
 - Lista de grupos (criar/editar/excluir).
 - Grid mostrando as contas do grupo **que estão online no momento**
-  (cruzamento ContaId → Hwnd ativo).
+  (cruzamento AccountId → Hwnd ativo).
 - Área de Presets, cada um como um botão:
   - Criar preset: selecionar contas online → definir Ação por conta
     (tecla ou click, com captura de posição via overlay) → definir delay
@@ -93,5 +94,5 @@ Notas:
 - Mapa interativo / marcações de mundo.
 - Auto forja.
 - Perfis de formação exportáveis com reconexão automática de personagem
-  (feature avançada do PW Helper PRO) — revisitar depois que o core
+  (recurso avançado) — revisitar depois que o core
   estiver estável.

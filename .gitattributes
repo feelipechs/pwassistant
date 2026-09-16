@@ -1,0 +1,5 @@
+# Normaliza finais de linha (repo trabalha em LF; checkout converte no Windows)
+* text=auto
+*.sln text eol=crlf
+*.csproj text eol=crlf
+*.ps1 text eol=crlf
