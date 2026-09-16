@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>PW Launcher</value></data>
+  <data name="Servers" xml:space="preserve"><value>Servers</value></data>
+  <data name="AddServer" xml:space="preserve"><value>Add server</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>Add account</value></data>
+  <data name="Play" xml:space="preserve"><value>Play</value></data>
+  <data name="Online" xml:space="preserve"><value>Online</value></data>
+  <data name="Offline" xml:space="preserve"><value>Offline</value></data>
+  <data name="GroupMode" xml:space="preserve"><value>Group mode</value></data>
+  <data name="Presets" xml:space="preserve"><value>Presets</value></data>
+  <data name="Fire" xml:space="preserve"><value>Fire</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Login" xml:space="preserve"><value>Login</value></data>
+  <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Role" xml:space="preserve"><value>Character (role)</value></data>
+  <data name="ServerName" xml:space="preserve"><value>Server name</value></data>
+  <data name="ClientPath" xml:space="preserve"><value>Client path (elementclient.exe)</value></data>
+  <data name="GroupName" xml:space="preserve"><value>Group name</value></data>
+  <data name="PresetName" xml:space="preserve"><value>Preset name</value></data>
+  <data name="SyncEnabled" xml:space="preserve"><value>Sync click</value></data>
+  <data name="CaptureClick" xml:space="preserve"><value>Capture click position</value></data>
+  <data name="ClickOverlayHint" xml:space="preserve"><value>Click once on the game window to capture the position.</value></data>
+  <data name="GroundClickLimitation" xml:space="preserve"><value>3D-ground clicks do not replicate without focus (v1 limitation).</value></data>
+</root>

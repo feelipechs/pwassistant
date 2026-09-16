@@ -1,8 +1,10 @@
 # Pesquisas e Validações — a fazer no Windows
 
-> **Status (2026-09-10):** item 1 **concluído** (T1/C4 validados — ver resultado
+> **Status (2026-09-16):** item 1 **concluído** (T1/C4 validados — ver resultado
 > no item e `HANDOFF.md`). Itens 2–5 seguem como checklist de validação dos
-> marcos M5/M6 (`06-marcos.md`); este arquivo continua necessário até lá.
+> marcos M5/M6 (`06-marcos.md`); em 2026-09-16 foi removido texto de resultado
+> copiado por engano do item 1 nesses itens. Este arquivo continua necessário
+> até lá.
 
 Este documento é o checklist do que precisa ser testado na prática antes
 de fechar decisões de arquitetura. Atualizar conforme os testes forem
@@ -40,14 +42,8 @@ foco.
       pelo client ou pelo servidor privado.
 - [ ] Verificar comportamento se `role:NICK` não existir ainda na conta
       (primeiro login) — cai em tela de criação de personagem?
-- **Resultado (2026-09-10, `teste-bateria.ps1`):** `PostMessage` puro SEM foco falha (T0), mas
-  funciona SEM foco com priming de ativacao (T1: `WM_ACTIVATE/WA_ACTIVE` + `WM_SETFOCUS` +
-  `WM_ACTIVATEAPP` antes de `WM_KEYDOWN/UP` com scan code via `MapVirtualKey`). Testado com F1
-  (montaria) em `elementclient_64` real, foco fora do jogo o tempo todo. T2 (DOWN+CHAR+UP),
-  T3 (hold/repeat) e T5 (PostThreadMessage) nao funcionaram sem foco. A janela do jogo nao tem
-  filhas (`ElementClient Window` e o proprio alvo). Higiene do flag (devolver `WA_INACTIVE`,
-  `teste-higiene.ps1`) em validacao. Conclusao: `IInputStrategy` principal = `PostMessage` com
-  priming; sem driver, sem foco real, sem flicker.
+- **Resultado:** pendente — validar no Windows no marco M5
+  (`06-marcos.md`).
 
 ## 3. Identificação de janela por processo
 
@@ -56,28 +52,16 @@ foco.
       janela principal aparecer — mapear esse tempo).
 - [ ] Verificar se o título da janela muda com base no `role` (nick) —
       isso pode simplificar exibição na UI mesmo sem depender só do PID.
-- **Resultado (2026-09-10, `teste-bateria.ps1`):** `PostMessage` puro SEM foco falha (T0), mas
-  funciona SEM foco com priming de ativacao (T1: `WM_ACTIVATE/WA_ACTIVE` + `WM_SETFOCUS` +
-  `WM_ACTIVATEAPP` antes de `WM_KEYDOWN/UP` com scan code via `MapVirtualKey`). Testado com F1
-  (montaria) em `elementclient_64` real, foco fora do jogo o tempo todo. T2 (DOWN+CHAR+UP),
-  T3 (hold/repeat) e T5 (PostThreadMessage) nao funcionaram sem foco. A janela do jogo nao tem
-  filhas (`ElementClient Window` e o proprio alvo). Higiene do flag (devolver `WA_INACTIVE`,
-  `teste-higiene.ps1`) em validacao. Conclusao: `IInputStrategy` principal = `PostMessage` com
-  priming; sem driver, sem foco real, sem flicker.
+- **Resultado:** pendente — validar no Windows no marco M5
+  (`06-marcos.md`).
 
 ## 4. Overlay de captura de posição
 
 - [ ] Validar que um overlay transparente por cima da janela do jogo não
       interfere no client (ex.: jogo capturando o click do overlay em vez
       do overlay capturar).
-- **Resultado (2026-09-10, `teste-bateria.ps1`):** `PostMessage` puro SEM foco falha (T0), mas
-  funciona SEM foco com priming de ativacao (T1: `WM_ACTIVATE/WA_ACTIVE` + `WM_SETFOCUS` +
-  `WM_ACTIVATEAPP` antes de `WM_KEYDOWN/UP` com scan code via `MapVirtualKey`). Testado com F1
-  (montaria) em `elementclient_64` real, foco fora do jogo o tempo todo. T2 (DOWN+CHAR+UP),
-  T3 (hold/repeat) e T5 (PostThreadMessage) nao funcionaram sem foco. A janela do jogo nao tem
-  filhas (`ElementClient Window` e o proprio alvo). Higiene do flag (devolver `WA_INACTIVE`,
-  `teste-higiene.ps1`) em validacao. Conclusao: `IInputStrategy` principal = `PostMessage` com
-  priming; sem driver, sem foco real, sem flicker.
+- **Resultado:** pendente — validar no Windows no marco M5
+  (`06-marcos.md`).
 
 ## 5. Antivírus / falso positivo
 
@@ -85,14 +69,8 @@ foco.
       de Windows Defender/AV por causa do uso de `PostMessage`/simulação
       de input. Se sim, avaliar assinatura de código ou ajuste de
       publish settings.
-- **Resultado (2026-09-10, `teste-bateria.ps1`):** `PostMessage` puro SEM foco falha (T0), mas
-  funciona SEM foco com priming de ativacao (T1: `WM_ACTIVATE/WA_ACTIVE` + `WM_SETFOCUS` +
-  `WM_ACTIVATEAPP` antes de `WM_KEYDOWN/UP` com scan code via `MapVirtualKey`). Testado com F1
-  (montaria) em `elementclient_64` real, foco fora do jogo o tempo todo. T2 (DOWN+CHAR+UP),
-  T3 (hold/repeat) e T5 (PostThreadMessage) nao funcionaram sem foco. A janela do jogo nao tem
-  filhas (`ElementClient Window` e o proprio alvo). Higiene do flag (devolver `WA_INACTIVE`,
-  `teste-higiene.ps1`) em validacao. Conclusao: `IInputStrategy` principal = `PostMessage` com
-  priming; sem driver, sem foco real, sem flicker.
+- **Resultado:** pendente — validar no Windows no marco M6
+  (`06-marcos.md`).
 
 ## Como usar este documento
 

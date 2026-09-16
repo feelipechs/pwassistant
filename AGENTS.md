@@ -58,7 +58,10 @@ qualquer tarefa. Docs de contexto: `doc/00-visao-geral.md` →
 
 ## Commits
 
-- Só com pedido explícito. Um commit por marco (mínimo).
+- Só com pedido explícito. **Um commit por etapa/bloco concluído** — cada
+  unidade de trabalho fechada (ex.: bootstrap da solution, WinApi + Probe,
+  Core + testes, App WPF) gera um commit próprio, independente de
+  corresponder ou não a um marco inteiro do `doc/06-marcos.md`.
 - Padrão: Conventional Commits, tudo em inglês, imperativo, curto:
   `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:` + escopo opcional
   (ex.: `feat(winapi): add background key press with activation priming`).

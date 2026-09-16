@@ -1,0 +1,23 @@
+# .NET build outputs
+bin/
+obj/
+out/
+publish/
+
+# User-specific files
+*.user
+*.suo
+.vs/
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# Test results
+TestResults/
+coverage*.xml
+coverage*.json
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+<Window x:Class="PwHelper.App.Views.ClickCaptureOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None" AllowsTransparency="True" Background="#22000000"
+        WindowState="Maximized" Topmost="True" ShowInTaskbar="False"
+        Cursor="Cross">
+    <Grid>
+        <TextBlock x:Name="HintLabel" HorizontalAlignment="Center" VerticalAlignment="Top"
+                   Margin="0,40,0,0" FontSize="16" Foreground="White"/>
+    </Grid>
+</Window>
