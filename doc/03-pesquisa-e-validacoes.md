@@ -44,6 +44,11 @@ foco.
       (primeiro login) — cai em tela de criação de personagem?
 - **Resultado:** pendente — validar no Windows no marco M5
   (`06-marcos.md`).
+- **Descoberta (2026-09-17, Play via App):** o client precisa iniciar com a
+  própria pasta como working directory — sem isso abre a janela e morre com
+  erro citando `configs.pck` (assets resolvidos por caminho relativo).
+  Corrigido em `GameLauncher.BuildStartInfo` (`WorkingDirectory` = pasta do
+  `elementclient.exe`) + teste xUnit.
 
 ## 3. Identificação de janela por processo
 

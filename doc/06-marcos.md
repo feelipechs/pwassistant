@@ -24,6 +24,9 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   verdes. Aceite contra o jogo real **pendente no Windows**:
   `PwHelper.Probe key --pid <pid> --key F1` e
   `PwHelper.Probe click --pid <pid> --x <cx> --y <cy>`.
+- **Aceite (2026-09-17, Windows):** ✅ `Probe key --pid 2992/7688 --key F1`
+  (montaria) 3/3 em cada PID sem foco + `Probe click --x 1343 --y 305`
+  (fechar inventário) 1/1 em cada PID sem foco.
 
 ## M2 — `PwHelper.Core` (models + storage)
 
@@ -49,6 +52,10 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 - **Status (2026-09-16):** `MacroExecutor` + `MacroJobRunner` + `PresetEditor`
   implementados; lógica coberta por testes com estratégia fake. Aceite contra
   o jogo **pendente no Windows**.
+- **Aceite (2026-09-17, Windows):** ✅ `Probe preset --pid 2992 --pid 7688
+  --x 1343 --y 305` (`Simultaneous`): F1 na conta 1 + UI-click (fechar
+  inventário) na conta 2 no mesmo disparo sem foco; conta fantasma
+  `SKIPPED (offline)`, lote não abortado (`canceled=False`).
 
 ## M4 — `SyncService` (Sync Click)
 
@@ -60,6 +67,11 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 - **Status (2026-09-16):** `SyncService` (Core, testado) + `MouseHook`
   (WH_MOUSE_LL) + `SyncController` (fan-out) implementados. Prova manual A→B
   e aceite **pendentes no Windows**.
+- **Aceite (2026-09-17, Windows):** ✅ `Probe sync --pid 2992 --pid 7688`
+  bidirecional: físico na 2992 → réplica na 7688 `(1346,303) OK`;
+  físico na 7688 → réplica na 2992 `(1340,307) OK`. Sem eco (1 réplica
+  por clique). Harness novo: `probe sync` (hook + `MessageLoop` no
+  `WinApi`, fan-out no Probe, sem principal fixo).
 
 ## M5 — `PwHelper.App` (WPF/MVVM)
 
@@ -71,6 +83,16 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   `GroupWindow`, diálogos, overlay, `.resx` pt-BR) implementado; compila e
   publica `win-x64` self-contained a partir do Linux. Aceite funcional
   **pendente no Windows**.
+- **Aceite (2026-09-17, Windows):** ✅ fluxo completo pelo App com 2 contas
+  (`flp-wb`, `flp-wf`): Play via `startbypatcher` (após fix `WorkingDirectory`,
+  sem erro `configs.pck`) → Fire do preset seedado `F1 x2` (`fired=2 skipped=0`,
+  countdown 3 s) → Sync via checkbox bidirecional com janelas sobrepostas
+  (após fix conversão-única + master por `WindowFromPoint`, sem eco) →
+  overlay (`Testar captura`, diagnóstico temporário até o B2):
+  `captured=(0.98,0.40)` estável em 2 cliques no X do inventário.
+  Corrigidos no caminho: lista de servidores invisível (faltava `ItemsSource`),
+  mesmo defeito em `GroupList`/`OnlineList`, + cabeçalho "Contas — {0}" e
+  destaque de seleção.
 
 ## M6 — Endurecimento v1
 
@@ -82,6 +104,24 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   disparo), hotkey global (`GlobalHotKeyManager`, formato `CTRL+SHIFT+F9`),
   crash-watch (morte do client cancela jobs e marca offline) e `README` de
   uso implementados. Checklist contra 5 contas **pendente no Windows**.
+- **Parcial (2026-09-17, Windows):** crash-watch validado (card nasce Online
+  após Play — após fix `NotifyPropertyChangedFor(StatusText)` — e volta a
+  Offline ao fechar o client na mão, App responsivo). Hotkey `CTRL+SHIFT+F9`
+  gravada no preset `F1 x2` via seed (sem UI); disparo com jogo em foco
+  pendente de teste. Checklist proposto como adaptado a 2 contas.
+- **Hotkey (2026-09-17, Windows):** ✅ `CTRL+SHIFT+F9` com jogo em foco
+  dispara `F1 x2` nas 2 contas (countdown 3 s). Causa do 1º failure:
+  condição de corrida — registro ocorria no `SourceInitialized`, antes do
+  `LoadAsync`; corrigido (registro pós-carga via
+  `RegisterPresetHotkeys`, idempotente).
+- **Aceite final (2026-09-17, Windows):** ✅ checklist adaptado a 2 contas
+  (usuário tem 2; decisão: o fan-out é por conta com o mesmo caminho de
+  código, então 2 provam o mecanismo — 5 seria repetição, não cobertura
+  nova). Cobertura executada: login ×2 via Play, Fire `fired=2`, Sync
+  bidirecional, hotkey com jogo em foco, crash-watch Online→Offline,
+  overlay `captured=(0.98,0.40)` estável, `README` revisado. AV/Defender:
+  sem alertas observados nos binários Debug usados na sessão; publish
+  Release self-contained segue pendente de teste dedicado.
 
 ## Convenções de marco
 

@@ -17,6 +17,9 @@ Tudo é camada App. Só implementar após o aceite M1 no Windows.
 - Criar/editar/excluir preset; adicionar/remover ação por conta
   (tecla + click com captura via overlay); tempo em ms; duplicar preset;
   reordenar ações/personagens (lista simples primeiro).
+- Campo de hotkey editável no preset (formato `CTRL+SHIFT+F9`, validado pelo
+  `ParseHotkey`; registrar/desregistrar ao salvar) — pedido do usuário em
+  2026-09-17 (hoje só via seed no JSON).
 - Drag & drop na ordem: só se a lista simples incomodar em uso real.
 - Aceite: duplicar preset de 2 contas, ajustar delays, disparar sem foco
   nas duas; linha inválida (click sem posição) bloqueia o save.
