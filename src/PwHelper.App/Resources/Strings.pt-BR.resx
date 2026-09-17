@@ -29,4 +29,5 @@
   <data name="GroundClickLimitation" xml:space="preserve"><value>Clicks no chão 3D não replicam sem foco (limitação do v1).</value></data>
   <data name="AccountsOfServer" xml:space="preserve"><value>Contas — {0}</value></data>
   <data name="NoServerSelected" xml:space="preserve"><value>Nenhum servidor selecionado</value></data>
+  <data name="CaptureTest" xml:space="preserve"><value>Testar captura</value></data>
 </root>
