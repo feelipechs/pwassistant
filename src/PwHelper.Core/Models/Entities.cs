@@ -48,6 +48,19 @@ public sealed class Group
     public List<Guid> AccountIds { get; set; } = new();
 }
 
+/// <summary>
+/// Named, ordered snapshot of party members. Order is significant
+/// (numpad selection in B4 follows it). No presets (they persist per group).
+/// </summary>
+public sealed class Formation
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Ordered member account ids.</summary>
+    public List<Guid> AccountIds { get; set; } = new();
+}
+
 public sealed class Preset
 {
     public Guid Id { get; set; } = Guid.NewGuid();

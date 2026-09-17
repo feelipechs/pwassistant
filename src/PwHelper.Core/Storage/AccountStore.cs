@@ -11,6 +11,7 @@ public sealed class AppData
     public List<Server> Servers { get; set; } = new();
     public List<Group> Groups { get; set; } = new();
     public List<Preset> Presets { get; set; } = new();
+    public List<Formation> Formations { get; set; } = new();
 }
 
 public interface IAccountStore
