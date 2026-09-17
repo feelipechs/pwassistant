@@ -53,6 +53,12 @@ Validar em cada item abaixo.
 - Drag & drop na ordem: só se a lista simples incomodar em uso real.
 - Aceite: duplicar preset de 2 contas, ajustar delays, disparar sem foco
   nas duas; linha inválida (click sem posição) bloqueia o save.
+- **Parcial (2026-09-17, Windows):** ✅ criar preset, linhas editáveis no
+  lugar (conta/tipo/tecla/captura/delay), duplicar/excluir/↑↓ linha,
+  validação por linha no save, último servidor lembrado. Bug no caminho:
+  combos vazios (faltava `DataContext = this` no editor). Auto-foco da
+  janela-alvo antes do overlay (`WindowFocus`, explícito a pedido).
+  Falta: duplicar preset, campo de hotkey, renomear preset.
 
 ## B3 — Mini-mode da janela de grupo
 
