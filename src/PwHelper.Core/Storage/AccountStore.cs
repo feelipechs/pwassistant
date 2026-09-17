@@ -12,6 +12,9 @@ public sealed class AppData
     public List<Group> Groups { get; set; } = new();
     public List<Preset> Presets { get; set; } = new();
     public List<Formation> Formations { get; set; } = new();
+
+    /// <summary>Last server selected in the shell (restored on launch).</summary>
+    public Guid? LastSelectedServerId { get; set; }
 }
 
 public interface IAccountStore

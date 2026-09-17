@@ -67,17 +67,32 @@ public sealed partial class MainViewModel : ObservableObject
             Servers.Clear();
             foreach (Server server in _state.Data.Servers)
                 Servers.Add(server);
-            SelectedServer = _state.SelectedServer ?? Servers.FirstOrDefault();
+            // Last used wins; nothing preselected on first run (raw by rule).
+            SelectedServer = Servers.FirstOrDefault(s => s.Id == _state.Data.LastSelectedServerId);
         });
     }
 
     partial void OnSelectedServerChanged(Server? value)
     {
         _state.SelectedServer = value;
+        _state.Data.LastSelectedServerId = value?.Id;
         Accounts.Clear();
         if (value is null) return;
         foreach (Account account in value.Accounts)
             Accounts.Add(new AccountCard(account));
+        _ = PersistSelectionAsync();
+    }
+
+    private async Task PersistSelectionAsync()
+    {
+        try
+        {
+            await _state.SaveAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
     }
 
     [RelayCommand]
