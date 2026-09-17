@@ -27,6 +27,13 @@ public static class KeyCodes
         ["F12"] = 0x7B
     };
 
+    /// <summary>Curated key names offered by the preset editor (no free text).</summary>
+    public static IReadOnlyList<string> PresetKeys { get; } =
+    [
+        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+        "SPACE", "ENTER", "ESC", "TAB",
+    ];
+
     public static int Resolve(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
