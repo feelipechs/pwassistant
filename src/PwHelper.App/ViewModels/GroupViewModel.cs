@@ -73,11 +73,12 @@ public sealed partial class GroupViewModel : ObservableObject
         Groups.Clear();
         foreach (Group group in _state.Data.Groups)
             Groups.Add(group);
-        SelectedGroup = Groups.FirstOrDefault();
+        // Raw by rule: nothing preselected; the user picks group and formation.
+        SelectedGroup = null;
         Formations.Clear();
         foreach (Formation formation in _state.Data.Formations)
             Formations.Add(formation);
-        SelectedFormation = Formations.FirstOrDefault();
+        SelectedFormation = null;
     }
 
     partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);
