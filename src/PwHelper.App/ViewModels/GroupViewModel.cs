@@ -36,6 +36,10 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<Preset> Presets { get; } = new();
     public ObservableCollection<MemberOption> Members { get; } = new();
     public ObservableCollection<MemberOption> AvailableAccounts { get; } = new();
+    public ObservableCollection<Formation> Formations { get; } = new();
+
+    [ObservableProperty]
+    private Formation? selectedFormation;
 
     [ObservableProperty]
     private MemberOption? selectedAccountToAdd;
@@ -64,6 +68,10 @@ public sealed partial class GroupViewModel : ObservableObject
         foreach (Group group in _state.Data.Groups)
             Groups.Add(group);
         SelectedGroup = Groups.FirstOrDefault();
+        Formations.Clear();
+        foreach (Formation formation in _state.Data.Formations)
+            Formations.Add(formation);
+        SelectedFormation = Formations.FirstOrDefault();
     }
 
     partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);
@@ -165,6 +173,40 @@ public sealed partial class GroupViewModel : ObservableObject
         // No ConfigureAwait(false): see AddMemberAsync.
         await _state.SaveAsync();
         Rebuild(SelectedGroup);
+    }
+
+    [RelayCommand]
+    private async Task SaveFormationAsync()
+    {
+        if (SelectedGroup is null || SelectedGroup.AccountIds.Count == 0) return;
+        var dialog = new TextPromptDialog("FormationName", SelectedGroup.Name);
+        if (dialog.ShowDialog() != true) return;
+        var formation = new Formation
+        {
+            Name = dialog.Value,
+            AccountIds = new List<Guid>(SelectedGroup.AccountIds)
+        };
+        _state.Data.Formations.Add(formation);
+        Formations.Add(formation);
+        SelectedFormation = formation;
+        await _state.SaveAsync();
+    }
+
+    [RelayCommand]
+    private async Task LoadFormationAsync()
+    {
+        if (SelectedGroup is null || SelectedFormation is null) return;
+        var known = _state.Data.Servers
+            .SelectMany(s => s.Accounts)
+            .Select(a => a.Id);
+        (IReadOnlyList<Guid> applied, int skipped) =
+            FormationApplicator.Apply(SelectedFormation, known);
+        SelectedGroup.AccountIds = new List<Guid>(applied);
+        await _state.SaveAsync();
+        Rebuild(SelectedGroup);
+        StatusMessage = skipped == 0
+            ? $"formation={SelectedFormation.Name} members={applied.Count}"
+            : $"formation={SelectedFormation.Name} members={applied.Count} skipped={skipped}";
     }
 
     [RelayCommand]

@@ -40,4 +40,8 @@ public static class Strings
     public static string OnlineMembers => Get(nameof(OnlineMembers));
     public static string AddMember => Get(nameof(AddMember));
     public static string Remove => Get(nameof(Remove));
+    public static string Formations => Get(nameof(Formations));
+    public static string FormationName => Get(nameof(FormationName));
+    public static string SaveFormation => Get(nameof(SaveFormation));
+    public static string LoadFormation => Get(nameof(LoadFormation));
 }

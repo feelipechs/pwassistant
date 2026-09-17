@@ -30,6 +30,9 @@ public partial class GroupWindow : Window
         OnlineLabel.Text = Strings.OnlineMembers;
         MembersLabel.Text = Strings.Members;
         AddMemberButton.Content = Strings.AddMember;
+        FormationsLabel.Text = Strings.Formations;
+        SaveFormationButton.Content = Strings.SaveFormation;
+        LoadFormationButton.Content = Strings.LoadFormation;
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
     }

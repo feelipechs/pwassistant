@@ -34,4 +34,8 @@
   <data name="OnlineMembers" xml:space="preserve"><value>Membros online</value></data>
   <data name="AddMember" xml:space="preserve"><value>Adicionar membro</value></data>
   <data name="Remove" xml:space="preserve"><value>Remover</value></data>
+  <data name="Formations" xml:space="preserve"><value>Formações</value></data>
+  <data name="FormationName" xml:space="preserve"><value>Nome da formação</value></data>
+  <data name="SaveFormation" xml:space="preserve"><value>Salvar formação</value></data>
+  <data name="LoadFormation" xml:space="preserve"><value>Carregar formação</value></data>
 </root>
