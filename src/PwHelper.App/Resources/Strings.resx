@@ -54,4 +54,6 @@
   <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
   <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
   <data name="RowWithoutAccount" xml:space="preserve"><value>Row {0} has no character.</value></data>
+  <data name="DuplicatePreset" xml:space="preserve"><value>Duplicate preset</value></data>
+  <data name="CopySuffix" xml:space="preserve"><value> (copy)</value></data>
 </root>

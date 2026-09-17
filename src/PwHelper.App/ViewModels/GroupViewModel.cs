@@ -57,6 +57,7 @@ public sealed partial class GroupViewModel : ObservableObject
     public string RemoveText => AppStrings.Remove;
     public string EditText => AppStrings.Edit;
     public string DeleteText => AppStrings.Delete;
+    public string DuplicatePresetText => AppStrings.DuplicatePreset;
 
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
@@ -247,6 +248,39 @@ public sealed partial class GroupViewModel : ObservableObject
         if (preset is null) return;
         _state.Data.Presets.Remove(preset);
         Presets.Remove(preset);
+        await _state.SaveAsync();
+    }
+
+    [RelayCommand]
+    private async Task DuplicatePresetAsync(Preset? preset)
+    {
+        if (preset is null) return;
+        var copy = new Preset
+        {
+            GroupId = preset.GroupId,
+            Name = preset.Name + AppStrings.CopySuffix,
+            Hotkey = null,
+            ExecutionMode = preset.ExecutionMode,
+            Actions = preset.Actions.Select(a => new AccountAction
+            {
+                AccountId = a.AccountId,
+                Action = new GameAction
+                {
+                    Type = a.Action.Type,
+                    Key = a.Action.Key,
+                    RelativePosition = a.Action.RelativePosition is null
+                        ? null
+                        : new RelativePosition(a.Action.RelativePosition.X, a.Action.RelativePosition.Y),
+                    Button = a.Action.Button,
+                    DelayBeforeMs = a.Action.DelayBeforeMs,
+                    Repeat = a.Action.Repeat is null
+                        ? null
+                        : new RepeatSettings(a.Action.Repeat.Times, a.Action.Repeat.IntervalMs),
+                },
+            }).ToList(),
+        };
+        _state.Data.Presets.Add(copy);
+        Presets.Add(copy);
         await _state.SaveAsync();
     }
 

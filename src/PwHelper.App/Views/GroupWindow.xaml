@@ -62,6 +62,9 @@
                             <Button Content="{Binding DataContext.DeleteText, RelativeSource={RelativeSource AncestorType=Window}}"
                                     Command="{Binding DataContext.DeletePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                     CommandParameter="{Binding}"/>
+                            <Button Content="{Binding DataContext.DuplicatePresetText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Command="{Binding DataContext.DuplicatePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

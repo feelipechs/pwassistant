@@ -59,6 +59,8 @@ public static class Strings
     public static string Duplicate => Get(nameof(Duplicate));
     public static string MoveUp => Get(nameof(MoveUp));
     public static string MoveDown => Get(nameof(MoveDown));
+    public static string DuplicatePreset => Get(nameof(DuplicatePreset));
+    public static string CopySuffix => Get(nameof(CopySuffix));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }
