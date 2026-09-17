@@ -76,6 +76,7 @@ public partial class PresetEditor : Window
         _state = state;
         _resolver = resolver;
         _preset = preset;
+        DataContext = this;
         InitializeComponent();
 
         var accountsById = state.Data.Servers
