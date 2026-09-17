@@ -73,6 +73,9 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     internal static extern IntPtr WindowFromPoint(POINT point);
 
+    [DllImport("user32.dll")]
+    internal static extern bool SetForegroundWindow(IntPtr hWnd);
+
     public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [StructLayout(LayoutKind.Sequential)]

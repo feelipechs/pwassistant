@@ -7,6 +7,7 @@ using PwHelper.App.ViewModels;
 using PwHelper.Core.Execution;
 using PwHelper.Core.Input;
 using PwHelper.Core.Models;
+using PwHelper.WinApi;
 
 namespace PwHelper.App.Views;
 
@@ -120,6 +121,7 @@ public partial class PresetEditor : Window
         if (target is null) return Task.FromResult<RelativePosition?>(null);
 
         var overlay = new ClickCaptureOverlay();
+        WindowFocus.BringToFront(target.WindowHandle);
         overlay.ShowDialog();
         if (overlay.CapturedScreenPoint is null) return Task.FromResult<RelativePosition?>(null);
 
