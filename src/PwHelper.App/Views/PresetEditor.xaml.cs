@@ -129,6 +129,7 @@ public partial class PresetEditor : Window
         var overlay = new ClickCaptureOverlay();
         WindowFocus.BringToFront(target.WindowHandle);
         overlay.ShowDialog();
+        Activate();
         if (overlay.CapturedScreenPoint is null) return Task.FromResult<RelativePosition?>(null);
 
         (int x, int y) = _resolver.ScreenToClientPoint(
