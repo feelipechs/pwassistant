@@ -107,7 +107,7 @@ public sealed class SyncController : IDisposable
             {
                 await _strategy.SendUiClickAsync(
                     new ReplicaTarget(replica.Id, replica.WindowHandle),
-                    fraction.X, fraction.Y).ConfigureAwait(false);
+                    fraction.X, fraction.Y, MouseButton.Left).ConfigureAwait(false);
             }
             catch (WinApiException)
             {

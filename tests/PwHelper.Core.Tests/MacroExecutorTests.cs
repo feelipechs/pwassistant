@@ -8,7 +8,7 @@ internal sealed record FakeTarget(Guid AccountId, IntPtr WindowHandle) : IWindow
 
 internal sealed class FakeStrategy : IInputStrategy
 {
-    public record Call(Guid AccountId, string Kind, int? VirtualKey = null);
+    public record Call(Guid AccountId, string Kind, int? VirtualKey = null, MouseButton? Button = null);
 
     public List<Call> Calls { get; } = new();
     public Func<FakeTarget, GameAction, Exception?>? FailWith { get; set; }
@@ -19,9 +19,11 @@ internal sealed class FakeStrategy : IInputStrategy
         return Task.CompletedTask;
     }
 
-    public Task SendUiClickAsync(IWindowTarget target, double relativeX, double relativeY, CancellationToken cancellationToken = default)
+    public Task SendUiClickAsync(
+        IWindowTarget target, double relativeX, double relativeY,
+        MouseButton button = MouseButton.Left, CancellationToken cancellationToken = default)
     {
-        lock (Calls) Calls.Add(new Call(target.AccountId, "click"));
+        lock (Calls) Calls.Add(new Call(target.AccountId, "click", Button: button));
         Exception? failure = FailWith?.Invoke((FakeTarget)target, null!);
         return failure is null ? Task.CompletedTask : Task.FromException(failure);
     }
@@ -124,6 +126,34 @@ public sealed class MacroExecutorTests
     }
 
     [Fact]
+    public async Task ClickAction_ForwardsMouseButton()
+    {
+        var strategy = new FakeStrategy();
+        var executor = new MacroExecutor(strategy, Resolver(AccountA));
+        var preset = new Preset
+        {
+            Actions =
+            {
+                new AccountAction
+                {
+                    AccountId = AccountA,
+                    Action = new GameAction
+                    {
+                        Type = ActionType.Click,
+                        Button = MouseButton.Right,
+                        RelativePosition = new RelativePosition(0.5, 0.5)
+                    }
+                }
+            }
+        };
+
+        await executor.ExecuteAsync(preset, Guid.NewGuid());
+
+        FakeStrategy.Call call = Assert.Single(strategy.Calls);
+        Assert.Equal(MouseButton.Right, call.Button);
+    }
+
+    [Fact]
     public async Task StrategyError_IsCaptured_DoesNotThrow()
     {
         var strategy = new FakeStrategy
@@ -181,7 +211,9 @@ public sealed class MacroExecutorTests
         public BlockingStrategy(TaskCompletionSource gate) => _gate = gate;
         public Task SendKeyAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default) =>
             Task.Delay(Timeout.Infinite, cancellationToken);
-        public Task SendUiClickAsync(IWindowTarget target, double relativeX, double relativeY, CancellationToken cancellationToken = default) =>
+        public Task SendUiClickAsync(
+            IWindowTarget target, double relativeX, double relativeY,
+            MouseButton button = MouseButton.Left, CancellationToken cancellationToken = default) =>
             Task.Delay(Timeout.Infinite, cancellationToken);
     }
 }

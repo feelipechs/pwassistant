@@ -6,6 +6,12 @@ public enum ActionType
     Click
 }
 
+public enum MouseButton
+{
+    Left,
+    Right
+}
+
 public enum ExecutionMode
 {
     Sequential,

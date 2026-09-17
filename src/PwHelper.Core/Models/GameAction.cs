@@ -14,6 +14,9 @@ public sealed class GameAction
     /// <summary>Client-area fraction when <see cref="Type"/> is <see cref="ActionType.Click"/>.</summary>
     public RelativePosition? RelativePosition { get; set; }
 
+    /// <summary>Button for Click actions. Defaults to Left (v1 recipe).</summary>
+    public MouseButton Button { get; set; } = MouseButton.Left;
+
     private int _delayBeforeMs;
     public int DelayBeforeMs
     {

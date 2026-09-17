@@ -1,5 +1,7 @@
 namespace PwHelper.Core.Input;
 
+using PwHelper.Core.Models;
+
 /// <summary>Where to send input: the live window of one specific account.</summary>
 public interface IWindowTarget
 {
@@ -15,7 +17,9 @@ public interface IWindowTarget
 public interface IInputStrategy
 {
     Task SendKeyAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default);
-    Task SendUiClickAsync(IWindowTarget target, double relativeX, double relativeY, CancellationToken cancellationToken = default);
+    Task SendUiClickAsync(
+        IWindowTarget target, double relativeX, double relativeY,
+        MouseButton button = MouseButton.Left, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Resolves the live top-level game window for a process id.</summary>

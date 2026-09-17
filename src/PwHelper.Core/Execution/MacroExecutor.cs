@@ -111,7 +111,8 @@ public sealed class MacroExecutor
     {
         if (action.Type == ActionType.Click && action.RelativePosition is not null)
             return _strategy.SendUiClickAsync(
-                target, action.RelativePosition.X, action.RelativePosition.Y, cancellationToken);
+                target, action.RelativePosition.X, action.RelativePosition.Y,
+                action.Button, cancellationToken);
 
         return _strategy.SendKeyAsync(target, ResolveKey(action.Key), cancellationToken);
     }

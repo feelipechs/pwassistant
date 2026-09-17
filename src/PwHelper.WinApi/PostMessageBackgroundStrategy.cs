@@ -1,4 +1,5 @@
 using PwHelper.Core.Input;
+using PwHelper.Core.Models;
 
 namespace PwHelper.WinApi;
 
@@ -49,7 +50,8 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
     }
 
     public async Task SendUiClickAsync(
-        IWindowTarget target, double relativeX, double relativeY, CancellationToken cancellationToken = default)
+        IWindowTarget target, double relativeX, double relativeY,
+        MouseButton button = MouseButton.Left, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(target);
         IntPtr hwnd = RequireHandle(target);
@@ -61,18 +63,23 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
         int y = (int)(relativeY * (rect.Bottom - rect.Top));
         IntPtr lParam = WinApiMessages.MakeLParam(x, y);
 
+        bool right = button == MouseButton.Right;
+        uint downMsg = right ? WinApiMessages.WM_RBUTTONDOWN : WinApiMessages.WM_LBUTTONDOWN;
+        uint upMsg = right ? WinApiMessages.WM_RBUTTONUP : WinApiMessages.WM_LBUTTONUP;
+        int mkButton = right ? WinApiMessages.MK_RBUTTON : WinApiMessages.MK_LBUTTON;
+
         // C4 mouse priming, then the click itself (all in client-area coords).
         Post(hwnd, WinApiMessages.WM_NCHITTEST, IntPtr.Zero, lParam, "HITTEST");
         await Task.Delay(_timing.MousePrimeStepMs, cancellationToken).ConfigureAwait(false);
         Post(hwnd, WinApiMessages.WM_MOUSEMOVE, IntPtr.Zero, lParam, "MOVE");
         await Task.Delay(_timing.MousePrimeStepMs, cancellationToken).ConfigureAwait(false);
         Post(hwnd, WinApiMessages.WM_SETCURSOR, hwnd,
-            (IntPtr)((WinApiMessages.WM_LBUTTONDOWN << 16) | WinApiMessages.HTCLIENT), "SETCURSOR");
+            (IntPtr)((downMsg << 16) | WinApiMessages.HTCLIENT), "SETCURSOR");
         await Task.Delay(_timing.MousePrimeStepMs, cancellationToken).ConfigureAwait(false);
 
-        Post(hwnd, WinApiMessages.WM_LBUTTONDOWN, (IntPtr)WinApiMessages.MK_LBUTTON, lParam, "LBUTTONDOWN");
+        Post(hwnd, downMsg, (IntPtr)mkButton, lParam, "BUTTONDOWN");
         await Task.Delay(_timing.ClickHoldMs, cancellationToken).ConfigureAwait(false);
-        Post(hwnd, WinApiMessages.WM_LBUTTONUP, IntPtr.Zero, lParam, "LBUTTONUP");
+        Post(hwnd, upMsg, IntPtr.Zero, lParam, "BUTTONUP");
 
         if (_applyHygiene)
             ApplyHygiene(hwnd);

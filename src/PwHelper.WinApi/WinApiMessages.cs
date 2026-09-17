@@ -11,12 +11,15 @@ internal static class WinApiMessages
     public const uint WM_MOUSEMOVE = 0x0200;
     public const uint WM_LBUTTONDOWN = 0x0201;
     public const uint WM_LBUTTONUP = 0x0202;
+    public const uint WM_RBUTTONDOWN = 0x0204;
+    public const uint WM_RBUTTONUP = 0x0205;
     public const uint WM_NCHITTEST = 0x0084;
 
     public const int WA_ACTIVE = 1;
     public const int WA_INACTIVE = 0;
     public const int HTCLIENT = 1;
     public const int MK_LBUTTON = 0x0001;
+    public const int MK_RBUTTON = 0x0002;
 
     public const uint MAPVK_VK_TO_VSC = 0;
 

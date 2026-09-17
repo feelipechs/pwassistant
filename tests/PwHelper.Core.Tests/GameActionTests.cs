@@ -12,6 +12,13 @@ public sealed class GameActionTests
     }
 
     [Fact]
+    public void Click_ButtonDefaultsToLeft()
+    {
+        var action = new GameAction { Type = ActionType.Click };
+        Assert.Equal(MouseButton.Left, action.Button);
+    }
+
+    [Fact]
     public void Click_WithoutPosition_IsInvalid()
     {
         var action = new GameAction { Type = ActionType.Click };
