@@ -29,8 +29,8 @@
 
 ## Próximo passo
 
-B2 fatia 4 (duplicar preset, hotkey editável, renomear). B2d aceito em
-2026-09-17 (click direito 2/2).
+B4 troca de janela (`` ` `` cíclico, Shift-toque, numpad pela ordem do
+grupo). B1/B1b/B2/B2d aceitos.
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 

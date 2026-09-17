@@ -55,12 +55,14 @@ Validar em cada item abaixo.
   nas duas; linha inválida (click sem posição) bloqueia o save.
 - **Parcial (2026-09-17, Windows):** ✅ criar preset, linhas editáveis no
   lugar (conta/tipo/tecla/captura/delay), duplicar/excluir/↑↓ linha,
-  validação por linha no save, último servidor lembrado. Bug no caminho:
-  combos vazios (faltava `DataContext = this` no editor). Auto-foco da
-  janela-alvo antes do overlay + volta do foco ao editor depois
-  (`WindowFocus`/`Activate`, explícitos a pedido). Validação R1–R8 ok.
-  Falta:   duplicar preset, campo de hotkey, renomear preset, click direito
-  (B2d abaixo).
+  validação por linha no save, último servidor lembrado,
+  duplicar preset (sem hotkey), renomear, hotkey editável com gravação
+  por tecla e re-registro live. Bug no caminho: combos vazios (faltava
+  `DataContext = this` no editor). Auto-foco da janela-alvo antes do
+  overlay + volta do foco ao editor (`WindowFocus`/`Activate`).
+- **Aceite final (2026-09-17, Windows):** ✅ B2 completo — duplicar preset
+  de 2 contas, delays ajustados, disparo sem foco nas duas, click sem
+  posição bloqueia o save, hotkey gravada dispara com jogo em foco.
 
 ## B2d — Click direito (botão por linha + prova no jogo)
 
