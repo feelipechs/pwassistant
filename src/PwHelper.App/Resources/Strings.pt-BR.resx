@@ -56,4 +56,8 @@
   <data name="RowWithoutAccount" xml:space="preserve"><value>Linha {0} sem personagem.</value></data>
   <data name="DuplicatePreset" xml:space="preserve"><value>Duplicar preset</value></data>
   <data name="CopySuffix" xml:space="preserve"><value> (cópia)</value></data>
+  <data name="Hotkey" xml:space="preserve"><value>Atalho</value></data>
+  <data name="HotkeyHint" xml:space="preserve"><value>Atalho global, ex. CTRL+SHIFT+F9 (vazio = nenhum).</value></data>
+  <data name="PresetNameRequired" xml:space="preserve"><value>Preset precisa de um nome.</value></data>
+  <data name="InvalidHotkey" xml:space="preserve"><value>Atalho precisa de modificadores + tecla, ex. CTRL+SHIFT+F9.</value></data>
 </root>

@@ -119,6 +119,11 @@ public partial class PresetEditor : Window
         ActionList.ItemsSource = Rows;
         AddCommandButton.Content = Strings.AddCommand;
         AddClickButton.Content = Strings.AddClick;
+        NameCaption.Text = Strings.PresetName;
+        NameBox.Text = preset.Name;
+        HotkeyCaption.Text = Strings.Hotkey;
+        HotkeyBox.Text = preset.Hotkey ?? string.Empty;
+        HotkeyBox.ToolTip = Strings.HotkeyHint;
     }
 
     public Task<RelativePosition?> CaptureClickAsync(Guid accountId)
@@ -194,6 +199,26 @@ public partial class PresetEditor : Window
 
     private void OnSave(object sender, RoutedEventArgs e)
     {
+        string name = NameBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Error(Strings.PresetNameRequired);
+            return;
+        }
+        string hotkey = HotkeyBox.Text.Trim();
+        if (!string.IsNullOrEmpty(hotkey))
+        {
+            try
+            {
+                MainWindow.ParseHotkey(hotkey);
+            }
+            catch (ArgumentException)
+            {
+                Error(Strings.InvalidHotkey);
+                return;
+            }
+        }
+
         var rebuilt = new List<AccountAction>();
         for (int i = 0; i < Rows.Count; i++)
         {
@@ -235,6 +260,8 @@ public partial class PresetEditor : Window
             rebuilt.Add(new AccountAction { AccountId = row.SelectedAccount.Account.Id, Action = action });
         }
 
+        _preset.Name = name;
+        _preset.Hotkey = string.IsNullOrEmpty(hotkey) ? null : hotkey;
         _preset.Actions.Clear();
         _preset.Actions.AddRange(rebuilt);
         DialogResult = true;

@@ -43,6 +43,18 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Re-registers from the current preset list (after B2 mutations).
+    /// Disposes previous registrations first; safe to call repeatedly.
+    /// </summary>
+    public void RefreshPresetHotkeys()
+    {
+        _hotkeys?.Dispose();
+        _hotkeys = null;
+        _hotkeysRegistered = false;
+        RegisterPresetHotkeys();
+    }
+
+    /// <summary>
     /// (Re)registers global hotkeys for presets that declare one. Must run
     /// AFTER AppState.LoadAsync — at SourceInitialized time the preset list
     /// is still empty, so App calls this again once data is loaded.

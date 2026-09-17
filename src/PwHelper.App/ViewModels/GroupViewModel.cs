@@ -59,6 +59,9 @@ public sealed partial class GroupViewModel : ObservableObject
     public string DeleteText => AppStrings.Delete;
     public string DuplicatePresetText => AppStrings.DuplicatePreset;
 
+    /// <summary>Invoked after preset mutations so hotkeys re-register live.</summary>
+    public Action? HotkeysChanged { get; set; }
+
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
         Func<Preset, PresetEditor> editorFactory)
@@ -227,6 +230,7 @@ public sealed partial class GroupViewModel : ObservableObject
         _state.Data.Presets.Add(preset);
         Presets.Add(preset);
         await _state.SaveAsync();
+        HotkeysChanged?.Invoke();
     }
 
     private string NewPresetName() =>
@@ -240,6 +244,7 @@ public sealed partial class GroupViewModel : ObservableObject
         if (editor.ShowDialog() != true) return;
         await _state.SaveAsync();
         Refresh();
+        HotkeysChanged?.Invoke();
     }
 
     [RelayCommand]
@@ -249,6 +254,7 @@ public sealed partial class GroupViewModel : ObservableObject
         _state.Data.Presets.Remove(preset);
         Presets.Remove(preset);
         await _state.SaveAsync();
+        HotkeysChanged?.Invoke();
     }
 
     [RelayCommand]

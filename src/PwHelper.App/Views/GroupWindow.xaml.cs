@@ -13,6 +13,7 @@ public partial class GroupWindow : Window
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
+        viewModel.HotkeysChanged = RefreshMainHotkeys;
         SyncCheck.Content = Strings.SyncEnabled;
         LimitationLabel.Text = Strings.GroundClickLimitation;
         OnlineLabel.Text = Strings.OnlineMembers;
@@ -26,5 +27,11 @@ public partial class GroupWindow : Window
         CancelButton.Content = Strings.Cancel;
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
+    }
+
+    private static void RefreshMainHotkeys()
+    {
+        if (Application.Current.MainWindow is MainWindow main)
+            main.RefreshPresetHotkeys();
     }
 }

@@ -61,6 +61,10 @@ public static class Strings
     public static string MoveDown => Get(nameof(MoveDown));
     public static string DuplicatePreset => Get(nameof(DuplicatePreset));
     public static string CopySuffix => Get(nameof(CopySuffix));
+    public static string Hotkey => Get(nameof(Hotkey));
+    public static string HotkeyHint => Get(nameof(HotkeyHint));
+    public static string PresetNameRequired => Get(nameof(PresetNameRequired));
+    public static string InvalidHotkey => Get(nameof(InvalidHotkey));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }
