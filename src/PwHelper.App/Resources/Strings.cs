@@ -63,6 +63,9 @@ public static class Strings
     public static string CopySuffix => Get(nameof(CopySuffix));
     public static string Hotkey => Get(nameof(Hotkey));
     public static string HotkeyHint => Get(nameof(HotkeyHint));
+    public static string RecordHotkey => Get(nameof(RecordHotkey));
+    public static string PressKeys => Get(nameof(PressKeys));
+    public static string NoHotkey => Get(nameof(NoHotkey));
     public static string PresetNameRequired => Get(nameof(PresetNameRequired));
     public static string InvalidHotkey => Get(nameof(InvalidHotkey));
     public static string RowWithoutAccount(int line) =>

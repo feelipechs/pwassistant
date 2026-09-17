@@ -57,7 +57,10 @@
   <data name="DuplicatePreset" xml:space="preserve"><value>Duplicar preset</value></data>
   <data name="CopySuffix" xml:space="preserve"><value> (cópia)</value></data>
   <data name="Hotkey" xml:space="preserve"><value>Atalho</value></data>
-  <data name="HotkeyHint" xml:space="preserve"><value>Foque e pressione a combinação (ESC cancela, Backspace limpa).</value></data>
+  <data name="HotkeyHint" xml:space="preserve"><value>CTRL, SHIFT, ALT, WIN + tecla (F1-F12, A-Z, 0-9, SPACE, ENTER, TAB). Modificador obrigatório. Evite reservadas como WIN+L. Botões do mouse não valem como atalho.</value></data>
+  <data name="RecordHotkey" xml:space="preserve"><value>Gravar atalho</value></data>
+  <data name="PressKeys" xml:space="preserve"><value>Pressione as teclas… (ESC cancela)</value></data>
+  <data name="NoHotkey" xml:space="preserve"><value>(nenhum)</value></data>
   <data name="PresetNameRequired" xml:space="preserve"><value>Preset precisa de um nome.</value></data>
   <data name="InvalidHotkey" xml:space="preserve"><value>Atalho precisa de modificadores + tecla, ex. CTRL+SHIFT+F9.</value></data>
 </root>

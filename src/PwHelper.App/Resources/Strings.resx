@@ -57,7 +57,10 @@
   <data name="DuplicatePreset" xml:space="preserve"><value>Duplicate preset</value></data>
   <data name="CopySuffix" xml:space="preserve"><value> (copy)</value></data>
   <data name="Hotkey" xml:space="preserve"><value>Hotkey</value></data>
-  <data name="HotkeyHint" xml:space="preserve"><value>Focus and press the key combination (ESC cancels, Backspace clears).</value></data>
+  <data name="HotkeyHint" xml:space="preserve"><value>Any of CTRL, SHIFT, ALT, WIN + key (F1-F12, A-Z, 0-9, SPACE, ENTER, TAB). A modifier is required. Avoid Windows-reserved combos like WIN+L. Mouse buttons cannot be hotkeys.</value></data>
+  <data name="RecordHotkey" xml:space="preserve"><value>Record hotkey</value></data>
+  <data name="PressKeys" xml:space="preserve"><value>Press keys… (ESC cancels)</value></data>
+  <data name="NoHotkey" xml:space="preserve"><value>(none)</value></data>
   <data name="PresetNameRequired" xml:space="preserve"><value>Preset needs a name.</value></data>
   <data name="InvalidHotkey" xml:space="preserve"><value>Hotkey needs modifiers + key, e.g. CTRL+SHIFT+F9.</value></data>
 </root>

@@ -14,8 +14,10 @@
                 <TextBlock x:Name="NameCaption" VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <TextBox x:Name="NameBox" Width="220" Margin="0,0,16,0"/>
                 <TextBlock x:Name="HotkeyCaption" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <TextBox x:Name="HotkeyBox" Width="160"/>
+                <TextBlock x:Name="HotkeyValueLabel" Width="160" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Button x:Name="RecordHotkeyButton" Click="OnRecordHotkey"/>
             </StackPanel>
+            <TextBlock x:Name="HotkeyHintLabel" Margin="0,4,0,0" FontStyle="Italic" FontSize="11" TextWrapping="Wrap"/>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
             <StackPanel Orientation="Horizontal">

@@ -124,28 +124,51 @@ public partial class PresetEditor : Window
         NameCaption.Text = Strings.PresetName;
         NameBox.Text = preset.Name;
         HotkeyCaption.Text = Strings.Hotkey;
-        HotkeyBox.Text = preset.Hotkey ?? string.Empty;
-        HotkeyBox.ToolTip = Strings.HotkeyHint;
-        HotkeyBox.IsReadOnly = true;
-        HotkeyBox.GotKeyboardFocus += (_, _) => _hotkeyBeforeCapture = HotkeyBox.Text;
-        HotkeyBox.PreviewKeyDown += OnHotkeyCapture;
+        _recordedHotkey = preset.Hotkey ?? string.Empty;
+        UpdateHotkeyLabel();
+        RecordHotkeyButton.Content = Strings.RecordHotkey;
+        HotkeyHintLabel.Text = Strings.HotkeyHint;
     }
 
-    private string _hotkeyBeforeCapture = string.Empty;
+    private string _recordedHotkey = string.Empty;
+    private bool _recordingHotkey;
 
-    /// <summary>Press-to-record: the next key combo becomes the hotkey.</summary>
-    private void OnHotkeyCapture(object sender, System.Windows.Input.KeyEventArgs e)
+    /// <summary>Press-to-record with explicit armed state and focus return.</summary>
+    private void OnRecordHotkey(object sender, RoutedEventArgs e)
     {
+        if (_recordingHotkey)
+        {
+            DisarmHotkeyRecorder();
+            return;
+        }
+        _recordingHotkey = true;
+        RecordHotkeyButton.Content = Strings.PressKeys;
+        PreviewKeyDown += OnHotkeyRecordKey;
+        RecordHotkeyButton.Focus();
+    }
+
+    private void DisarmHotkeyRecorder()
+    {
+        _recordingHotkey = false;
+        PreviewKeyDown -= OnHotkeyRecordKey;
+        RecordHotkeyButton.Content = Strings.RecordHotkey;
+        RecordHotkeyButton.Focus();
+    }
+
+    private void OnHotkeyRecordKey(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (!_recordingHotkey) return;
         if (e.Key == Key.Escape)
         {
-            HotkeyBox.Text = _hotkeyBeforeCapture;
-            HotkeyBox.MoveFocus(new System.Windows.Input.TraversalRequest(System.Windows.Input.FocusNavigationDirection.Next));
+            DisarmHotkeyRecorder();
             e.Handled = true;
             return;
         }
         if (e.Key is Key.Back or Key.Delete)
         {
-            HotkeyBox.Text = string.Empty;
+            _recordedHotkey = string.Empty;
+            UpdateHotkeyLabel();
+            DisarmHotkeyRecorder();
             e.Handled = true;
             return;
         }
@@ -165,9 +188,14 @@ public partial class PresetEditor : Window
             return;
         }
         parts.Add(keyName);
-        HotkeyBox.Text = string.Join("+", parts);
+        _recordedHotkey = string.Join("+", parts);
+        UpdateHotkeyLabel();
+        DisarmHotkeyRecorder();
         e.Handled = true;
     }
+
+    private void UpdateHotkeyLabel() =>
+        HotkeyValueLabel.Text = string.IsNullOrEmpty(_recordedHotkey) ? Strings.NoHotkey : _recordedHotkey;
 
     private static string? MapHotkeyKey(Key key)
     {
@@ -263,7 +291,7 @@ public partial class PresetEditor : Window
             Error(Strings.PresetNameRequired);
             return;
         }
-        string hotkey = HotkeyBox.Text.Trim();
+        string hotkey = _recordedHotkey.Trim();
         if (!string.IsNullOrEmpty(hotkey))
         {
             try
