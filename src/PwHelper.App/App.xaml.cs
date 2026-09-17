@@ -57,7 +57,17 @@ public partial class App : Application
         var main = _provider.GetRequiredService<MainWindow>();
         MainWindow = main;
         main.Show();
-        _ = main.ViewModel.InitializeAsync();
+        _ = InitializeAndRegisterAsync(main);
+    }
+
+    /// <summary>
+    /// Loads persisted data, then registers global preset hotkeys (which
+    /// need the loaded preset list — registering earlier sees nothing).
+    /// </summary>
+    private static async Task InitializeAndRegisterAsync(MainWindow main)
+    {
+        await main.ViewModel.InitializeAsync().ConfigureAwait(false);
+        await main.Dispatcher.InvokeAsync(main.RegisterPresetHotkeys).Task.ConfigureAwait(false);
     }
 
     protected override void OnExit(ExitEventArgs e)

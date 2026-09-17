@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private readonly AppState _state;
     private readonly PresetDispatcher _dispatcher;
     private GlobalHotKeyManager? _hotkeys;
+    private bool _hotkeysRegistered;
 
     public MainViewModel ViewModel { get; }
 
@@ -39,8 +40,22 @@ public partial class MainWindow : Window
         var hwnd = new WindowInteropHelper(this).Handle;
         var source = HwndSource.FromHwnd(hwnd);
         source?.AddHook(WndProc);
+    }
 
-        _hotkeys = new GlobalHotKeyManager(hwnd);
+    /// <summary>
+    /// (Re)registers global hotkeys for presets that declare one. Must run
+    /// AFTER AppState.LoadAsync — at SourceInitialized time the preset list
+    /// is still empty, so App calls this again once data is loaded.
+    /// Idempotent: presets added later re-register via the B2 editor.
+    /// </summary>
+    public void RegisterPresetHotkeys()
+    {
+        if (_hotkeysRegistered) return;
+
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero) return;
+        _hotkeys ??= new GlobalHotKeyManager(hwnd);
+
         foreach (Preset preset in _state.Data.Presets.Where(p => !string.IsNullOrWhiteSpace(p.Hotkey)))
         {
             try
@@ -54,6 +69,7 @@ public partial class MainWindow : Window
                 // One bad hotkey string never breaks the app startup.
             }
         }
+        _hotkeysRegistered = true;
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
