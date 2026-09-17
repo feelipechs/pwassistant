@@ -29,8 +29,8 @@
 
 ## Próximo passo
 
-B2 fatia 4 (duplicar preset, hotkey editável, renomear). Fatia 3 + auto-foco
-aceitos em 2026-09-17.
+B2 fatia 4 (duplicar preset, hotkey editável, renomear). B2d aceito em
+2026-09-17 (click direito 2/2).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 

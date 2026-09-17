@@ -72,6 +72,10 @@ Validar em cada item abaixo.
 - Editor: seletor Esquerdo/Direito por linha de click.
 - Aceite: click direito no retrato do personagem abre o menu de contexto
   (convidar/seguir) sem foco, 2/2.
+- **Aceite (2026-09-17, Windows):** ✅ menu de contexto 2/2 sem foco.
+  Decisão de desenho: a captura ouve sempre o botão esquerdo (posição não
+  tem botão; ouvir o direito abriria menus durante a mira) — o botão do
+  seletor vale só no disparo.
 
 ## B3 — Mini-mode da janela de grupo
 
