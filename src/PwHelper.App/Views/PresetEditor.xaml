@@ -32,6 +32,9 @@
                                   SelectedItem="{Binding Key, Mode=TwoWay}"/>
                         <Button x:Name="RowCaptureButton" Click="OnCaptureRow" Margin="0,0,8,0"
                                 Content="{x:Static res:Strings.CaptureClick}"/>
+                        <ComboBox x:Name="RowButtonBox" Width="90" Margin="0,0,8,0"
+                                  ItemsSource="{Binding DataContext.MouseButtons, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  SelectedItem="{Binding Button, Mode=TwoWay}"/>
                         <TextBlock x:Name="RowPositionText" Width="130" Margin="0,0,8,0" VerticalAlignment="Center"
                                    Text="{Binding PositionLabel}"/>
                         <TextBox Width="70" Margin="0,0,8,0" ToolTip="{x:Static res:Strings.DelayMs}"
@@ -48,6 +51,9 @@
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Type}" Value="{x:Static models:ActionType.Click}">
                             <Setter TargetName="RowKeyBox" Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Type}" Value="{x:Static models:ActionType.Key}">
+                            <Setter TargetName="RowButtonBox" Property="Visibility" Value="Collapsed"/>
                         </DataTrigger>
                     </DataTemplate.Triggers>
                 </DataTemplate>

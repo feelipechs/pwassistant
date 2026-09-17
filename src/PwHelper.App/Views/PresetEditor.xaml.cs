@@ -29,6 +29,9 @@ public sealed partial class PresetActionRow : ObservableObject
     private RelativePosition? position;
 
     [ObservableProperty]
+    private MouseButton button = MouseButton.Left;
+
+    [ObservableProperty]
     private int delayBeforeMs;
 
     partial void OnSelectedAccountChanged(MemberOption? value)
@@ -55,6 +58,7 @@ public sealed partial class PresetActionRow : ObservableObject
         Type = Type,
         Key = Key,
         Position = Position,
+        Button = Button,
         DelayBeforeMs = DelayBeforeMs,
         RepeatTimes = RepeatTimes,
         RepeatIntervalMs = RepeatIntervalMs,
@@ -70,6 +74,7 @@ public partial class PresetEditor : Window
     public ObservableCollection<PresetActionRow> Rows { get; } = new();
     public ObservableCollection<MemberOption> MemberAccounts { get; } = new();
     public Array ActionTypes { get; } = Enum.GetValues<ActionType>();
+    public Array MouseButtons { get; } = Enum.GetValues<MouseButton>();
     public IReadOnlyList<string> AvailableKeys { get; } = KeyCodes.PresetKeys;
 
     public PresetEditor(AppState state, IWindowResolver resolver, Preset preset)
@@ -105,6 +110,7 @@ public partial class PresetEditor : Window
                 Type = existing.Action.Type,
                 Key = existing.Action.Key,
                 Position = existing.Action.RelativePosition,
+                Button = existing.Action.Button,
                 DelayBeforeMs = existing.Action.DelayBeforeMs,
                 RepeatTimes = existing.Action.Repeat?.Times ?? 1,
                 RepeatIntervalMs = existing.Action.Repeat?.IntervalMs ?? 0,
@@ -204,7 +210,13 @@ public partial class PresetEditor : Window
             }
             GameAction action = row.Type == ActionType.Key
                 ? new GameAction { Type = ActionType.Key, Key = row.Key, DelayBeforeMs = row.DelayBeforeMs }
-                : new GameAction { Type = ActionType.Click, RelativePosition = row.Position, DelayBeforeMs = row.DelayBeforeMs };
+                : new GameAction
+                {
+                    Type = ActionType.Click,
+                    RelativePosition = row.Position,
+                    Button = row.Button,
+                    DelayBeforeMs = row.DelayBeforeMs
+                };
 
             if (row.Type == ActionType.Key && string.IsNullOrWhiteSpace(row.Key))
             {
