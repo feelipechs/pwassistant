@@ -71,6 +71,13 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
   unidade de trabalho fechada (ex.: bootstrap da solution, WinApi + Probe,
   Core + testes, App WPF) gera um commit próprio, independente de
   corresponder ou não a um marco inteiro do `doc/06-marcos.md`.
+- Commits atômicos (padrão de mercado): cada commit compila e mantém os
+  testes verdes; uma mudança lógica por commit. Se um arquivo mistura dois
+  blocos, separar por hunk (`git add -p` ou equivalente) em vez de agrupar
+  por arquivo.
+- Docs junto do código que os afeta no mesmo commit (ex.: descoberta `03`
+  com o fix); bookkeeping de processo (carimbos do `06`, `HANDOFF`
+  reescrito, `README` revisado) em `docs:` separado(s).
 - Padrão: Conventional Commits, tudo em inglês, imperativo, curto:
   `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:` + escopo opcional
   (ex.: `feat(winapi): add background key press with activation priming`).

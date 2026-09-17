@@ -27,21 +27,41 @@ dotnet publish src/PwHelper.App -r win-x64 --self-contained -c Release
 
 No Linux, o projeto `PwHelper.App` compila graças a
 `EnableWindowsTargeting`, mas só **executa** no Windows.
+Para rodar os testes é preciso o **runtime .NET 8** instalado
+(lado a lado com outras versões, sem conflito).
 
-## Validação no Windows (aceite pendente — ver `doc/06-marcos.md`)
-
-Com o jogo **sem foco**, countdown de 3 s, ação de baixo risco primeiro:
+## Uso no Windows (fluxo validado — ver `doc/06-marcos.md`)
 
 ```powershell
-# M1: tecla F1 (montaria) sem foco — esperado: monta/desmonta
-.\PwHelper.Probe.exe key --pid <pid> --key F1
+# 1. App: cadastrar servidor (elementclient.exe) + contas, Play x2
+dotnet run --project src/PwHelper.App
 
-# M1: UI-click sem foco (coordenada de client area) — esperado: click de UI
-.\PwHelper.Probe.exe click --pid <pid> --x 400 --y 300
+# 2. Modo grupo: Fire dispara o preset; checkbox Sync replica clicks
+# 3. Hotkey global do preset (com o jogo em foco): CTRL+SHIFT+F9
+```
+
+Console de diagnóstico (sem App, jogo sem foco, countdown de 3 s):
+
+```powershell
+# Tecla F1 (montaria) num PID — esperado: monta/desmonta
+dotnet run --project src/PwHelper.Probe -- key --pid <pid> --key F1
+
+# UI-click (coordenada de client area) — esperado: click de UI
+dotnet run --project src/PwHelper.Probe -- click --pid <pid> --x 1343 --y 305
+
+# Preset F1 + click nas 2 contas (Simultaneous) + skip de offline
+dotnet run --project src/PwHelper.Probe -- preset --pid <pid1> --pid <pid2> --x 1343 --y 305
+
+# Sync listener: click físico em qualquer janela replica na outra (ENTER para)
+dotnet run --project src/PwHelper.Probe -- sync --pid <pid1> --pid <pid2>
 ```
 
 Controles: a variante T0 pura (`tools/provas-winapi/teste-bateria.ps1 -Variant T0`)
 deve **falhar** sem foco — se passar, o engine mudou; parar e investigar.
+
+Limites do v1: click no chão 3D não passa sem foco; grupo/preset ainda
+sem telas de gerência (ver `doc/07-backlog.md`); dados em
+`%AppData%\PwHelper\accounts.json` (senhas via DPAPI).
 
 ## Regras do projeto
 
