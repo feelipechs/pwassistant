@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using PwHelper.Core.Input;
 using PwHelper.Core.Models;
 
@@ -34,6 +35,9 @@ public sealed class GameLauncher
         {
             FileName = server.ElementClientPath,
             Arguments = arguments,
+            // The client resolves configs.pck and other assets relatively:
+            // it must start with its own folder as the working directory.
+            WorkingDirectory = Path.GetDirectoryName(server.ElementClientPath) ?? string.Empty,
             UseShellExecute = false
         };
     }

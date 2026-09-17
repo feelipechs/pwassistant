@@ -89,6 +89,17 @@ public sealed class GameLauncherTests
         Assert.Throws<ArgumentException>(() =>
             GameLauncher.BuildStartInfo(server, new Account(), "pw"));
     }
+
+    [Fact]
+    public void BuildStartInfo_SetsWorkingDirectoryToClientFolder()
+    {
+        string clientPath = Path.Combine("game", "x64", "elementclient_64.exe");
+        var server = new Server { ElementClientPath = clientPath };
+
+        var info = GameLauncher.BuildStartInfo(server, new Account { Login = "hero" }, "pw");
+
+        Assert.Equal(Path.Combine("game", "x64"), info.WorkingDirectory);
+    }
 }
 
 public sealed class CountdownTests
