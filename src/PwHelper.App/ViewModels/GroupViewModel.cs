@@ -30,6 +30,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly AppState _state;
     private readonly PresetDispatcher _dispatcher;
     private readonly SyncController _sync;
+    private readonly Func<Preset, PresetEditor> _editorFactory;
 
     public ObservableCollection<Group> Groups { get; } = new();
     public ObservableCollection<Account> OnlineMembers { get; } = new();
@@ -55,11 +56,14 @@ public sealed partial class GroupViewModel : ObservableObject
 
     public string RemoveText => AppStrings.Remove;
 
-    public GroupViewModel(AppState state, PresetDispatcher dispatcher, SyncController sync)
+    public GroupViewModel(
+        AppState state, PresetDispatcher dispatcher, SyncController sync,
+        Func<Preset, PresetEditor> editorFactory)
     {
         _state = state;
         _dispatcher = dispatcher;
         _sync = sync;
+        _editorFactory = editorFactory;
     }
 
     public void Initialize()
@@ -208,6 +212,21 @@ public sealed partial class GroupViewModel : ObservableObject
             ? $"formation={SelectedFormation.Name} members={applied.Count}"
             : $"formation={SelectedFormation.Name} members={applied.Count} skipped={skipped}";
     }
+
+    [RelayCommand]
+    private async Task AddPresetAsync()
+    {
+        if (SelectedGroup is null) return;
+        var preset = new Preset { GroupId = SelectedGroup.Id, Name = NewPresetName() };
+        PresetEditor editor = _editorFactory(preset);
+        if (editor.ShowDialog() != true) return;
+        _state.Data.Presets.Add(preset);
+        Presets.Add(preset);
+        await _state.SaveAsync();
+    }
+
+    private string NewPresetName() =>
+        string.Format(AppStrings.PresetNameNumber, Presets.Count + 1);
 
     [RelayCommand]
     private void CancelAll() => _dispatcher.CancelAll();

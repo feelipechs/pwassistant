@@ -29,7 +29,6 @@
   <data name="GroundClickLimitation" xml:space="preserve"><value>3D-ground clicks do not replicate without focus (v1 limitation).</value></data>
   <data name="AccountsOfServer" xml:space="preserve"><value>Accounts — {0}</value></data>
   <data name="NoServerSelected" xml:space="preserve"><value>No server selected</value></data>
-  <data name="CaptureTest" xml:space="preserve"><value>Test capture</value></data>
   <data name="Members" xml:space="preserve"><value>Members</value></data>
   <data name="OnlineMembers" xml:space="preserve"><value>Online members</value></data>
   <data name="AddMember" xml:space="preserve"><value>Add member</value></data>
@@ -38,4 +37,11 @@
   <data name="FormationName" xml:space="preserve"><value>Formation name</value></data>
   <data name="SaveFormation" xml:space="preserve"><value>Save formation</value></data>
   <data name="LoadFormation" xml:space="preserve"><value>Load formation</value></data>
+  <data name="NewPreset" xml:space="preserve"><value>New preset</value></data>
+  <data name="PresetNameNumber" xml:space="preserve"><value>Preset {0}</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="KeyRequired" xml:space="preserve"><value>Type a key name first.</value></data>
+  <data name="ClickPositionRequired" xml:space="preserve"><value>Capture a click position first.</value></data>
+  <data name="NoPositionCaptured" xml:space="preserve"><value>No click position captured.</value></data>
+  <data name="PositionCaptured" xml:space="preserve"><value>Captured click at ({0:F2}, {1:F2}).</value></data>
 </root>

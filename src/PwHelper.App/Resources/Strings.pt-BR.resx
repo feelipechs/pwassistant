@@ -29,7 +29,6 @@
   <data name="GroundClickLimitation" xml:space="preserve"><value>Clicks no chão 3D não replicam sem foco (limitação do v1).</value></data>
   <data name="AccountsOfServer" xml:space="preserve"><value>Contas — {0}</value></data>
   <data name="NoServerSelected" xml:space="preserve"><value>Nenhum servidor selecionado</value></data>
-  <data name="CaptureTest" xml:space="preserve"><value>Testar captura</value></data>
   <data name="Members" xml:space="preserve"><value>Membros</value></data>
   <data name="OnlineMembers" xml:space="preserve"><value>Membros online</value></data>
   <data name="AddMember" xml:space="preserve"><value>Adicionar membro</value></data>
@@ -38,4 +37,11 @@
   <data name="FormationName" xml:space="preserve"><value>Nome da formação</value></data>
   <data name="SaveFormation" xml:space="preserve"><value>Salvar formação</value></data>
   <data name="LoadFormation" xml:space="preserve"><value>Carregar formação</value></data>
+  <data name="NewPreset" xml:space="preserve"><value>Novo preset</value></data>
+  <data name="PresetNameNumber" xml:space="preserve"><value>Preset {0}</value></data>
+  <data name="Add" xml:space="preserve"><value>Adicionar</value></data>
+  <data name="KeyRequired" xml:space="preserve"><value>Digite o nome da tecla primeiro.</value></data>
+  <data name="ClickPositionRequired" xml:space="preserve"><value>Capture a posição do click primeiro.</value></data>
+  <data name="NoPositionCaptured" xml:space="preserve"><value>Nenhuma posição de click capturada.</value></data>
+  <data name="PositionCaptured" xml:space="preserve"><value>Click capturado em ({0:F2}, {1:F2}).</value></data>
 </root>

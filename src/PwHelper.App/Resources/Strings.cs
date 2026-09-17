@@ -35,7 +35,6 @@ public static class Strings
     public static string GroundClickLimitation => Get(nameof(GroundClickLimitation));
     public static string AccountsOfServer => Get(nameof(AccountsOfServer));
     public static string NoServerSelected => Get(nameof(NoServerSelected));
-    public static string CaptureTest => Get(nameof(CaptureTest));
     public static string Members => Get(nameof(Members));
     public static string OnlineMembers => Get(nameof(OnlineMembers));
     public static string AddMember => Get(nameof(AddMember));
@@ -44,4 +43,11 @@ public static class Strings
     public static string FormationName => Get(nameof(FormationName));
     public static string SaveFormation => Get(nameof(SaveFormation));
     public static string LoadFormation => Get(nameof(LoadFormation));
+    public static string NewPreset => Get(nameof(NewPreset));
+    public static string PresetNameNumber => Get(nameof(PresetNameNumber));
+    public static string Add => Get(nameof(Add));
+    public static string KeyRequired => Get(nameof(KeyRequired));
+    public static string ClickPositionRequired => Get(nameof(ClickPositionRequired));
+    public static string NoPositionCaptured => Get(nameof(NoPositionCaptured));
+    public static string PositionCaptured => Get(nameof(PositionCaptured));
 }

@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using PwHelper.App.Resources;
 using PwHelper.App.Services;
+using PwHelper.App.ViewModels;
 using PwHelper.Core.Input;
 using PwHelper.Core.Models;
 
@@ -30,6 +32,9 @@ public partial class PresetEditor : Window
     private readonly Preset _preset;
 
     public ObservableCollection<PresetActionRow> Rows { get; } = new();
+    public ObservableCollection<MemberOption> MemberAccounts { get; } = new();
+
+    private RelativePosition? _capturedPosition;
 
     public PresetEditor(AppState state, IWindowResolver resolver, Preset preset)
     {
@@ -41,6 +46,21 @@ public partial class PresetEditor : Window
         var accountsById = state.Data.Servers
             .SelectMany(s => s.Accounts)
             .ToDictionary(a => a.Id);
+
+        IEnumerable<Account> scope = state.Data.Groups
+            .FirstOrDefault(g => g.Id == preset.GroupId) is Group group
+            ? group.AccountIds.Where(accountsById.ContainsKey).Select(id => accountsById[id])
+            : accountsById.Values;
+        foreach (Account account in scope)
+            MemberAccounts.Add(new MemberOption(account));
+        NewRowAccountBox.ItemsSource = MemberAccounts;
+        NewRowAccountBox.SelectedIndex = MemberAccounts.Count > 0 ? 0 : -1;
+        NewRowTypeBox.ItemsSource = Enum.GetValues<ActionType>();
+        NewRowTypeBox.SelectedIndex = 0;
+        CaptureButton.Content = Strings.CaptureClick;
+        AddRowButton.Content = Strings.Add;
+        UpdateNewRowInfo();
+        NewRowTypeBox.SelectionChanged += (_, _) => UpdateNewRowInfo();
         foreach (AccountAction existing in preset.Actions)
         {
             accountsById.TryGetValue(existing.AccountId, out Account? account);
@@ -75,6 +95,56 @@ public partial class PresetEditor : Window
             (int)overlay.CapturedScreenPoint.Value.Y);
         (int w, int h) = _resolver.GetClientSize(target.WindowHandle);
         return Task.FromResult<RelativePosition?>(RelativePosition.FromAbsolute(x, y, w, h));
+    }
+
+    private async void OnCapture(object sender, RoutedEventArgs e)
+    {
+        if (NewRowAccountBox.SelectedItem is not MemberOption selected)
+            return;
+        RelativePosition? captured = await CaptureClickAsync(selected.Account.Id);
+        if (captured is null)
+            return;
+        _capturedPosition = captured;
+        NewRowTypeBox.SelectedItem = ActionType.Click;
+        UpdateNewRowInfo();
+    }
+
+    private void OnAddRow(object sender, RoutedEventArgs e)
+    {
+        if (NewRowAccountBox.SelectedItem is not MemberOption selected)
+            return;
+        var type = NewRowTypeBox.SelectedItem is ActionType t ? t : ActionType.Key;
+        string key = NewRowKeyBox.Text.Trim();
+
+        if (type == ActionType.Key && string.IsNullOrWhiteSpace(key))
+        {
+            NewRowInfoLabel.Text = Strings.KeyRequired;
+            return;
+        }
+        if (type == ActionType.Click && _capturedPosition is null)
+        {
+            NewRowInfoLabel.Text = Strings.ClickPositionRequired;
+            return;
+        }
+
+        Rows.Add(new PresetActionRow
+        {
+            AccountId = selected.Account.Id,
+            AccountName = selected.DisplayName,
+            Type = type,
+            Key = type == ActionType.Key ? key : "F1",
+            RelativeX = _capturedPosition?.X ?? 0.5,
+            RelativeY = _capturedPosition?.Y ?? 0.5,
+        });
+        _capturedPosition = null;
+        UpdateNewRowInfo();
+    }
+
+    private void UpdateNewRowInfo()
+    {
+        NewRowInfoLabel.Text = _capturedPosition is null
+            ? Strings.NoPositionCaptured
+            : string.Format(Strings.PositionCaptured, _capturedPosition.X, _capturedPosition.Y);
     }
 
     private void OnSave(object sender, RoutedEventArgs e)
