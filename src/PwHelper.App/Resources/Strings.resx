@@ -44,4 +44,14 @@
   <data name="ClickPositionRequired" xml:space="preserve"><value>Capture a click position first.</value></data>
   <data name="NoPositionCaptured" xml:space="preserve"><value>No click position captured.</value></data>
   <data name="PositionCaptured" xml:space="preserve"><value>Captured click at ({0:F2}, {1:F2}).</value></data>
+  <data name="DelayMs" xml:space="preserve"><value>Delay before this action (ms).</value></data>
+  <data name="InvalidDelay" xml:space="preserve"><value>Delay must be 0 ms or more.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="AddCommand" xml:space="preserve"><value>Add command</value></data>
+  <data name="AddClick" xml:space="preserve"><value>Add click</value></data>
+  <data name="Duplicate" xml:space="preserve"><value>Duplicate row</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="RowWithoutAccount" xml:space="preserve"><value>Row {0} has no character.</value></data>
 </root>

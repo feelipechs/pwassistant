@@ -50,4 +50,15 @@ public static class Strings
     public static string ClickPositionRequired => Get(nameof(ClickPositionRequired));
     public static string NoPositionCaptured => Get(nameof(NoPositionCaptured));
     public static string PositionCaptured => Get(nameof(PositionCaptured));
+    public static string DelayMs => Get(nameof(DelayMs));
+    public static string InvalidDelay => Get(nameof(InvalidDelay));
+    public static string Edit => Get(nameof(Edit));
+    public static string Delete => Get(nameof(Delete));
+    public static string AddCommand => Get(nameof(AddCommand));
+    public static string AddClick => Get(nameof(AddClick));
+    public static string Duplicate => Get(nameof(Duplicate));
+    public static string MoveUp => Get(nameof(MoveUp));
+    public static string MoveDown => Get(nameof(MoveDown));
+    public static string RowWithoutAccount(int line) =>
+        string.Format(Get(nameof(RowWithoutAccount)), line);
 }
