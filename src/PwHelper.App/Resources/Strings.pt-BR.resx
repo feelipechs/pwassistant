@@ -30,4 +30,8 @@
   <data name="AccountsOfServer" xml:space="preserve"><value>Contas — {0}</value></data>
   <data name="NoServerSelected" xml:space="preserve"><value>Nenhum servidor selecionado</value></data>
   <data name="CaptureTest" xml:space="preserve"><value>Testar captura</value></data>
+  <data name="Members" xml:space="preserve"><value>Membros</value></data>
+  <data name="OnlineMembers" xml:space="preserve"><value>Membros online</value></data>
+  <data name="AddMember" xml:space="preserve"><value>Adicionar membro</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remover</value></data>
 </root>

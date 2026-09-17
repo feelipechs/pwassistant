@@ -16,6 +16,27 @@
         <StackPanel Margin="8">
             <TextBlock x:Name="OnlineLabel" FontWeight="Bold" Margin="0,0,0,4"/>
             <ListBox x:Name="OnlineList" Height="150" ItemsSource="{Binding OnlineMembers}" DisplayMemberPath="Role"/>
+            <TextBlock x:Name="MembersLabel" FontWeight="Bold" Margin="0,8,0,4"/>
+            <ListBox x:Name="MembersList" Height="110" ItemsSource="{Binding Members}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding DisplayName}" Width="220" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding StatusText}" Width="80" VerticalAlignment="Center"/>
+                            <Button Content="{Binding DataContext.RemoveText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Command="{Binding DataContext.RemoveMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                <ComboBox x:Name="AddMemberBox" Width="260" Margin="0,0,8,0"
+                          ItemsSource="{Binding AvailableAccounts}"
+                          DisplayMemberPath="DisplayName"
+                          SelectedItem="{Binding SelectedAccountToAdd}"/>
+                <Button x:Name="AddMemberButton" Command="{Binding AddMemberCommand}"/>
+            </StackPanel>
             <TextBlock x:Name="PresetsLabel" FontWeight="Bold" Margin="0,8,0,4"/>
             <ItemsControl ItemsSource="{Binding Presets}">
                 <ItemsControl.ItemTemplate>

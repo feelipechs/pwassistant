@@ -36,4 +36,8 @@ public static class Strings
     public static string AccountsOfServer => Get(nameof(AccountsOfServer));
     public static string NoServerSelected => Get(nameof(NoServerSelected));
     public static string CaptureTest => Get(nameof(CaptureTest));
+    public static string Members => Get(nameof(Members));
+    public static string OnlineMembers => Get(nameof(OnlineMembers));
+    public static string AddMember => Get(nameof(AddMember));
+    public static string Remove => Get(nameof(Remove));
 }

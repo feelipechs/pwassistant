@@ -5,8 +5,25 @@ using PwHelper.App.Services;
 using PwHelper.App.Views;
 using PwHelper.Core.Execution;
 using PwHelper.Core.Models;
+using AppStrings = PwHelper.App.Resources.Strings;
 
 namespace PwHelper.App.ViewModels;
+
+/// <summary>One group member row (online or offline) for management.</summary>
+public sealed class MemberOption
+{
+    public Account Account { get; }
+
+    public MemberOption(Account account) => Account = account;
+
+    public string DisplayName => string.IsNullOrWhiteSpace(Account.Role)
+        ? Account.Login
+        : $"{Account.Role} ({Account.Login})";
+
+    public string StatusText => Account.Status == AccountStatus.Online
+        ? AppStrings.Online
+        : AppStrings.Offline;
+}
 
 public sealed partial class GroupViewModel : ObservableObject
 {
@@ -17,6 +34,11 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<Group> Groups { get; } = new();
     public ObservableCollection<Account> OnlineMembers { get; } = new();
     public ObservableCollection<Preset> Presets { get; } = new();
+    public ObservableCollection<MemberOption> Members { get; } = new();
+    public ObservableCollection<MemberOption> AvailableAccounts { get; } = new();
+
+    [ObservableProperty]
+    private MemberOption? selectedAccountToAdd;
 
     [ObservableProperty]
     private Group? selectedGroup;
@@ -26,6 +48,8 @@ public sealed partial class GroupViewModel : ObservableObject
 
     [ObservableProperty]
     private string statusMessage = string.Empty;
+
+    public string RemoveText => AppStrings.Remove;
 
     public GroupViewModel(AppState state, PresetDispatcher dispatcher, SyncController sync)
     {
@@ -42,10 +66,18 @@ public sealed partial class GroupViewModel : ObservableObject
         SelectedGroup = Groups.FirstOrDefault();
     }
 
-    partial void OnSelectedGroupChanged(Group? value)
+    partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);
+
+    /// <summary>Recompute members/online/presets (also the Activated refresh).</summary>
+    public void Refresh() => Rebuild(SelectedGroup);
+
+    private void Rebuild(Group? value)
     {
         OnlineMembers.Clear();
         Presets.Clear();
+        Members.Clear();
+        AvailableAccounts.Clear();
+        SelectedAccountToAdd = null;
         if (value is null) return;
 
         _state.RefreshOnlineStatus();
@@ -55,10 +87,17 @@ public sealed partial class GroupViewModel : ObservableObject
 
         foreach (Guid id in value.AccountIds)
         {
-            if (accountsById.TryGetValue(id, out Account? account)
-                && account.Status == AccountStatus.Online)
+            if (!accountsById.TryGetValue(id, out Account? account))
+                continue;
+            Members.Add(new MemberOption(account));
+            if (account.Status == AccountStatus.Online)
                 OnlineMembers.Add(account);
         }
+
+        foreach (Account account in accountsById.Values
+            .Where(a => !value.AccountIds.Contains(a.Id))
+            .OrderBy(a => a.Role))
+            AvailableAccounts.Add(new MemberOption(account));
 
         foreach (Preset preset in _state.Data.Presets.Where(p => p.GroupId == value.Id))
             Presets.Add(preset);
@@ -105,6 +144,24 @@ public sealed partial class GroupViewModel : ObservableObject
         {
             StatusMessage = ex.Message;
         }
+    }
+
+    [RelayCommand]
+    private async Task AddMemberAsync()
+    {
+        if (SelectedGroup is null || SelectedAccountToAdd is null) return;
+        SelectedGroup.AccountIds.Add(SelectedAccountToAdd.Account.Id);
+        await _state.SaveAsync().ConfigureAwait(false);
+        Rebuild(SelectedGroup);
+    }
+
+    [RelayCommand]
+    private async Task RemoveMemberAsync(MemberOption? option)
+    {
+        if (SelectedGroup is null || option is null) return;
+        SelectedGroup.AccountIds.Remove(option.Account.Id);
+        await _state.SaveAsync().ConfigureAwait(false);
+        Rebuild(SelectedGroup);
     }
 
     [RelayCommand]

@@ -27,7 +27,11 @@ public partial class GroupWindow : Window
         PresetsLabel.Text = Strings.Presets;
         CancelButton.Content = Strings.Cancel;
         CaptureTestButton.Content = Strings.CaptureTest;
+        OnlineLabel.Text = Strings.OnlineMembers;
+        MembersLabel.Text = Strings.Members;
+        AddMemberButton.Content = Strings.AddMember;
         Loaded += (_, _) => ViewModel.Initialize();
+        Activated += (_, _) => ViewModel.Refresh();
     }
 
     // TEMP diagnostic for the M5 overlay validation (remove when B2 lands):
