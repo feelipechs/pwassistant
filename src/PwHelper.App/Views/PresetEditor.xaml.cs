@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
+using MouseButton = PwHelper.Core.Models.MouseButton;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PwHelper.App.Resources;
 using PwHelper.App.Services;
@@ -124,6 +126,62 @@ public partial class PresetEditor : Window
         HotkeyCaption.Text = Strings.Hotkey;
         HotkeyBox.Text = preset.Hotkey ?? string.Empty;
         HotkeyBox.ToolTip = Strings.HotkeyHint;
+        HotkeyBox.IsReadOnly = true;
+        HotkeyBox.GotKeyboardFocus += (_, _) => _hotkeyBeforeCapture = HotkeyBox.Text;
+        HotkeyBox.PreviewKeyDown += OnHotkeyCapture;
+    }
+
+    private string _hotkeyBeforeCapture = string.Empty;
+
+    /// <summary>Press-to-record: the next key combo becomes the hotkey.</summary>
+    private void OnHotkeyCapture(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            HotkeyBox.Text = _hotkeyBeforeCapture;
+            HotkeyBox.MoveFocus(new System.Windows.Input.TraversalRequest(System.Windows.Input.FocusNavigationDirection.Next));
+            e.Handled = true;
+            return;
+        }
+        if (e.Key is Key.Back or Key.Delete)
+        {
+            HotkeyBox.Text = string.Empty;
+            e.Handled = true;
+            return;
+        }
+
+        Key pressed = e.Key == Key.System ? e.SystemKey : e.Key;
+        string? keyName = MapHotkeyKey(pressed);
+        var parts = new List<string>();
+        ModifierKeys mods = Keyboard.Modifiers;
+        if (mods.HasFlag(ModifierKeys.Control)) parts.Add("CTRL");
+        if (mods.HasFlag(ModifierKeys.Shift)) parts.Add("SHIFT");
+        if (mods.HasFlag(ModifierKeys.Alt)) parts.Add("ALT");
+        if (mods.HasFlag(ModifierKeys.Windows)) parts.Add("WIN");
+        if (keyName is null || parts.Count == 0)
+        {
+            Error(Strings.InvalidHotkey);
+            e.Handled = true;
+            return;
+        }
+        parts.Add(keyName);
+        HotkeyBox.Text = string.Join("+", parts);
+        e.Handled = true;
+    }
+
+    private static string? MapHotkeyKey(Key key)
+    {
+        string name = key.ToString();
+        if (name is "Space") return "SPACE";
+        if (name is "Enter") return "ENTER";
+        if (name is "Tab") return "TAB";
+        if (name.Length == 1) return name; // A-Z
+        if (name.Length == 2 && name[0] == 'D' && char.IsDigit(name[1])) return name[1..]; // D0-D9
+        if (name.StartsWith("NumPad", StringComparison.Ordinal) && name.Length == 7 && char.IsDigit(name[6]))
+            return name[6..]; // NumPad0-9
+        if (name.Length >= 2 && name[0] == 'F' && int.TryParse(name[1..], out int f) && f is >= 1 and <= 12)
+            return name; // F1-F12
+        return null;
     }
 
     public Task<RelativePosition?> CaptureClickAsync(Guid accountId)

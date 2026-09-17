@@ -57,7 +57,7 @@
   <data name="DuplicatePreset" xml:space="preserve"><value>Duplicate preset</value></data>
   <data name="CopySuffix" xml:space="preserve"><value> (copy)</value></data>
   <data name="Hotkey" xml:space="preserve"><value>Hotkey</value></data>
-  <data name="HotkeyHint" xml:space="preserve"><value>Global hotkey, e.g. CTRL+SHIFT+F9 (empty = none).</value></data>
+  <data name="HotkeyHint" xml:space="preserve"><value>Focus and press the key combination (ESC cancels, Backspace clears).</value></data>
   <data name="PresetNameRequired" xml:space="preserve"><value>Preset needs a name.</value></data>
   <data name="InvalidHotkey" xml:space="preserve"><value>Hotkey needs modifiers + key, e.g. CTRL+SHIFT+F9.</value></data>
 </root>
