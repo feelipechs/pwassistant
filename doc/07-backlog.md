@@ -38,6 +38,9 @@ Validar em cada item abaixo.
   do B4.
 - Aceite: salvar PT de 2 contas, esvaziar o grupo, carregar de volta
   na mesma ordem.
+- **Aceite (2026-09-17, Windows):** ✅ salvar (`PT principal`), esvaziar,
+  persistência reabrindo o App, carregar de volta na mesma ordem
+  (`members=2`).
 
 ## B2 — CRUD de preset completo
 

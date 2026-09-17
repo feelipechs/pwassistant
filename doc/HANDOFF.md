@@ -29,8 +29,8 @@
 
 ## Próximo passo
 
-B1b formações (salvar/carregar PT com ordem) — B1 aceito em 2026-09-17
-(add/remover 4/4, crash cross-thread corrigido). Depois B2.
+B2 fatiado (primeira fatia: criar preset + linhas tecla/click com captura,
+aposentando o `Testar captura`). B1b aceito em 2026-09-17.
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
