@@ -55,6 +55,8 @@ public sealed partial class GroupViewModel : ObservableObject
     private string statusMessage = string.Empty;
 
     public string RemoveText => AppStrings.Remove;
+    public string EditText => AppStrings.Edit;
+    public string DeleteText => AppStrings.Delete;
 
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
@@ -227,6 +229,25 @@ public sealed partial class GroupViewModel : ObservableObject
 
     private string NewPresetName() =>
         string.Format(AppStrings.PresetNameNumber, Presets.Count + 1);
+
+    [RelayCommand]
+    private async Task EditPresetAsync(Preset? preset)
+    {
+        if (preset is null) return;
+        PresetEditor editor = _editorFactory(preset);
+        if (editor.ShowDialog() != true) return;
+        await _state.SaveAsync();
+        Refresh();
+    }
+
+    [RelayCommand]
+    private async Task DeletePresetAsync(Preset? preset)
+    {
+        if (preset is null) return;
+        _state.Data.Presets.Remove(preset);
+        Presets.Remove(preset);
+        await _state.SaveAsync();
+    }
 
     [RelayCommand]
     private void CancelAll() => _dispatcher.CancelAll();

@@ -56,6 +56,12 @@
                             <Button Content="Fire"
                                     Command="{Binding DataContext.FirePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                     CommandParameter="{Binding}"/>
+                            <Button Content="{Binding DataContext.EditText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Command="{Binding DataContext.EditPresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}"/>
+                            <Button Content="{Binding DataContext.DeleteText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Command="{Binding DataContext.DeletePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
