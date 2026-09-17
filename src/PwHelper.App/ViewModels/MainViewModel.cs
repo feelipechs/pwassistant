@@ -15,6 +15,7 @@ public sealed partial class AccountCard : ObservableObject
     public Account Model { get; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
     private AccountStatus status;
 
     public AccountCard(Account model)
