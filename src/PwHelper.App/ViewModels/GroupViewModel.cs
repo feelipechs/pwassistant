@@ -151,7 +151,9 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         if (SelectedGroup is null || SelectedAccountToAdd is null) return;
         SelectedGroup.AccountIds.Add(SelectedAccountToAdd.Account.Id);
-        await _state.SaveAsync().ConfigureAwait(false);
+        // No ConfigureAwait(false): Rebuild touches UI-bound collections,
+        // so the continuation must stay on the dispatcher thread.
+        await _state.SaveAsync();
         Rebuild(SelectedGroup);
     }
 
@@ -160,7 +162,8 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         if (SelectedGroup is null || option is null) return;
         SelectedGroup.AccountIds.Remove(option.Account.Id);
-        await _state.SaveAsync().ConfigureAwait(false);
+        // No ConfigureAwait(false): see AddMemberAsync.
+        await _state.SaveAsync();
         Rebuild(SelectedGroup);
     }
 
