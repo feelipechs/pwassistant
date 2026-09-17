@@ -17,10 +17,14 @@ if (args.Length == 0 || args[0] is "-h" or "--help")
           probe key --pid <pid> --key F1 [--countdown 3] [--no-hygiene]
           probe click --pid <pid> --x <cx> --y <cy> [--countdown 3] [--no-hygiene]
           probe preset --pid <pid1> --pid <pid2> --x <cx> --y <cy> [--countdown 3] [--no-hygiene] [--sequential]
+          probe sync --pid <pid1> --pid <pid2> [--no-hygiene]
 
         Client-area pixel coords for click. Observe the game visually.
         Preset (M3): key F1 on the first PID + UI-click on the second PID in one
         Simultaneous dispatch, plus a ghost offline account proving skip-without-abort.
+        Sync (M4): installs the mouse hook and stays live until ENTER — a physical
+        left-click inside ANY listed window replicates as a UI-click to the others.
+        No fixed master; the focused window at click time is the master.
         """);
     return 0;
 }
@@ -169,6 +173,105 @@ switch (args[0].ToLowerInvariant())
             Console.WriteLine($"  {who}: {status}");
         }
         Console.WriteLine("Observe the game: F1 on account 1 + UI-click on account 2, ghost skipped.");
+        break;
+    }
+    case "sync":
+    {
+        List<int> pids = CollectAll(args, "pid").Select(v => int.TryParse(v, out int p) ? p : -1).ToList();
+        if (pids.Count < 2 || pids.Any(p => p <= 0))
+        {
+            Console.Error.WriteLine("Sync needs --pid <pid1> --pid <pid2> (repeat --pid per account).");
+            return 2;
+        }
+
+        var accountIds = pids.Select(_ => Guid.NewGuid()).ToList();
+        var targets = new Dictionary<Guid, (int Pid, IWindowTarget Target)>();
+        for (int i = 0; i < pids.Count; i++)
+        {
+            IntPtr hwnd = resolver.ResolveWindow(pids[i]);
+            if (hwnd == IntPtr.Zero)
+            {
+                Console.Error.WriteLine($"No visible window for PID {pids[i]}.");
+                return 1;
+            }
+            Console.WriteLine($"Target[{i}] HWND=0x{hwnd.ToInt64():X} for PID {pids[i]}.");
+            targets[accountIds[i]] = (pids[i], new ProbeTarget(accountIds[i], hwnd));
+        }
+
+        var sync = new SyncService();
+        sync.SetEnabled(true);
+        sync.SetSyncedAccounts(accountIds);
+
+        using var hook = new MouseHook();
+        hook.LeftButtonDown += click =>
+        {
+            try
+            {
+                foreach (Guid masterId in accountIds)
+                {
+                    (int masterPid, IWindowTarget masterTarget) = targets[masterId];
+                    IntPtr masterHwnd = masterTarget.WindowHandle;
+                    (int Width, int Height) size;
+                    (int X, int Y) client;
+                    try
+                    {
+                        size = resolver.GetClientSize(masterHwnd);
+                        client = resolver.ScreenToClientPoint(masterHwnd, click.ScreenX, click.ScreenY);
+                    }
+                    catch (WinApiException)
+                    {
+                        continue;
+                    }
+                    if (client.X < 0 || client.Y < 0 || client.X > size.Width || client.Y > size.Height)
+                        continue;
+
+                    RelativePosition? fraction = sync.CaptureMasterClick(
+                        client.X, client.Y, size.Width, size.Height, isLeftButton: true);
+                    if (fraction is null)
+                        return;
+
+                    Console.WriteLine($"Master PID {masterPid} click ({client.X},{client.Y}) -> replicating...");
+                    foreach (Guid replicaId in accountIds.Where(id => id != masterId))
+                    {
+                        (int replicaPid, IWindowTarget replicaTarget) = targets[replicaId];
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                (int Width, int Height) replicaSize =
+                                    resolver.GetClientSize(replicaTarget.WindowHandle);
+                                (int X, int Y) replicaPx =
+                                    SyncService.ToReplicaPixels(fraction, replicaSize.Width, replicaSize.Height);
+                                await strategy.SendUiClickAsync(replicaTarget, fraction.X, fraction.Y);
+                                Console.WriteLine($"  replica PID {replicaPid} ({replicaPx.X},{replicaPx.Y}) OK");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"  replica PID {replicaPid} FAIL: {ex.Message}");
+                            }
+                        });
+                    }
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Sync error: {ex.Message}");
+            }
+        };
+
+        hook.Start();
+        Console.WriteLine("Sync ON: left-click inside ANY listed game window replicates to the others.");
+        Console.WriteLine("Press ENTER to stop.");
+        using var cts = new CancellationTokenSource();
+        _ = Task.Run(() =>
+        {
+            Console.ReadLine();
+            cts.Cancel();
+        });
+        MessageLoop.RunUntilCancelled(cts.Token);
+        hook.Stop();
+        Console.WriteLine("Sync OFF.");
         break;
     }
     default:
