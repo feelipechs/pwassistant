@@ -6,6 +6,7 @@ using PwHelper.App.Services;
 using PwHelper.App.Views;
 using PwHelper.Core.Launcher;
 using PwHelper.Core.Models;
+using AppStrings = PwHelper.App.Resources.Strings;
 
 namespace PwHelper.App.ViewModels;
 
@@ -39,7 +40,12 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<AccountCard> Accounts { get; } = new();
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AccountsHeader))]
     private Server? selectedServer;
+
+    public string AccountsHeader => SelectedServer is null
+        ? AppStrings.NoServerSelected
+        : string.Format(AppStrings.AccountsOfServer, SelectedServer.Name);
 
     [ObservableProperty]
     private string statusMessage = string.Empty;

@@ -6,6 +6,7 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Left" Width="200" Background="{StaticResource SurfaceBrush}">
             <ListBox x:Name="GroupList" Margin="8" Height="200"
+                     ItemsSource="{Binding Groups}"
                      DisplayMemberPath="Name"
                      SelectedItem="{Binding SelectedGroup}"/>
             <Button x:Name="AddGroupButton" Content="+" Command="{Binding AddGroupCommand}"/>
@@ -14,7 +15,7 @@
         </StackPanel>
         <StackPanel Margin="8">
             <TextBlock x:Name="OnlineLabel" FontWeight="Bold" Margin="0,0,0,4"/>
-            <ListBox x:Name="OnlineList" Height="150" DisplayMemberPath="Role"/>
+            <ListBox x:Name="OnlineList" Height="150" ItemsSource="{Binding OnlineMembers}" DisplayMemberPath="Role"/>
             <TextBlock x:Name="PresetsLabel" FontWeight="Bold" Margin="0,8,0,4"/>
             <ItemsControl ItemsSource="{Binding Presets}">
                 <ItemsControl.ItemTemplate>

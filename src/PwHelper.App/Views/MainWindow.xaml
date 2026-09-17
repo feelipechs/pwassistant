@@ -7,13 +7,27 @@
         <StackPanel DockPanel.Dock="Left" Width="220" Background="{StaticResource SurfaceBrush}">
             <TextBlock x:Name="ServersLabel" Margin="8,8,8,4" FontWeight="Bold"/>
             <ListBox x:Name="ServerList" Margin="8,0,8,4" Height="300"
+                     ItemsSource="{Binding Servers}"
                      DisplayMemberPath="Name"
-                     SelectedItem="{Binding SelectedServer}"/>
+                     SelectedItem="{Binding SelectedServer}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
             <Button x:Name="AddServerButton" Content="+" Command="{Binding AddServerCommand}"/>
             <Button x:Name="GroupModeButton" Content="Group" Command="{Binding OpenGroupModeCommand}"/>
             <Button x:Name="RefreshButton" Content="Refresh" Command="{Binding RefreshStatusCommand}"/>
         </StackPanel>
         <StackPanel>
+            <TextBlock x:Name="AccountsHeaderLabel" Margin="8,8,8,0" FontWeight="Bold"
+                       Text="{Binding AccountsHeader}"/>
             <StackPanel Orientation="Horizontal" Margin="8">
                 <Button x:Name="AddAccountButton" Content="+ Account" Command="{Binding AddAccountCommand}"/>
                 <TextBlock Text="{Binding StatusMessage}" Margin="12,0,0,0" VerticalAlignment="Center"/>
