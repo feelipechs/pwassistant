@@ -57,8 +57,21 @@ Validar em cada item abaixo.
   lugar (conta/tipo/tecla/captura/delay), duplicar/excluir/↑↓ linha,
   validação por linha no save, último servidor lembrado. Bug no caminho:
   combos vazios (faltava `DataContext = this` no editor). Auto-foco da
-  janela-alvo antes do overlay (`WindowFocus`, explícito a pedido).
-  Falta: duplicar preset, campo de hotkey, renomear preset.
+  janela-alvo antes do overlay + volta do foco ao editor depois
+  (`WindowFocus`/`Activate`, explícitos a pedido). Validação R1–R8 ok.
+  Falta:   duplicar preset, campo de hotkey, renomear preset, click direito
+  (B2d abaixo).
+
+## B2d — Click direito (botão por linha + prova no jogo)
+
+- Modelo: `GameAction.MouseButton {Left, Right}`, default `Left`
+  (aditivo; presets existentes intactos).
+- Estratégia: variante direita da C4 (mesmo prime; `WM_RBUTTONDOWN/UP`).
+  Receita sem-foco a provar — se refutada, documentar em `03` e manter
+  o seletor desabilitado até nova receita (lei nº 5).
+- Editor: seletor Esquerdo/Direito por linha de click.
+- Aceite: click direito no retrato do personagem abre o menu de contexto
+  (convidar/seguir) sem foco, 2/2.
 
 ## B3 — Mini-mode da janela de grupo
 
