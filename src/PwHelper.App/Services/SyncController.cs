@@ -46,37 +46,62 @@ public sealed class SyncController : IDisposable
     {
         if (!_sync.Enabled) return;
 
-        foreach (Account account in AllOnlineAccounts())
-        {
-            if (account.WindowHandle == IntPtr.Zero) continue;
-            if (IsPointInside(account.WindowHandle, click.ScreenX, click.ScreenY, out int cx, out int cy))
-            {
-                // Click landed on this account's window: it is the master.
-                _ = ReplicateAsync(account, cx, cy);
-                return;
-            }
-        }
-    }
+        List<Account> online = AllOnlineAccounts().ToList();
+        Account? master = FindTopmostAccount(online, click.ScreenX, click.ScreenY)
+            ?? FindFirstContainingAccount(online, click.ScreenX, click.ScreenY);
+        if (master is null) return;
 
-    private async Task ReplicateAsync(Account master, int screenX, int screenY)
-    {
         (int Width, int Height) size;
         (int X, int Y) client;
         try
         {
             size = _resolver.GetClientSize(master.WindowHandle);
-            client = _resolver.ScreenToClientPoint(master.WindowHandle, screenX, screenY);
+            client = _resolver.ScreenToClientPoint(master.WindowHandle, click.ScreenX, click.ScreenY);
         }
         catch (WinApiException)
         {
             return;
         }
 
+        _ = ReplicateAsync(master, online, client.X, client.Y, size.Width, size.Height);
+    }
+
+    /// <summary>Master = the topmost registered game window at the click point.</summary>
+    private Account? FindTopmostAccount(List<Account> online, int screenX, int screenY)
+    {
+        IntPtr top;
+        try
+        {
+            top = _resolver.ResolveTopWindowAtPoint(screenX, screenY);
+        }
+        catch (WinApiException)
+        {
+            return null;
+        }
+        if (top == IntPtr.Zero) return null;
+        return online.FirstOrDefault(a => a.WindowHandle == top);
+    }
+
+    /// <summary>Fallback when the topmost window is not a tracked game window.</summary>
+    private Account? FindFirstContainingAccount(List<Account> online, int screenX, int screenY)
+    {
+        foreach (Account account in online)
+        {
+            if (account.WindowHandle == IntPtr.Zero) continue;
+            if (IsPointInside(account.WindowHandle, screenX, screenY, out _, out _))
+                return account;
+        }
+        return null;
+    }
+
+    private async Task ReplicateAsync(
+        Account master, List<Account> online, int clientX, int clientY, int clientWidth, int clientHeight)
+    {
         RelativePosition? fraction = _sync.CaptureMasterClick(
-            client.X, client.Y, size.Width, size.Height, isLeftButton: true);
+            clientX, clientY, clientWidth, clientHeight, isLeftButton: true);
         if (fraction is null) return;
 
-        foreach (Account replica in AllOnlineAccounts().Where(a => a.Id != master.Id && _sync.IsSynced(a.Id)))
+        foreach (Account replica in online.Where(a => a.Id != master.Id && _sync.IsSynced(a.Id)))
         {
             try
             {

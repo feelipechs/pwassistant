@@ -25,4 +25,6 @@ public interface IWindowResolver
     bool IsWindowAlive(IntPtr windowHandle);
     (int Width, int Height) GetClientSize(IntPtr windowHandle);
     (int X, int Y) ScreenToClientPoint(IntPtr windowHandle, int screenX, int screenY);
+    /// <summary>Topmost window at a screen point (Z-order aware).</summary>
+    IntPtr ResolveTopWindowAtPoint(int screenX, int screenY);
 }

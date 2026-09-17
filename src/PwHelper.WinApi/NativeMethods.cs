@@ -70,6 +70,9 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     internal static extern bool PostThreadMessageW(uint idThread, uint msg, IntPtr wParam, IntPtr lParam);
 
+    [DllImport("user32.dll")]
+    internal static extern IntPtr WindowFromPoint(POINT point);
+
     public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [StructLayout(LayoutKind.Sequential)]
