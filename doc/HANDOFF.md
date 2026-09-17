@@ -29,9 +29,8 @@
 
 ## Próximo passo
 
-Backlog pós-v1 (`doc/07-backlog.md`): B1 membros do grupo, B2 CRUD de
-preset (inclui campo de hotkey editável + remover botão diagnóstico
-`Testar captura`), B3 mini-mode. Ou encerrar por aqui — v1 validado.
+B1b formações (salvar/carregar PT com ordem) — B1 aceito em 2026-09-17
+(add/remover 4/4, crash cross-thread corrigido). Depois B2.
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
