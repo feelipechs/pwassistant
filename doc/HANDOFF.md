@@ -29,9 +29,9 @@
 
 ## Próximo passo
 
-Validar B4-config (trocar ciclo p/ F10, desligar numpad/shift,
-persistência). Depois: polimentos finais (Play→Stop já feito, dnd
-condicional, auto-refresh do grid).
+Validar B4-config (F8 marcada com aviso, toggles, persistência, legenda
+do mini). Depois: polimentos finais (dnd condicional, auto-refresh do
+grid por evento).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
