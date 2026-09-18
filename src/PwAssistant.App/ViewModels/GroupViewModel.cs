@@ -5,6 +5,7 @@ using PwAssistant.App.Services;
 using PwAssistant.App.Views;
 using PwAssistant.Core.Execution;
 using PwAssistant.Core.Models;
+using PwAssistant.Core.Sync;
 using PwAssistant.Core.Ux;
 using AppStrings = PwAssistant.App.Resources.Strings;
 
@@ -48,6 +49,9 @@ public sealed partial class MemberOption : ObservableObject
         : AppStrings.Offline;
 }
 
+/// <summary>One cycle-key choice (curated safe set, no typing hijack).</summary>
+public sealed record CycleKeyOption(int Code, string Label);
+
 public sealed partial class GroupViewModel : ObservableObject
 {
     private readonly AppState _state;
@@ -66,6 +70,18 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<MemberOption> AvailableAccounts { get; } = new();
     public ObservableCollection<Formation> Formations { get; } = new();
     public ObservableCollection<MiniPresetRow> MiniRows { get; } = new();
+
+    public static IReadOnlyList<CycleKeyOption> CycleKeyOptions { get; } =
+    [
+        new(0xC0, "`"),
+        new(0x76, "F7"),
+        new(0x77, "F8"),
+        new(0x78, "F9"),
+        new(0x79, "F10"),
+        new(0x7A, "F11"),
+        new(0x7B, "F12"),
+        new(0x13, "Pause"),
+    ];
 
     [ObservableProperty]
     private Formation? selectedFormation;
@@ -123,6 +139,63 @@ public sealed partial class GroupViewModel : ObservableObject
         foreach (Formation formation in _state.Data.Formations)
             Formations.Add(formation);
         SelectedFormation = null;
+        _state.Data.FocusSettings ??= new FocusSettings();
+        _focus.Settings = _state.Data.FocusSettings;
+        OnPropertyChanged(nameof(SelectedCycleKey));
+        OnPropertyChanged(nameof(NumpadEnabled));
+        OnPropertyChanged(nameof(ShiftTapEnabled));
+        OnPropertyChanged(nameof(FocusKeysLegend));
+    }
+
+    /// <summary>Mini-mode legend with the live cycle key.</summary>
+    public string FocusKeysLegend => string.Format(
+        AppStrings.FocusKeysLive,
+        SelectedCycleKey?.Label ?? FocusSettings.DefaultCycleKey.ToString());
+
+    public CycleKeyOption? SelectedCycleKey
+    {
+        get => CycleKeyOptions.FirstOrDefault(o => o.Code == _focus.Settings.CycleKey);
+        set
+        {
+            if (value is null) return;
+            _focus.Settings.CycleKey = value.Code;
+            OnPropertyChanged(nameof(FocusKeysLegend));
+            _ = PersistAsync();
+        }
+    }
+
+    public bool NumpadEnabled
+    {
+        get => _focus.Settings.NumpadEnabled;
+        set
+        {
+            _focus.Settings.NumpadEnabled = value;
+            OnPropertyChanged();
+            _ = PersistAsync();
+        }
+    }
+
+    public bool ShiftTapEnabled
+    {
+        get => _focus.Settings.ShiftTapEnabled;
+        set
+        {
+            _focus.Settings.ShiftTapEnabled = value;
+            OnPropertyChanged();
+            _ = PersistAsync();
+        }
+    }
+
+    private async Task PersistAsync()
+    {
+        try
+        {
+            await _state.SaveAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
     }
 
     partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);

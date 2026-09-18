@@ -21,6 +21,9 @@ public partial class GroupWindow : Window
         FormationsLabel.Text = Strings.Formations;
         SaveFormationButton.Content = Strings.SaveFormation;
         LoadFormationButton.Content = Strings.LoadFormation;
+        FocusConfigLabel.Text = Strings.FocusConfig;
+        NumpadCheck.Content = Strings.NumpadSelect;
+        ShiftTapCheck.Content = Strings.ShiftTapToggle;
         PresetsLabel.Text = Strings.Presets;
         NewPresetButton.Content = Strings.NewPreset;
         Loaded += (_, _) => ViewModel.Initialize();

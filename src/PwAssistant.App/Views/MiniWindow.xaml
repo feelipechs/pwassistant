@@ -43,7 +43,8 @@
             </ItemsControl>
             <CheckBox x:Name="SyncCheck" Margin="0,4,0,0" Focusable="False" IsChecked="{Binding SyncEnabled}"/>
             <CheckBox x:Name="FocusCheck" Margin="0,4,0,0" Focusable="False" IsChecked="{Binding FocusEnabled}"/>
-            <TextBlock x:Name="KeysLabel" Margin="0,8,0,0" TextWrapping="Wrap" FontStyle="Italic" FontSize="11"/>
+            <TextBlock x:Name="KeysLabel" Margin="0,8,0,0" TextWrapping="Wrap" FontStyle="Italic" FontSize="11"
+                       Text="{Binding FocusKeysLegend}"/>
             <TextBlock Text="{Binding StatusMessage}" Margin="0,4,0,0" VerticalAlignment="Center" TextWrapping="Wrap"/>
         </StackPanel>
     </StackPanel>

@@ -15,7 +15,6 @@ public sealed class FocusController : IDisposable
     private const int VK_SHIFT = 0x10;
     private const int VK_LSHIFT = 0xA0;
     private const int VK_RSHIFT = 0xA1;
-    private const int VK_OEM_3 = 0xC0;
     private const int VK_NUMPAD0 = 0x60;
     private const int VK_NUMPAD9 = 0x69;
     private const int ShiftTapMs = 300;
@@ -41,6 +40,9 @@ public sealed class FocusController : IDisposable
 
     public bool Enabled { get; set; }
 
+    /// <summary>Live config (backed by AppData, persisted on change).</summary>
+    public FocusSettings Settings { get; set; } = new();
+
     public void Start() => _hook.Start();
     public void Stop() => _hook.Stop();
 
@@ -52,6 +54,7 @@ public sealed class FocusController : IDisposable
 
         if (IsShift(transition.VirtualKey))
         {
+            if (!Settings.ShiftTapEnabled) return;
             if (transition.IsKeyDown)
             {
                 _shiftDownAt = DateTimeOffset.UtcNow;
@@ -71,9 +74,10 @@ public sealed class FocusController : IDisposable
         if (!transition.IsKeyDown) return;
         _shiftTainted = true;
 
-        if (transition.VirtualKey == VK_OEM_3)
+        if (transition.VirtualKey == Settings.CycleKey)
             Focus(_focus.CycleNext());
-        else if (transition.VirtualKey is >= VK_NUMPAD0 and <= VK_NUMPAD9)
+        else if (Settings.NumpadEnabled
+            && transition.VirtualKey is >= VK_NUMPAD0 and <= VK_NUMPAD9)
             Focus(_focus.SelectIndex(NumpadIndex(transition.VirtualKey)));
     }
 

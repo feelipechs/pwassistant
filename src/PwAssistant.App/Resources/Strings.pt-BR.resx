@@ -29,6 +29,10 @@
   <data name="FocusSwitch" xml:space="preserve"><value>Troca de janelas (`/Shift/numpad)</value></data>
   <data name="MiniMode" xml:space="preserve"><value>Mini-mode</value></data>
   <data name="FocusKeysHint" xml:space="preserve"><value>` alterna, toque de Shift troca as duas, numpad 1-9,0 seleciona (troca ligada).</value></data>
+  <data name="FocusConfig" xml:space="preserve"><value>Teclas de troca de janela</value></data>
+  <data name="NumpadSelect" xml:space="preserve"><value>Seleção pelo numpad</value></data>
+  <data name="ShiftTapToggle" xml:space="preserve"><value>Alternar com Shift</value></data>
+  <data name="FocusKeysLive" xml:space="preserve"><value>{0} alterna, toque de Shift troca as duas, numpad 1-9,0 seleciona (troca ligada).</value></data>
   <data name="Loop" xml:space="preserve"><value>Loop</value></data>
   <data name="CaptureClick" xml:space="preserve"><value>Capturar posição de click</value></data>
   <data name="ClickOverlayHint" xml:space="preserve"><value>Clique uma vez na janela do jogo para capturar a posição.</value></data>
