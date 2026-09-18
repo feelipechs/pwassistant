@@ -30,6 +30,23 @@ public partial class AccountDialog : Window
         ClassBox.ItemsSource = ClassCatalog.All;
         ClassBox.SelectedIndex = -1;
         SaveButton.Content = Strings.Save;
+        SameAsRoleCheck.Checked += (_, _) => MirrorRole();
+        SameAsRoleCheck.Unchecked += (_, _) => NicknameBox.IsEnabled = true;
+        RoleBox.TextChanged += (_, _) => MirrorRole();
+    }
+
+    /// <summary>While same-as-role holds, the nickname mirrors the role live.</summary>
+    private void MirrorRole()
+    {
+        if (SameAsRoleCheck.IsChecked == true)
+        {
+            NicknameBox.Text = RoleBox.Text;
+            NicknameBox.IsEnabled = false;
+        }
+        else
+        {
+            NicknameBox.IsEnabled = true;
+        }
     }
 
     public void Prefill(Account account)
