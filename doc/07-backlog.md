@@ -112,10 +112,15 @@ Validar em cada item abaixo.
 
 - Cada janela viva recebe `AppUserModelID` distinto
   (`PwAssistant.Client.{guid}`) via `SHGetPropertyStoreForWindow` →
-  um botão de taskbar por client. Via `.lnk` refutada no jogo
+  um botão de taskbar por client **mesmo com classes iguais** (a
+  separação é pelo ID, não pelo ícone). Via `.lnk` refutada no jogo
   (`QueryInterface` p/ `IPropertyStore` falhou no `Play` — documentado
   aqui pela lei nº 5); launch segue `.exe` direto.
-- Aceite: 2 Plays → 2 botões separados na taskbar.
+- Ícone do client = `.ico` da classe (`WM_SETICON` com HICON da sessão;
+  mecanismo confirmado no PW Helper: `LoadImage` + por-janela).
+  Resultado gravado no log (`taskbarId=`, `icon=`).
+- Aceite: 2 Plays (classes iguais e diferentes) → 2 botões separados,
+  cada um com o ícone da classe.
 
 ## Refinos pós-validação (2026-09-18, Windows)
 
