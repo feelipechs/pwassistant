@@ -14,7 +14,8 @@
   <data name="GroupMode" xml:space="preserve"><value>Modo grupo</value></data>
   <data name="Presets" xml:space="preserve"><value>Presets</value></data>
   <data name="Fire" xml:space="preserve"><value>Disparar</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar disparos</value></data>
+  <data name="CancelHint" xml:space="preserve"><value>Cancela os presets em execução no momento.</value></data>
   <data name="Save" xml:space="preserve"><value>Salvar</value></data>
   <data name="Login" xml:space="preserve"><value>Login</value></data>
   <data name="Password" xml:space="preserve"><value>Senha</value></data>
