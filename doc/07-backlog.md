@@ -104,6 +104,7 @@ Validar em cada item abaixo.
   Visibilidade da senha: futuro.
 - Aceite: editar login/role e trocar senha pela UI; excluir some dos
   grupos/presets e persiste; copiar cola login/senha.
+  (Validação no jogo pendente — roteiro entregue.)
 
 ## B4 — Troca de janela por tecla (foco explícito a pedido)
 
