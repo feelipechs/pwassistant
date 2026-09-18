@@ -23,8 +23,6 @@ public partial class GroupWindow : Window
         LoadFormationButton.Content = Strings.LoadFormation;
         PresetsLabel.Text = Strings.Presets;
         NewPresetButton.Content = Strings.NewPreset;
-        CancelButton.Content = Strings.Cancel;
-        CancelButton.ToolTip = Strings.CancelHint;
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
     }
