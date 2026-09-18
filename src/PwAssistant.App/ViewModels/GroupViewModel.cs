@@ -5,6 +5,7 @@ using PwAssistant.App.Services;
 using PwAssistant.App.Views;
 using PwAssistant.Core.Execution;
 using PwAssistant.Core.Models;
+using PwAssistant.Core.Ux;
 using AppStrings = PwAssistant.App.Resources.Strings;
 
 namespace PwAssistant.App.ViewModels;
@@ -48,6 +49,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly SyncController _sync;
     private readonly FocusController _focus;
     private readonly LoopController _loops;
+    private readonly FileLogger _log;
     private readonly Func<Preset, PresetEditor> _editorFactory;
     private readonly Func<MiniWindow> _miniWindowFactory;
 
@@ -88,7 +90,7 @@ public sealed partial class GroupViewModel : ObservableObject
 
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
-        FocusController focus, LoopController loops,
+        FocusController focus, LoopController loops, FileLogger log,
         Func<Preset, PresetEditor> editorFactory,
         Func<MiniWindow> miniWindowFactory)
     {
@@ -97,6 +99,7 @@ public sealed partial class GroupViewModel : ObservableObject
         _sync = sync;
         _focus = focus;
         _loops = loops;
+        _log = log;
         _editorFactory = editorFactory;
         _miniWindowFactory = miniWindowFactory;
     }
@@ -197,14 +200,17 @@ public sealed partial class GroupViewModel : ObservableObject
             int fired = result.Accounts.Count(r => !r.Skipped);
             int skipped = result.Accounts.Count(r => r.Skipped);
             StatusMessage = $"fired={fired} skipped={skipped}";
+            _log.Info($"Fired preset {preset.Name}: fired={fired} skipped={skipped}.");
         }
         catch (OperationCanceledException)
         {
             StatusMessage = "canceled";
+            _log.Info($"Fired preset {preset.Name}: canceled.");
         }
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
+            _log.Error($"Fire preset {preset.Name} failed: {ex.Message}");
         }
     }
 

@@ -53,6 +53,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly AppState _state;
     private readonly GameLauncher _launcher;
     private readonly PresetDispatcher _dispatcher;
+    private readonly FileLogger _log;
     private readonly IServiceProvider _services;
 
     public ObservableCollection<Server> Servers { get; } = new();
@@ -73,11 +74,12 @@ public sealed partial class MainViewModel : ObservableObject
     public string DeleteText => AppStrings.Delete;
     public string CopyText => AppStrings.Copy;
 
-    public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, IServiceProvider services)
+    public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, FileLogger log, IServiceProvider services)
     {
         _state = state;
         _launcher = launcher;
         _dispatcher = dispatcher;
+        _log = log;
         _services = services;
     }
 
@@ -163,6 +165,7 @@ public sealed partial class MainViewModel : ObservableObject
             string password = _state.RevealPassword(card.Model);
             GameSession session = await _launcher.LaunchAsync(
                 SelectedServer, card.Model, password, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+            _log.Info($"Launched {card.Model.Login} pid={session.ProcessId}.");
             WatchSession(session, card);
             await _state.SaveAsync().ConfigureAwait(false);
             App.Current.Dispatcher.Invoke(card.Refresh);
@@ -171,6 +174,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
+            _log.Error($"Launch {card?.Model.Login} failed: {ex.Message}");
         }
     }
 
@@ -186,6 +190,7 @@ public sealed partial class MainViewModel : ObservableObject
             process.EnableRaisingEvents = true;
             process.Exited += (_, _) =>
             {
+                _log.Info($"Client pid={session.ProcessId} exited.");
                 _dispatcher.CancelAll();
                 card.Model.ProcessId = null;
                 card.Model.WindowHandle = IntPtr.Zero;
@@ -235,7 +240,9 @@ public sealed partial class MainViewModel : ObservableObject
         if (card is null) return;
         // Clipboard is readable by other apps; same exposure as in-memory
         // reveal at dispatch. Standard manager behavior, user-initiated.
+        // Auto-cleared below so the secret does not linger.
         Clipboard.SetText(card.Model.Login);
+        ClearClipboardAfter(TimeSpan.FromSeconds(30), card.Model.Login);
     }
 
     [RelayCommand]
@@ -243,7 +250,25 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (card is null) return;
         // See CopyLogin re clipboard exposure.
-        Clipboard.SetText(_state.RevealPassword(card.Model));
+        string password = _state.RevealPassword(card.Model);
+        Clipboard.SetText(password);
+        ClearClipboardAfter(TimeSpan.FromSeconds(30), password);
+    }
+
+    private static void ClearClipboardAfter(TimeSpan delay, string expected)
+    {
+        Task.Delay(delay).ContinueWith(_ =>
+        {
+            try
+            {
+                if (Clipboard.GetText() == expected)
+                    Clipboard.Clear();
+            }
+            catch (Exception)
+            {
+                // Clipboard busy: leave the value; the next copy overwrites it.
+            }
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     [RelayCommand]

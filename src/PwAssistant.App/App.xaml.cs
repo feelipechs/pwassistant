@@ -23,6 +23,12 @@ public partial class App : Application
         base.OnStartup(e);
 
         var services = new ServiceCollection();
+        var log = new FileLogger(FileLogger.DefaultDirectory());
+        services.AddSingleton(log);
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            log.Error("Unhandled: " + e.ExceptionObject);
+        DispatcherUnhandledException += (_, e) =>
+            log.Error("UI thread: " + e.Exception);
         services.AddSingleton<ISecretProtector, DpapiSecretProtector>();
         services.AddSingleton<IAccountStore, JsonFileAccountStore>();
         services.AddSingleton<IWindowResolver, WindowResolver>();
