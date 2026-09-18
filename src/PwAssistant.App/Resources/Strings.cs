@@ -34,6 +34,7 @@ public static class Strings
     public static string FocusSwitch => Get(nameof(FocusSwitch));
     public static string MiniMode => Get(nameof(MiniMode));
     public static string FocusKeysHint => Get(nameof(FocusKeysHint));
+    public static string Loop => Get(nameof(Loop));
     public static string CaptureClick => Get(nameof(CaptureClick));
     public static string ClickOverlayHint => Get(nameof(ClickOverlayHint));
     public static string GroundClickLimitation => Get(nameof(GroundClickLimitation));

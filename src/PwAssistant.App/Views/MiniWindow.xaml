@@ -26,12 +26,18 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ItemsControl ItemsSource="{Binding Presets}" Margin="0,4,0,0">
+            <ItemsControl ItemsSource="{Binding MiniRows}" Margin="0,4,0,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Button Content="{Binding Name}" Margin="0,0,0,4" Focusable="False"
-                                Command="{Binding DataContext.FirePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                CommandParameter="{Binding}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button Content="{Binding Name}" Width="150" Focusable="False"
+                                    Command="{Binding DataContext.FirePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding Preset}"/>
+                            <ToggleButton Content="{Binding DataContext.LoopText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                          IsChecked="{Binding IsLooping, Mode=OneWay}" Focusable="False"
+                                          Command="{Binding DataContext.ToggleLoopCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                          CommandParameter="{Binding}"/>
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

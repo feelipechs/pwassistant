@@ -9,6 +9,19 @@ using AppStrings = PwAssistant.App.Resources.Strings;
 
 namespace PwAssistant.App.ViewModels;
 
+/// <summary>One preset row for the mini-mode remote (fire + loop).</summary>
+public sealed partial class MiniPresetRow : ObservableObject
+{
+    public Preset Preset { get; }
+
+    public MiniPresetRow(Preset preset) => Preset = preset;
+
+    public string Name => Preset.Name;
+
+    [ObservableProperty]
+    private bool isLooping;
+}
+
 /// <summary>One group member row (online or offline) for management.</summary>
 public sealed partial class MemberOption : ObservableObject
 {
@@ -34,6 +47,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly PresetDispatcher _dispatcher;
     private readonly SyncController _sync;
     private readonly FocusController _focus;
+    private readonly LoopController _loops;
     private readonly Func<Preset, PresetEditor> _editorFactory;
     private readonly Func<MiniWindow> _miniWindowFactory;
 
@@ -43,6 +57,7 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<MemberOption> Members { get; } = new();
     public ObservableCollection<MemberOption> AvailableAccounts { get; } = new();
     public ObservableCollection<Formation> Formations { get; } = new();
+    public ObservableCollection<MiniPresetRow> MiniRows { get; } = new();
 
     [ObservableProperty]
     private Formation? selectedFormation;
@@ -66,22 +81,27 @@ public sealed partial class GroupViewModel : ObservableObject
     public string EditText => AppStrings.Edit;
     public string DeleteText => AppStrings.Delete;
     public string DuplicatePresetText => AppStrings.DuplicatePreset;
+    public string LoopText => AppStrings.Loop;
 
     /// <summary>Invoked after preset mutations so hotkeys re-register live.</summary>
     public Action? HotkeysChanged { get; set; }
 
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
-        FocusController focus, Func<Preset, PresetEditor> editorFactory,
+        FocusController focus, LoopController loops,
+        Func<Preset, PresetEditor> editorFactory,
         Func<MiniWindow> miniWindowFactory)
     {
         _state = state;
         _dispatcher = dispatcher;
         _sync = sync;
         _focus = focus;
+        _loops = loops;
         _editorFactory = editorFactory;
         _miniWindowFactory = miniWindowFactory;
     }
+
+    public LoopController Loops => _loops;
 
     public void Initialize()
     {
@@ -131,6 +151,9 @@ public sealed partial class GroupViewModel : ObservableObject
 
         foreach (Preset preset in _state.Data.Presets.Where(p => p.GroupId == value.Id))
             Presets.Add(preset);
+        MiniRows.Clear();
+        foreach (Preset preset in Presets)
+            MiniRows.Add(new MiniPresetRow(preset));
 
         _sync.SetSyncedAccounts(OnlineMembers.Select(a => a.Id));
         _focus.SetOrder(OnlineMembers.Select(a => a.Id));
@@ -249,6 +272,7 @@ public sealed partial class GroupViewModel : ObservableObject
         if (editor.ShowDialog() != true) return;
         _state.Data.Presets.Add(preset);
         Presets.Add(preset);
+        MiniRows.Add(new MiniPresetRow(preset));
         await _state.SaveAsync();
         HotkeysChanged?.Invoke();
     }
@@ -263,6 +287,9 @@ public sealed partial class GroupViewModel : ObservableObject
         PresetEditor editor = _editorFactory(preset);
         if (editor.ShowDialog() != true) return;
         await _state.SaveAsync();
+        MiniRows.Clear();
+        foreach (Preset existing in Presets)
+            MiniRows.Add(new MiniPresetRow(existing) { IsLooping = _loops.IsLooping(existing.Id) });
         Refresh();
         HotkeysChanged?.Invoke();
     }
@@ -271,8 +298,12 @@ public sealed partial class GroupViewModel : ObservableObject
     private async Task DeletePresetAsync(Preset? preset)
     {
         if (preset is null) return;
+        _loops.Stop(preset.Id);
         _state.Data.Presets.Remove(preset);
         Presets.Remove(preset);
+        MiniPresetRow? row = MiniRows.FirstOrDefault(r => r.Preset == preset);
+        if (row is not null)
+            MiniRows.Remove(row);
         await _state.SaveAsync();
         HotkeysChanged?.Invoke();
     }
@@ -307,8 +338,26 @@ public sealed partial class GroupViewModel : ObservableObject
         };
         _state.Data.Presets.Add(copy);
         Presets.Add(copy);
+        MiniRows.Add(new MiniPresetRow(copy));
         await _state.SaveAsync();
     }
+
+    [RelayCommand]
+    private void ToggleLoop(MiniPresetRow? row)
+    {
+        if (row is null) return;
+        _loops.ToggleLoop(row.Preset);
+        RefreshLoopStates();
+    }
+
+    /// <summary>Syncs row toggle states (called on loop start/stop).</summary>
+    public void RefreshLoopStates()
+    {
+        foreach (MiniPresetRow row in MiniRows)
+            row.IsLooping = _loops.IsLooping(row.Preset.Id);
+    }
+
+    public void StopAllLoops() => _loops.StopAll();
 
     [RelayCommand]
     private void OpenMiniMode()

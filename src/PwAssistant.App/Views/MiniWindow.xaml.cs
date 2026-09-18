@@ -38,6 +38,20 @@ public partial class MiniWindow : Window
             Dispatcher);
         _activeTracker.Start();
         Closed += (_, _) => _activeTracker.Stop();
+        Closed += (_, _) => SwitchModesOff();
+        ViewModel.Loops.Changed += OnLoopsChanged;
+        Closed += (_, _) => ViewModel.Loops.Changed -= OnLoopsChanged;
+    }
+
+    private void OnLoopsChanged() =>
+        Dispatcher.InvokeAsync(ViewModel.RefreshLoopStates);
+
+    /// <summary>Closing the remote stops its modes (nothing runs headless).</summary>
+    private void SwitchModesOff()
+    {
+        ViewModel.SyncEnabled = false;
+        ViewModel.FocusEnabled = false;
+        ViewModel.StopAllLoops();
     }
 
     protected override void OnSourceInitialized(EventArgs e)

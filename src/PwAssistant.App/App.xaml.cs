@@ -9,6 +9,7 @@ using PwAssistant.Core.Launcher;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Storage;
 using PwAssistant.Core.Sync;
+using PwAssistant.Core.Ux;
 using PwAssistant.WinApi;
 
 namespace PwAssistant.App;
@@ -43,6 +44,7 @@ public partial class App : Application
         services.AddSingleton<PresetDispatcher>();
         services.AddSingleton<SyncController>();
         services.AddSingleton<FocusController>();
+        services.AddSingleton<LoopController>();
         services.AddTransient<MainViewModel>();
         services.AddTransient<GroupViewModel>();
         services.AddTransient<MainWindow>();
@@ -83,6 +85,7 @@ public partial class App : Application
         {
             _provider.GetService<SyncController>()?.Dispose();
             _provider.GetService<FocusController>()?.Dispose();
+            _provider.GetService<LoopController>()?.Dispose();
             _provider.GetService<MacroJobRunner>()?.Dispose();
             _provider.Dispose();
         }

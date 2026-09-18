@@ -28,6 +28,7 @@
   <data name="FocusSwitch" xml:space="preserve"><value>Window switching (`/Shift/numpad)</value></data>
   <data name="MiniMode" xml:space="preserve"><value>Mini-mode</value></data>
   <data name="FocusKeysHint" xml:space="preserve"><value>` cycles, Shift-tap toggles, numpad 1-9,0 selects (switching on).</value></data>
+  <data name="Loop" xml:space="preserve"><value>Loop</value></data>
   <data name="CaptureClick" xml:space="preserve"><value>Capture click position</value></data>
   <data name="ClickOverlayHint" xml:space="preserve"><value>Click once on the game window to capture the position.</value></data>
   <data name="GroundClickLimitation" xml:space="preserve"><value>3D-ground clicks do not replicate without focus (v1 limitation).</value></data>
