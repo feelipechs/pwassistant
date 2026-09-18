@@ -7,6 +7,7 @@ using PwAssistant.App.Services;
 using PwAssistant.App.Views;
 using PwAssistant.Core.Launcher;
 using PwAssistant.Core.Models;
+using PwAssistant.Core.Ux;
 using AppStrings = PwAssistant.App.Resources.Strings;
 
 namespace PwAssistant.App.ViewModels;
@@ -25,8 +26,24 @@ public sealed partial class AccountCard : ObservableObject
         status = model.Status;
     }
 
-    public string DisplayName => string.IsNullOrWhiteSpace(Model.Role) ? Model.Login : Model.Role;
+    public string DisplayName => string.IsNullOrWhiteSpace(Model.Nickname)
+        ? (string.IsNullOrWhiteSpace(Model.Role) ? Model.Login : Model.Role)
+        : Model.Nickname;
     public string StatusText => Status == AccountStatus.Online ? "Online" : "Offline";
+
+    public string? ClassImagePath => string.IsNullOrWhiteSpace(Model.Class)
+        ? null
+        : $"/PwAssistant.App;component/Resources/Classes/{Model.Class.Trim().ToLowerInvariant()}.png";
+
+    public string? ClassBadgeText
+    {
+        get
+        {
+            if (!ClassCatalog.TryGet(Model.Class, out ClassInfo info))
+                return null;
+            return $"{info.DisplayName} ({info.Abbreviation})";
+        }
+    }
 
     public void Refresh() => Status = Model.Status;
 }
@@ -125,7 +142,9 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 ServerId = SelectedServer.Id,
                 Login = dialog.Login,
-                Role = dialog.Role
+                Role = dialog.Role,
+                Nickname = dialog.Nickname,
+                Class = dialog.Class
             };
             _state.SetPassword(account, dialog.Password);
             SelectedServer.Accounts.Add(account);
@@ -184,10 +203,12 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (card is null || SelectedServer is null) return;
         var dialog = new AccountDialog { RequirePassword = false };
-        dialog.Prefill(card.Model.Login, card.Model.Role);
+        dialog.Prefill(card.Model);
         if (dialog.ShowDialog() != true) return;
         card.Model.Login = dialog.Login;
         card.Model.Role = dialog.Role;
+        card.Model.Nickname = dialog.Nickname;
+        card.Model.Class = dialog.Class;
         if (!string.IsNullOrEmpty(dialog.Password))
             _state.SetPassword(card.Model, dialog.Password);
         await _state.SaveAsync().ConfigureAwait(false);

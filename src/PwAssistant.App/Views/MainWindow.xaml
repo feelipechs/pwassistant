@@ -38,7 +38,20 @@
                         <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Margin="0,0,0,8" Padding="8">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <StackPanel Width="250">
+                                    <Image x:Name="ClassBadge" Width="24" Height="24" Margin="0,0,8,0"
+                                           Source="{Binding ClassImagePath}"
+                                           ToolTip="{Binding ClassBadgeText}">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ClassImagePath}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                    <StackPanel Width="220">
                                         <TextBlock Text="{Binding DisplayName}" FontWeight="Bold"/>
                                         <TextBlock Text="{Binding StatusText}"/>
                                     </StackPanel>

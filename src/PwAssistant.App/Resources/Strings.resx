@@ -54,6 +54,9 @@
   <data name="Edit" xml:space="preserve"><value>Edit</value></data>
   <data name="Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Nickname" xml:space="preserve"><value>Display name</value></data>
+  <data name="SameAsRole" xml:space="preserve"><value>Same as character</value></data>
+  <data name="Class" xml:space="preserve"><value>Class</value></data>
   <data name="AddCommand" xml:space="preserve"><value>Add command</value></data>
   <data name="AddClick" xml:space="preserve"><value>Add click</value></data>
   <data name="Duplicate" xml:space="preserve"><value>Duplicate row</value></data>

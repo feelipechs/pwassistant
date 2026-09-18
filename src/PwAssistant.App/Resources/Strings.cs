@@ -60,6 +60,9 @@ public static class Strings
     public static string Edit => Get(nameof(Edit));
     public static string Delete => Get(nameof(Delete));
     public static string Copy => Get(nameof(Copy));
+    public static string Nickname => Get(nameof(Nickname));
+    public static string SameAsRole => Get(nameof(SameAsRole));
+    public static string Class => Get(nameof(Class));
     public static string AddCommand => Get(nameof(AddCommand));
     public static string AddClick => Get(nameof(AddClick));
     public static string Duplicate => Get(nameof(Duplicate));

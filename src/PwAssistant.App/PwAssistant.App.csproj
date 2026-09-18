@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\Classes\*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PwAssistant.Core\PwAssistant.Core.csproj" />
     <ProjectReference Include="..\PwAssistant.WinApi\PwAssistant.WinApi.csproj" />
   </ItemGroup>

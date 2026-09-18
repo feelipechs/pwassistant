@@ -28,6 +28,12 @@ public sealed class Account
     /// <summary>Character nickname used as the client role argument.</summary>
     public string Role { get; set; } = string.Empty;
 
+    /// <summary>Display name shown on cards. Null means same as <see cref="Role"/>.</summary>
+    public string? Nickname { get; set; }
+
+    /// <summary>Class key from <see cref="ClassCatalog"/> (null = none).</summary>
+    public string? Class { get; set; }
+
     public string? Tag { get; set; }
     public string? Color { get; set; }
     public bool IsFavorite { get; set; }
