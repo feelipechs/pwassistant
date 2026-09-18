@@ -195,9 +195,6 @@ public sealed partial class MainViewModel : ObservableObject
     /// </summary>
     private void MarkClientWindow(Account account)
     {
-        bool idOk = TaskbarIdentity.TrySetAppId(
-            account.WindowHandle, TaskbarAppId.ForAccount(account.Id),
-            out int hr, out string? error);
         bool iconOk = false;
         if (ClassCatalog.TryGet(account.Class, out ClassInfo info))
         {
@@ -205,38 +202,36 @@ public sealed partial class MainViewModel : ObservableObject
                 AppContext.BaseDirectory, "Resources", "Classes", info.Key + ".ico");
             iconOk = WindowIcon.TrySetIcon(account.WindowHandle, iconPath);
         }
-        _log.Info($"Marked {account.Login}: taskbarId={idOk} hr=0x{hr:X} err={error} icon={iconOk}.");
-        if (!idOk)
-            _ = RetryTaskbarIdAsync(account);
+        _log.Info($"Marked {account.Login}: icon={iconOk}.");
+        if (!iconOk)
+            _ = RetryIconAsync(account);
     }
 
-    /// <summary>
-    /// The taskbar may only accept the identity once settled: retry briefly
-    /// in the background (best effort, never blocks the launch).
-    /// </summary>
-    private async Task RetryTaskbarIdAsync(Account account)
+    /// <summary>Best effort: the icon may only stick once settled.</summary>
+    private async Task RetryIconAsync(Account account)
     {
         try
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 5; i++)
             {
                 await Task.Delay(2000).ConfigureAwait(false);
                 if (account.WindowHandle == IntPtr.Zero)
                     return;
-                if (TaskbarIdentity.TrySetAppId(
-                    account.WindowHandle, TaskbarAppId.ForAccount(account.Id),
-                    out int hr, out string? error))
+                if (!ClassCatalog.TryGet(account.Class, out ClassInfo info))
+                    return;
+                string iconPath = Path.Combine(
+                    AppContext.BaseDirectory, "Resources", "Classes", info.Key + ".ico");
+                if (WindowIcon.TrySetIcon(account.WindowHandle, iconPath))
                 {
-                    _log.Info($"Marked {account.Login} on retry: taskbarId=True.");
+                    _log.Info($"Marked {account.Login} on retry: icon=True.");
                     return;
                 }
-                if (i == 9)
-                    _log.Warn($"Marked {account.Login}: taskbarId still False hr=0x{hr:X} err={error}.");
             }
+            _log.Warn($"Marked {account.Login}: icon still False.");
         }
         catch (Exception ex)
         {
-            _log.Error($"Taskbar retry {account.Login} failed: {ex.Message}");
+            _log.Error($"Icon retry {account.Login} failed: {ex.Message}");
         }
     }
 

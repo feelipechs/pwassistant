@@ -94,11 +94,6 @@ internal static class NativeMethods
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
     internal static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 
-    [DllImport("shell32.dll")]
-    internal static extern int SHGetPropertyStoreForWindow(
-        IntPtr hwnd, ref Guid riid,
-        [MarshalAs(UnmanagedType.Interface)] out object? propertyStore);
-
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     internal static extern IntPtr LoadImageW(
         IntPtr hInstance, string fileName, uint type, int cx, int cy, uint fuLoad);
