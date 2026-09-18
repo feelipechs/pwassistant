@@ -73,3 +73,16 @@ public sealed class FocusServiceTests
         Assert.Equal(A, focus.CycleNext());
     }
 }
+
+public sealed class FocusSettingsTests
+{
+    [Fact]
+    public void Defaults_MatchValidatedBehavior()
+    {
+        var settings = new FocusSettings();
+
+        Assert.Equal(FocusSettings.DefaultCycleKey, settings.CycleKey);
+        Assert.True(settings.NumpadEnabled);
+        Assert.True(settings.ShiftTapEnabled);
+    }
+}
