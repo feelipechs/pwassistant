@@ -7,7 +7,7 @@ namespace PwAssistant.WinApi;
 /// AppUserModelID: giving each game window its own id yields one button
 /// per client. The store comes from SHGetPropertyStoreForWindow — no
 /// manual QueryInterface (the .lnk PropertyStore cast proved fragile).
-/// Best effort: failures never break the launch.
+/// Best effort: failures never break the launch; hr/error aid diagnosis.
 /// </summary>
 public static class TaskbarIdentity
 {
@@ -19,19 +19,31 @@ public static class TaskbarIdentity
     private const ushort VT_LPWSTR = 31;
     private const int S_OK = 0;
 
-    public static bool TrySetAppId(IntPtr windowHandle, string appId)
+    /// <summary>Tries to tag the window; reports hr/error for diagnostics.</summary>
+    public static bool TrySetAppId(IntPtr windowHandle, string appId, out int hresult, out string? error)
     {
+        hresult = -1;
+        error = null;
         if (windowHandle == IntPtr.Zero || string.IsNullOrWhiteSpace(appId))
+        {
+            error = "bad-args";
             return false;
+        }
         if (!OperatingSystem.IsWindows())
+        {
+            error = "not-windows";
             return false;
+        }
 
         try
         {
             Guid iid = IID_IPropertyStore;
-            int hr = NativeMethods.SHGetPropertyStoreForWindow(windowHandle, ref iid, out object? raw);
-            if (hr != S_OK || raw is not IPropertyStore store)
+            hresult = NativeMethods.SHGetPropertyStoreForWindow(windowHandle, ref iid, out object? raw);
+            if (hresult != S_OK || raw is not IPropertyStore store)
+            {
+                error = raw is null ? "no-store" : "wrong-store";
                 return false;
+            }
             try
             {
                 var key = new PROPERTYKEY { fmtid = PKEY_AppUserModelID_FmtId, pid = PKEY_AppUserModelID_Pid };
@@ -53,11 +65,15 @@ public static class TaskbarIdentity
                 Marshal.ReleaseComObject(store);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            error = ex.GetType().Name + ":" + ex.Message;
             return false;
         }
     }
+
+    public static bool TrySetAppId(IntPtr windowHandle, string appId) =>
+        TrySetAppId(windowHandle, appId, out _, out _);
 
     [ComImport]
     [Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF74")]

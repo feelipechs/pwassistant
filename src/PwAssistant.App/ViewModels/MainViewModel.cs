@@ -196,7 +196,8 @@ public sealed partial class MainViewModel : ObservableObject
     private void MarkClientWindow(Account account)
     {
         bool idOk = TaskbarIdentity.TrySetAppId(
-            account.WindowHandle, TaskbarAppId.ForAccount(account.Id));
+            account.WindowHandle, TaskbarAppId.ForAccount(account.Id),
+            out int hr, out string? error);
         bool iconOk = false;
         if (ClassCatalog.TryGet(account.Class, out ClassInfo info))
         {
@@ -204,7 +205,39 @@ public sealed partial class MainViewModel : ObservableObject
                 AppContext.BaseDirectory, "Resources", "Classes", info.Key + ".ico");
             iconOk = WindowIcon.TrySetIcon(account.WindowHandle, iconPath);
         }
-        _log.Info($"Marked {account.Login}: taskbarId={idOk} icon={iconOk}.");
+        _log.Info($"Marked {account.Login}: taskbarId={idOk} hr=0x{hr:X} err={error} icon={iconOk}.");
+        if (!idOk)
+            _ = RetryTaskbarIdAsync(account);
+    }
+
+    /// <summary>
+    /// The taskbar may only accept the identity once settled: retry briefly
+    /// in the background (best effort, never blocks the launch).
+    /// </summary>
+    private async Task RetryTaskbarIdAsync(Account account)
+    {
+        try
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                await Task.Delay(2000).ConfigureAwait(false);
+                if (account.WindowHandle == IntPtr.Zero)
+                    return;
+                if (TaskbarIdentity.TrySetAppId(
+                    account.WindowHandle, TaskbarAppId.ForAccount(account.Id),
+                    out int hr, out string? error))
+                {
+                    _log.Info($"Marked {account.Login} on retry: taskbarId=True.");
+                    return;
+                }
+                if (i == 9)
+                    _log.Warn($"Marked {account.Login}: taskbarId still False hr=0x{hr:X} err={error}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"Taskbar retry {account.Login} failed: {ex.Message}");
+        }
     }
 
     /// <summary>
