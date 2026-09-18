@@ -18,6 +18,7 @@ public sealed partial class AccountCard : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
+    [NotifyPropertyChangedFor(nameof(PlayText))]
     private AccountStatus status;
 
     public AccountCard(Account model)
@@ -30,6 +31,8 @@ public sealed partial class AccountCard : ObservableObject
         ? (string.IsNullOrWhiteSpace(Model.Role) ? Model.Login : Model.Role)
         : Model.Nickname;
     public string StatusText => Status == AccountStatus.Online ? "Online" : "Offline";
+
+    public string PlayText => Status == AccountStatus.Online ? AppStrings.Stop : AppStrings.Play;
 
     public string? ClassImagePath => string.IsNullOrWhiteSpace(Model.Class)
         ? null
@@ -159,6 +162,11 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task PlayAsync(AccountCard? card)
     {
         if (card is null || SelectedServer is null) return;
+        if (card.Model.Status == AccountStatus.Online)
+        {
+            await StopClientAsync(card).ConfigureAwait(false);
+            return;
+        }
         try
         {
             StatusMessage = "...";
@@ -175,6 +183,30 @@ public sealed partial class MainViewModel : ObservableObject
         {
             StatusMessage = ex.Message;
             _log.Error($"Launch {card?.Model.Login} failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Graceful client close (like the window X button), Kill fallback.
+    /// The Exited handler finishes the job (jobs canceled, card offline).
+    /// </summary>
+    private async Task StopClientAsync(AccountCard card)
+    {
+        if (card.Model.ProcessId is not int pid) return;
+        try
+        {
+            using Process process = Process.GetProcessById(pid);
+            process.CloseMainWindow();
+            for (int i = 0; i < 20 && !process.HasExited; i++)
+                await Task.Delay(250).ConfigureAwait(false);
+            if (!process.HasExited)
+                process.Kill();
+            _log.Info($"Stopped {card.Model.Login} pid={pid}.");
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+            _log.Error($"Stop {card.Model.Login} failed: {ex.Message}");
         }
     }
 

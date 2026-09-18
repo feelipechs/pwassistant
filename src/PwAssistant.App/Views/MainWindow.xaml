@@ -55,9 +55,9 @@
                                         <TextBlock Text="{Binding DisplayName}" FontWeight="Bold"/>
                                         <TextBlock Text="{Binding StatusText}"/>
                                     </StackPanel>
-                                    <Button Content="Play"
-                                            Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}"/>
+                                <Button Content="{Binding PlayText}"
+                                        Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}"/>
                                     <Button Content="{Binding DataContext.EditText, RelativeSource={RelativeSource AncestorType=Window}}"
                                             Command="{Binding DataContext.EditAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                             CommandParameter="{Binding}"/>
