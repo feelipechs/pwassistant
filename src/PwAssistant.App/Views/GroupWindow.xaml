@@ -10,6 +10,7 @@
                      DisplayMemberPath="Name"
                      SelectedItem="{Binding SelectedGroup}"/>
             <Button x:Name="AddGroupButton" Content="+" Command="{Binding AddGroupCommand}"/>
+            <Button x:Name="MiniModeButton" Command="{Binding OpenMiniModeCommand}"/>
             <TextBlock x:Name="FormationsLabel" Margin="8,8,8,4" FontWeight="Bold"/>
             <ComboBox x:Name="FormationBox" Margin="8,0,8,4"
                       ItemsSource="{Binding Formations}"

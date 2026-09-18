@@ -25,6 +25,8 @@
   <data name="PresetName" xml:space="preserve"><value>Nome do preset</value></data>
   <data name="SyncEnabled" xml:space="preserve"><value>Sincronizar clicks</value></data>
   <data name="FocusSwitch" xml:space="preserve"><value>Troca de janelas (`/Shift/numpad)</value></data>
+  <data name="MiniMode" xml:space="preserve"><value>Mini-mode</value></data>
+  <data name="FocusKeysHint" xml:space="preserve"><value>` alterna, toque de Shift troca as duas, numpad 1-9,0 seleciona (troca ligada).</value></data>
   <data name="CaptureClick" xml:space="preserve"><value>Capturar posição de click</value></data>
   <data name="ClickOverlayHint" xml:space="preserve"><value>Clique uma vez na janela do jogo para capturar a posição.</value></data>
   <data name="GroundClickLimitation" xml:space="preserve"><value>Clicks no chão 3D não replicam sem foco (limitação do v1).</value></data>

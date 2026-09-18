@@ -32,6 +32,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly SyncController _sync;
     private readonly FocusController _focus;
     private readonly Func<Preset, PresetEditor> _editorFactory;
+    private readonly Func<MiniWindow> _miniWindowFactory;
 
     public ObservableCollection<Group> Groups { get; } = new();
     public ObservableCollection<Account> OnlineMembers { get; } = new();
@@ -68,13 +69,15 @@ public sealed partial class GroupViewModel : ObservableObject
 
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
-        FocusController focus, Func<Preset, PresetEditor> editorFactory)
+        FocusController focus, Func<Preset, PresetEditor> editorFactory,
+        Func<MiniWindow> miniWindowFactory)
     {
         _state = state;
         _dispatcher = dispatcher;
         _sync = sync;
         _focus = focus;
         _editorFactory = editorFactory;
+        _miniWindowFactory = miniWindowFactory;
     }
 
     public void Initialize()
@@ -296,6 +299,13 @@ public sealed partial class GroupViewModel : ObservableObject
         _state.Data.Presets.Add(copy);
         Presets.Add(copy);
         await _state.SaveAsync();
+    }
+
+    [RelayCommand]
+    private void OpenMiniMode()
+    {
+        MiniWindow mini = _miniWindowFactory();
+        mini.Show();
     }
 
     [RelayCommand]

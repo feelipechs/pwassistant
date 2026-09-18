@@ -47,6 +47,8 @@ public partial class App : Application
         services.AddTransient<GroupViewModel>();
         services.AddTransient<MainWindow>();
         services.AddTransient<GroupWindow>();
+        services.AddTransient<MiniWindow>();
+        services.AddSingleton<Func<MiniWindow>>(sp => () => sp.GetRequiredService<MiniWindow>());
         services.AddTransient<Func<Preset, PresetEditor>>(sp => preset => new PresetEditor(
             sp.GetRequiredService<AppState>(),
             sp.GetRequiredService<IWindowResolver>(),
