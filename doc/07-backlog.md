@@ -91,6 +91,19 @@ Validar em cada item abaixo.
   1 clique); toggles moram só no mini; `Cancelar disparos` com tooltip.
   B4-config (teclas configuráveis) vira item futuro, conjunto fixo
   documentado no B4.
+- **Pós-B3 (2026-09-18):** mini nunca ativa (`WS_EX_NOACTIVATE`: 1 clique
+  dispara com jogo focado — `Focusable=False` sozinho não bastava);
+  tracking da ativa em 250 ms; modo por preset no editor (padrão
+  Simultaneous); Fire mostra `i/n (Role)` por conta (`PresetProgress`).
+
+## B5 — Contas (CRUD + credenciais)
+
+- Editar conta (login/role; senha vazia mantém), excluir conta (limpa
+  grupos + ações que a citam), login visível com copiar, senha mascarada
+  com copiar (`Clipboard`; mesma exposição do reveal no disparo).
+  Visibilidade da senha: futuro.
+- Aceite: editar login/role e trocar senha pela UI; excluir some dos
+  grupos/presets e persiste; copiar cola login/senha.
 
 ## B4 — Troca de janela por tecla (foco explícito a pedido)
 

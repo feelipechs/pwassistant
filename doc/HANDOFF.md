@@ -29,9 +29,9 @@
 
 ## Próximo passo
 
-Backlog esgotado no escopo combinado (M1–M6, B1/B1b/B2/B2d/B3/B4 aceitos).
-Futuro: B4-config (teclas configuráveis), polimentos (Play→Stop, dnd
-condicional, auto-refresh do grid por evento).
+Validar: mini 1-clique, destaque ~250 ms, modo por preset + `i/n (Role)`,
+CRUD de conta + copiar. Depois: B4-config (teclas configuráveis),
+polimentos (Play→Stop, dnd condicional, auto-refresh do grid).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
