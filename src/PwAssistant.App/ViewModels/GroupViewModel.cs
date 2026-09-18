@@ -10,11 +10,14 @@ using AppStrings = PwAssistant.App.Resources.Strings;
 namespace PwAssistant.App.ViewModels;
 
 /// <summary>One group member row (online or offline) for management.</summary>
-public sealed class MemberOption
+public sealed partial class MemberOption : ObservableObject
 {
     public Account Account { get; }
 
     public MemberOption(Account account) => Account = account;
+
+    [ObservableProperty]
+    private bool isActive;
 
     public string DisplayName => string.IsNullOrWhiteSpace(Account.Role)
         ? Account.Login

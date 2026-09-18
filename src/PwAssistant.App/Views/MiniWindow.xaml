@@ -13,7 +13,20 @@
             <Button x:Name="CollapseButton" Click="OnCollapse" Width="30"/>
         </StackPanel>
         <StackPanel x:Name="ContentPanel" Margin="0,8,0,0">
-            <ItemsControl ItemsSource="{Binding Presets}">
+            <ListBox x:Name="MiniMembersList" Height="80" ItemsSource="{Binding Members}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock x:Name="MemberName" Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                <Setter TargetName="MemberName" Property="FontWeight" Value="Bold"/>
+                                <Setter TargetName="MemberName" Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ItemsControl ItemsSource="{Binding Presets}" Margin="0,4,0,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button Content="{Binding Name}" Margin="0,0,0,4"
@@ -23,6 +36,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <CheckBox x:Name="SyncCheck" Margin="0,4,0,0" IsChecked="{Binding SyncEnabled}"/>
+            <CheckBox x:Name="FocusCheck" Margin="0,4,0,0" IsChecked="{Binding FocusEnabled}"/>
             <TextBlock x:Name="KeysLabel" Margin="0,8,0,0" TextWrapping="Wrap" FontStyle="Italic" FontSize="11"/>
             <TextBlock Text="{Binding StatusMessage}" Margin="0,4,0,0" VerticalAlignment="Center" TextWrapping="Wrap"/>
         </StackPanel>

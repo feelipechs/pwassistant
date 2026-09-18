@@ -31,4 +31,6 @@ public interface IWindowResolver
     (int X, int Y) ScreenToClientPoint(IntPtr windowHandle, int screenX, int screenY);
     /// <summary>Topmost window at a screen point (Z-order aware).</summary>
     IntPtr ResolveTopWindowAtPoint(int screenX, int screenY);
+    /// <summary>Current foreground window (for active-member highlight).</summary>
+    IntPtr GetForegroundWindow();
 }

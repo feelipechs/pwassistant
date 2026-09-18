@@ -44,6 +44,8 @@ public sealed class WindowResolver : IWindowResolver
 
     public IntPtr ResolveTopWindowAtPoint(int screenX, int screenY) =>
         NativeMethods.WindowFromPoint(new NativeMethods.POINT { X = screenX, Y = screenY });
+
+    public IntPtr GetForegroundWindow() => NativeMethods.GetForegroundWindow();
 }
 
 public sealed class WinApiException : Exception

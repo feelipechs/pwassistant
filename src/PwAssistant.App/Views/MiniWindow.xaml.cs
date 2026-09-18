@@ -1,6 +1,8 @@
 using System.Windows;
+using System.Windows.Threading;
 using PwAssistant.App.Resources;
 using PwAssistant.App.ViewModels;
+using PwAssistant.Core.Input;
 
 namespace PwAssistant.App.Views;
 
@@ -11,19 +13,47 @@ namespace PwAssistant.App.Views;
 public partial class MiniWindow : Window
 {
     private bool _collapsed;
+    private readonly DispatcherTimer _activeTracker;
+    private readonly IWindowResolver _resolver;
 
     public GroupViewModel ViewModel { get; }
 
-    public MiniWindow(GroupViewModel viewModel)
+    public MiniWindow(GroupViewModel viewModel, IWindowResolver resolver)
     {
         ViewModel = viewModel;
+        _resolver = resolver;
         DataContext = viewModel;
         InitializeComponent();
         CollapseButton.Content = "–";
         SyncCheck.Content = Strings.SyncEnabled;
+        FocusCheck.Content = Strings.FocusSwitch;
         KeysLabel.Text = Strings.FocusKeysHint;
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
+        _activeTracker = new DispatcherTimer(
+            TimeSpan.FromMilliseconds(500),
+            DispatcherPriority.Background,
+            (_, _) => TrackActiveMember(),
+            Dispatcher);
+        _activeTracker.Start();
+        Closed += (_, _) => _activeTracker.Stop();
+    }
+
+    /// <summary>Highlights the member owning the foreground window.</summary>
+    private void TrackActiveMember()
+    {
+        IntPtr foreground;
+        try
+        {
+            foreground = _resolver.GetForegroundWindow();
+        }
+        catch (Exception)
+        {
+            return;
+        }
+        foreach (MemberOption member in ViewModel.Members)
+            member.IsActive = member.Account.WindowHandle != IntPtr.Zero
+                && member.Account.WindowHandle == foreground;
     }
 
     private void OnCollapse(object sender, RoutedEventArgs e)
