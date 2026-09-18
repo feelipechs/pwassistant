@@ -32,7 +32,7 @@ public partial class MiniWindow : Window
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
         _activeTracker = new DispatcherTimer(
-            TimeSpan.FromMilliseconds(500),
+            TimeSpan.FromMilliseconds(250),
             DispatcherPriority.Background,
             (_, _) => TrackActiveMember(),
             Dispatcher);
