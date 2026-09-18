@@ -99,3 +99,11 @@ Validar em cada item abaixo.
 - Aceite: com 2 contas online sobrepostas, `` ` `` alterna o foco entre
   elas; numpad 1/2 foca por posição; Shift-toque alterna as duas últimas
   sem disparar ao usar Shift como modificador no jogo.
+- **Aceite (2026-09-17, Windows):** ✅ os três modos com jogo focado,
+  validado com 3 contas, sem eco de foco. Caminho até lá: hook entrega +
+  alvo certo, mas `SetForegroundWindow` negado (pisca) → Attach
+  insuficiente (mesmo elevado) → **tap Alt + retry resolve**. Receia
+  confirmada por interoperabilidade com o PW Helper instalado
+  (`focus-window-by-pid.exe` = `SetForegroundWindow`+`ShowWindow`+
+  `keybd_event`; `play-preset-background.exe` = `PostMessage`, mesma
+  filosofia do T1/C4).

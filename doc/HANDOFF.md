@@ -29,8 +29,8 @@
 
 ## Próximo passo
 
-B4 troca de janela (`` ` `` cíclico, Shift-toque, numpad pela ordem do
-grupo). B1/B1b/B2/B2d aceitos.
+B3 mini-mode (compacta, Topmost, botões de preset + Sync + legenda das
+teclas B4). B1/B1b/B2/B2d/B4 aceitos.
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
