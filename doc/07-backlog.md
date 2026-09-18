@@ -110,15 +110,14 @@ Validar em cada item abaixo.
 
 ## Taskbar por conta (2026-09-18)
 
-- Cada janela viva recebe `AppUserModelID` distinto
-  (`PwAssistant.Client.{guid}`) via `SHGetPropertyStoreForWindow` →
-  um botão de taskbar por client **mesmo com classes iguais** (a
-  separação é pelo ID, não pelo ícone). Via `.lnk` refutada no jogo
-  (`QueryInterface` p/ `IPropertyStore` falhou no `Play` — documentado
-  aqui pela lei nº 5); launch segue `.exe` direto.
-- Ícone do client = `.ico` da classe (`WM_SETICON` com HICON da sessão;
-  mecanismo confirmado no PW Helper: `LoadImage` + por-janela).
-  Resultado gravado no log (`taskbarId=`, `icon=`).
+- Cada conta lança via `.lnk` próprio (`target` + args + working dir +
+  ícone da classe) em `%AppData%\PwAssistant\clients\`: a taskbar associa
+  cada client ao seu atalho → um botão por conta (confirmado por
+  experimento manual do usuário; só `IShellLinkW`+`IPersistFile`, sem COM
+  frágil). Launch segue com `UseShellExecute`.
+- Refutadas e registradas (lei nº 5): `AppUserModelID` no `.lnk` (QI
+  `IPropertyStore` falhou no `Play`) e na janela viva (`E_NOINTERFACE`
+  consistente, 10 retries).
 - Aceite: 2 Plays (classes iguais e diferentes) → 2 botões separados,
   cada um com o ícone da classe.
 
