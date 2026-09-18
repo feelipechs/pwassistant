@@ -20,13 +20,6 @@
                 <Button x:Name="SaveFormationButton" Command="{Binding SaveFormationCommand}"/>
                 <Button x:Name="LoadFormationButton" Command="{Binding LoadFormationCommand}"/>
             </StackPanel>
-            <TextBlock x:Name="FocusConfigLabel" Margin="8,8,8,4" FontWeight="Bold"/>
-            <ComboBox x:Name="CycleKeyBox" Margin="8,0,8,4"
-                      ItemsSource="{Binding CycleKeyOptions}"
-                      DisplayMemberPath="Label"
-                      SelectedItem="{Binding SelectedCycleKey, Mode=TwoWay}"/>
-            <CheckBox x:Name="NumpadCheck" Margin="8,0,8,0" IsChecked="{Binding NumpadEnabled, Mode=TwoWay}"/>
-            <CheckBox x:Name="ShiftTapCheck" Margin="8,0,8,0" IsChecked="{Binding ShiftTapEnabled, Mode=TwoWay}"/>
             <TextBlock x:Name="LimitationLabel" Margin="8" TextWrapping="Wrap" FontStyle="Italic" FontSize="11"/>
         </StackPanel>
         <StackPanel Margin="8">

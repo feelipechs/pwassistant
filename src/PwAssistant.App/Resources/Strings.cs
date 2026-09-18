@@ -34,9 +34,14 @@ public static class Strings
     public static string MiniMode => Get(nameof(MiniMode));
     public static string FocusKeysHint => Get(nameof(FocusKeysHint));
     public static string FocusConfig => Get(nameof(FocusConfig));
+    public static string CycleKey => Get(nameof(CycleKey));
     public static string NumpadSelect => Get(nameof(NumpadSelect));
     public static string ShiftTapToggle => Get(nameof(ShiftTapToggle));
     public static string FocusKeysLive => Get(nameof(FocusKeysLive));
+    public static string Settings => Get(nameof(Settings));
+    public static string Close => Get(nameof(Close));
+    public static string ArmingHint => Get(nameof(ArmingHint));
+    public static string GameSkillWarning => Get(nameof(GameSkillWarning));
     public static string Loop => Get(nameof(Loop));
     public static string CaptureClick => Get(nameof(CaptureClick));
     public static string ClickOverlayHint => Get(nameof(ClickOverlayHint));

@@ -74,6 +74,12 @@ public sealed partial class GroupViewModel : ObservableObject
     public static IReadOnlyList<CycleKeyOption> CycleKeyOptions { get; } =
     [
         new(0xC0, "`"),
+        new(0x70, "F1"),
+        new(0x71, "F2"),
+        new(0x72, "F3"),
+        new(0x73, "F4"),
+        new(0x74, "F5"),
+        new(0x75, "F6"),
         new(0x76, "F7"),
         new(0x77, "F8"),
         new(0x78, "F9"),
@@ -141,60 +147,17 @@ public sealed partial class GroupViewModel : ObservableObject
         SelectedFormation = null;
         _state.Data.FocusSettings ??= new FocusSettings();
         _focus.Settings = _state.Data.FocusSettings;
-        OnPropertyChanged(nameof(SelectedCycleKey));
-        OnPropertyChanged(nameof(NumpadEnabled));
-        OnPropertyChanged(nameof(ShiftTapEnabled));
         OnPropertyChanged(nameof(FocusKeysLegend));
     }
 
     /// <summary>Mini-mode legend with the live cycle key.</summary>
-    public string FocusKeysLegend => string.Format(
-        AppStrings.FocusKeysLive,
-        SelectedCycleKey?.Label ?? FocusSettings.DefaultCycleKey.ToString());
-
-    public CycleKeyOption? SelectedCycleKey
+    public string FocusKeysLegend
     {
-        get => CycleKeyOptions.FirstOrDefault(o => o.Code == _focus.Settings.CycleKey);
-        set
+        get
         {
-            if (value is null) return;
-            _focus.Settings.CycleKey = value.Code;
-            OnPropertyChanged(nameof(FocusKeysLegend));
-            _ = PersistAsync();
-        }
-    }
-
-    public bool NumpadEnabled
-    {
-        get => _focus.Settings.NumpadEnabled;
-        set
-        {
-            _focus.Settings.NumpadEnabled = value;
-            OnPropertyChanged();
-            _ = PersistAsync();
-        }
-    }
-
-    public bool ShiftTapEnabled
-    {
-        get => _focus.Settings.ShiftTapEnabled;
-        set
-        {
-            _focus.Settings.ShiftTapEnabled = value;
-            OnPropertyChanged();
-            _ = PersistAsync();
-        }
-    }
-
-    private async Task PersistAsync()
-    {
-        try
-        {
-            await _state.SaveAsync().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = ex.Message;
+            string label = CycleKeyOptions.FirstOrDefault(o => o.Code == _focus.Settings.CycleKey)?.Label
+                ?? FocusSettings.DefaultCycleKey.ToString();
+            return string.Format(AppStrings.FocusKeysLive, label);
         }
     }
 
@@ -239,6 +202,7 @@ public sealed partial class GroupViewModel : ObservableObject
 
         _sync.SetSyncedAccounts(OnlineMembers.Select(a => a.Id));
         _focus.SetOrder(OnlineMembers.Select(a => a.Id));
+        OnPropertyChanged(nameof(FocusKeysLegend));
     }
 
     partial void OnSyncEnabledChanged(bool value) => _sync.Enabled = value;

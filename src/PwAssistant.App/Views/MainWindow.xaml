@@ -22,6 +22,7 @@
                 </ListBox.ItemContainerStyle>
             </ListBox>
             <Button x:Name="AddServerButton" Content="+" Command="{Binding AddServerCommand}"/>
+            <Button x:Name="SettingsButton" Click="OnOpenSettings"/>
             <Button x:Name="GroupModeButton" Content="Group" Command="{Binding OpenGroupModeCommand}"/>
             <Button x:Name="RefreshButton" Content="Refresh" Command="{Binding RefreshStatusCommand}"/>
         </StackPanel>

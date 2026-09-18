@@ -32,7 +32,15 @@ public partial class MainWindow : Window
         AddServerButton.Content = AppStrings.AddServer;
         AddAccountButton.Content = AppStrings.AddAccount;
         GroupModeButton.Content = AppStrings.GroupMode;
+        SettingsButton.Content = AppStrings.Settings;
         SourceInitialized += OnSourceInitialized;
+    }
+
+    private void OnOpenSettings(object sender, RoutedEventArgs e)
+    {
+        var settings = new SettingsWindow(_state);
+        settings.Owner = this;
+        settings.ShowDialog();
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)

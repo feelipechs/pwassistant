@@ -30,9 +30,14 @@
   <data name="MiniMode" xml:space="preserve"><value>Mini-mode</value></data>
   <data name="FocusKeysHint" xml:space="preserve"><value>` alterna, toque de Shift troca as duas, numpad 1-9,0 seleciona (troca ligada).</value></data>
   <data name="FocusConfig" xml:space="preserve"><value>Teclas de troca de janela</value></data>
+  <data name="CycleKey" xml:space="preserve"><value>Tecla de ciclo</value></data>
   <data name="NumpadSelect" xml:space="preserve"><value>Seleção pelo numpad</value></data>
   <data name="ShiftTapToggle" xml:space="preserve"><value>Alternar com Shift</value></data>
   <data name="FocusKeysLive" xml:space="preserve"><value>{0} alterna, toque de Shift troca as duas, numpad 1-9,0 seleciona (troca ligada).</value></data>
+  <data name="Settings" xml:space="preserve"><value>Configurações</value></data>
+  <data name="Close" xml:space="preserve"><value>Fechar</value></data>
+  <data name="ArmingHint" xml:space="preserve"><value>A troca em si é ligada na janela mini-mode.</value></data>
+  <data name="GameSkillWarning" xml:space="preserve"><value>Esta tecla é usada pelo jogo para skills. Escolha só se religar as skills no jogo.</value></data>
   <data name="Loop" xml:space="preserve"><value>Loop</value></data>
   <data name="CaptureClick" xml:space="preserve"><value>Capturar posição de click</value></data>
   <data name="ClickOverlayHint" xml:space="preserve"><value>Clique uma vez na janela do jogo para capturar a posição.</value></data>
