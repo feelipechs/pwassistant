@@ -384,7 +384,4 @@ public sealed partial class GroupViewModel : ObservableObject
         MiniWindow mini = _miniWindowFactory();
         mini.Show();
     }
-
-    [RelayCommand]
-    private void CancelAll() => _dispatcher.CancelAll();
 }
