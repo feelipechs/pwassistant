@@ -28,7 +28,6 @@ public partial class MiniWindow : Window
         CollapseButton.Content = "–";
         SyncCheck.Content = Strings.SyncEnabled;
         FocusCheck.Content = Strings.FocusSwitch;
-        KeysLabel.Text = Strings.FocusKeysHint;
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
         _activeTracker = new DispatcherTimer(

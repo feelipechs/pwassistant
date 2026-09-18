@@ -150,3 +150,7 @@ Validar em cada item abaixo.
   (`focus-window-by-pid.exe` = `SetForegroundWindow`+`ShowWindow`+
   `keybd_event`; `play-preset-background.exe` = `PostMessage`, mesma
   filosofia do T1/C4).
+- **B4-config (2026-09-18):** tecla de ciclo configurável (conjunto
+  fechado: `` ` ``, F7–F12, Pause), numpad e Shift-toque ligáveis por
+  checkbox na janela Grupo; mini mostra a legenda com a tecla ativa.
+  Modo on/off segue sessão; config persiste em `AppData`.

@@ -29,8 +29,9 @@
 
 ## Próximo passo
 
-Validar: taskbar 2 botões, Fire⇄Parar, espelho do apelido, Play⇄Stop,
-remoções. Depois: B4-config (teclas configuráveis).
+Validar B4-config (trocar ciclo p/ F10, desligar numpad/shift,
+persistência). Depois: polimentos finais (Play→Stop já feito, dnd
+condicional, auto-refresh do grid).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
