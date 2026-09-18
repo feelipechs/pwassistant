@@ -20,6 +20,7 @@ public static class Strings
     public static string GroupMode => Get(nameof(GroupMode));
     public static string Presets => Get(nameof(Presets));
     public static string Fire => Get(nameof(Fire));
+    public static string Stop => Get(nameof(Stop));
     public static string Cancel => Get(nameof(Cancel));
     public static string CancelHint => Get(nameof(CancelHint));
     public static string Save => Get(nameof(Save));

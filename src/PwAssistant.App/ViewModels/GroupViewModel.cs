@@ -21,6 +21,12 @@ public sealed partial class MiniPresetRow : ObservableObject
 
     [ObservableProperty]
     private bool isLooping;
+
+    public string DisplayFireText => IsLooping
+        ? $"{AppStrings.Stop} {Name}"
+        : $"{AppStrings.Fire} {Name}";
+
+    partial void OnIsLoopingChanged(bool value) => OnPropertyChanged(nameof(DisplayFireText));
 }
 
 /// <summary>One group member row (online or offline) for management.</summary>
@@ -184,6 +190,13 @@ public sealed partial class GroupViewModel : ObservableObject
     private async Task FirePresetAsync(Preset? preset)
     {
         if (preset is null) return;
+        if (_loops.IsLooping(preset.Id))
+        {
+            _loops.Stop(preset.Id);
+            RefreshLoopStates();
+            StatusMessage = string.Empty;
+            return;
+        }
         try
         {
             StatusMessage = "...";
