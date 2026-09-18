@@ -99,6 +99,13 @@ internal static class NativeMethods
         IntPtr hwnd, ref Guid riid,
         [MarshalAs(UnmanagedType.Interface)] out object? propertyStore);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern IntPtr LoadImageW(
+        IntPtr hInstance, string fileName, uint type, int cx, int cy, uint fuLoad);
+
+    [DllImport("user32.dll")]
+    internal static extern IntPtr SendMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
     public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
