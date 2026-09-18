@@ -39,7 +39,7 @@ public partial class App : Application
             sp.GetRequiredService<IInputStrategy>(),
             id => sp.GetRequiredService<AppState>().ResolveTarget(id)));
         services.AddSingleton<MacroJobRunner>(sp => new MacroJobRunner(
-            (preset, jobId, ct) => sp.GetRequiredService<MacroExecutor>().ExecuteAsync(preset, jobId, ct)));
+            (preset, jobId, progress, ct) => sp.GetRequiredService<MacroExecutor>().ExecuteAsync(preset, jobId, progress, ct)));
         services.AddSingleton<PresetDispatcher>();
         services.AddSingleton<SyncController>();
         services.AddSingleton<FocusController>();

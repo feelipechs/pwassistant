@@ -15,6 +15,9 @@ public sealed record PresetExecutionResult(
     bool Canceled,
     IReadOnlyList<AccountExecutionResult> Accounts);
 
+/// <summary>Live per-account progress: 1-based index over the preset order.</summary>
+public sealed record PresetProgress(int Index, int Total, Guid AccountId, bool Skipped);
+
 /// <summary>
 /// Dispatches a preset to live game windows. Offline accounts are skipped
 /// with a log entry — the batch never aborts. DOWN/UP pairs inside the
@@ -32,27 +35,37 @@ public sealed class MacroExecutor
     }
 
     public async Task<PresetExecutionResult> ExecuteAsync(
-        Preset preset, Guid jobId, CancellationToken cancellationToken = default)
+        Preset preset, Guid jobId,
+        IProgress<PresetProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(preset);
 
         if (preset.ExecutionMode == ExecutionMode.Simultaneous)
-            return await ExecuteSimultaneousAsync(preset, jobId, cancellationToken).ConfigureAwait(false);
+            return await ExecuteSimultaneousAsync(preset, jobId, progress, cancellationToken).ConfigureAwait(false);
 
         var results = new List<AccountExecutionResult>();
+        int index = 0;
         foreach (AccountAction accountAction in preset.Actions)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            results.Add(await ExecuteSingleAsync(accountAction, cancellationToken).ConfigureAwait(false));
+            AccountExecutionResult result = await ExecuteSingleAsync(accountAction, cancellationToken).ConfigureAwait(false);
+            results.Add(result);
+            progress?.Report(new PresetProgress(++index, preset.Actions.Count, result.AccountId, result.Skipped));
         }
         return new PresetExecutionResult(jobId, preset.Id, false, results);
     }
 
     private async Task<PresetExecutionResult> ExecuteSimultaneousAsync(
-        Preset preset, Guid jobId, CancellationToken cancellationToken)
+        Preset preset, Guid jobId,
+        IProgress<PresetProgress>? progress, CancellationToken cancellationToken)
     {
         Task<AccountExecutionResult>[] tasks = preset.Actions
-            .Select(accountAction => ExecuteSingleAsync(accountAction, cancellationToken))
+            .Select(async (accountAction, index) =>
+            {
+                AccountExecutionResult result = await ExecuteSingleAsync(accountAction, cancellationToken).ConfigureAwait(false);
+                progress?.Report(new PresetProgress(index + 1, preset.Actions.Count, result.AccountId, result.Skipped));
+                return result;
+            })
             .ToArray();
 
         AccountExecutionResult[] results;

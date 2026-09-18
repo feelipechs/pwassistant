@@ -162,8 +162,14 @@ public sealed partial class GroupViewModel : ObservableObject
         {
             StatusMessage = "...";
             var countdown = new Progress<int>(left => StatusMessage = left.ToString());
+            var names = _state.Data.Servers
+                .SelectMany(s => s.Accounts)
+                .ToDictionary(a => a.Id, a => string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role);
+            var fire = new Progress<PresetProgress>(p =>
+                StatusMessage = $"{p.Index}/{p.Total} ({(names.TryGetValue(p.AccountId, out string? n) ? n : "?")})"
+                    + (p.Skipped ? " skipped" : ""));
             PresetExecutionResult result = await _dispatcher.FireAsync(
-                preset, countdownSeconds: 3, countdown).ConfigureAwait(false);
+                preset, countdownSeconds: 3, countdown, fire).ConfigureAwait(false);
 
             int fired = result.Accounts.Count(r => !r.Skipped);
             int skipped = result.Accounts.Count(r => r.Skipped);

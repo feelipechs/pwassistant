@@ -21,10 +21,11 @@ public sealed class PresetDispatcher
         Preset preset,
         int countdownSeconds = 3,
         IProgress<int>? countdown = null,
+        IProgress<PresetProgress>? fireProgress = null,
         CancellationToken cancellationToken = default)
     {
         await Countdown.RunAsync(countdownSeconds, countdown, cancellationToken).ConfigureAwait(false);
-        return await _runner.ExecuteAsync(preset, cancellationToken).ConfigureAwait(false);
+        return await _runner.ExecuteAsync(preset, fireProgress, cancellationToken).ConfigureAwait(false);
     }
 
     public void CancelAll() => _runner.CancelAll();

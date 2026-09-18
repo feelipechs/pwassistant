@@ -153,6 +153,30 @@ public sealed class MacroExecutorTests
         Assert.Equal(MouseButton.Right, call.Button);
     }
 
+    private sealed class CollectProgress : IProgress<PresetProgress>
+    {
+        public List<PresetProgress> Seen { get; } = new();
+        public void Report(PresetProgress value)
+        {
+            lock (Seen) Seen.Add(value);
+        }
+    }
+
+    [Fact]
+    public async Task Sequential_ReportsProgressPerAccount()
+    {
+        var strategy = new FakeStrategy();
+        var executor = new MacroExecutor(strategy, Resolver(AccountA, AccountB));
+        var progress = new CollectProgress();
+
+        await executor.ExecuteAsync(
+            TwoAccountPreset(ExecutionMode.Sequential), Guid.NewGuid(), progress);
+
+        Assert.Equal(2, progress.Seen.Count);
+        Assert.Equal([1, 2], progress.Seen.Select(p => p.Index));
+        Assert.All(progress.Seen, p => Assert.Equal(2, p.Total));
+    }
+
     [Fact]
     public async Task StrategyError_IsCaptured_DoesNotThrow()
     {
@@ -179,7 +203,7 @@ public sealed class MacroExecutorTests
         cts.Cancel();
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            executor.ExecuteAsync(TwoAccountPreset(ExecutionMode.Sequential), Guid.NewGuid(), cts.Token));
+            executor.ExecuteAsync(TwoAccountPreset(ExecutionMode.Sequential), Guid.NewGuid(), cancellationToken: cts.Token));
     }
 
     [Fact]
@@ -188,7 +212,8 @@ public sealed class MacroExecutorTests
         var gate = new TaskCompletionSource();
         var executor = new MacroExecutor(
             new BlockingStrategy(gate), Resolver(AccountA));
-        using var runner = new MacroJobRunner(executor.ExecuteAsync);
+        using var runner = new MacroJobRunner(
+            (preset, jobId, progress, ct) => executor.ExecuteAsync(preset, jobId, progress, ct));
 
         var preset = new Preset
         {

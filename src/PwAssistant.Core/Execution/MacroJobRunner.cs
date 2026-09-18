@@ -9,17 +9,21 @@ namespace PwAssistant.Core.Execution;
 /// </summary>
 public sealed class MacroJobRunner : IDisposable
 {
-    private readonly Func<Preset, Guid, CancellationToken, Task<PresetExecutionResult>> _execute;
+    private readonly Func<Preset, Guid, IProgress<PresetProgress>?, CancellationToken, Task<PresetExecutionResult>> _execute;
     private readonly Dictionary<Guid, CancellationTokenSource> _jobs = new();
     private readonly object _gate = new();
     private bool _disposed;
 
-    public MacroJobRunner(Func<Preset, Guid, CancellationToken, Task<PresetExecutionResult>> execute)
+    public MacroJobRunner(Func<Preset, Guid, IProgress<PresetProgress>?, CancellationToken, Task<PresetExecutionResult>> execute)
     {
         _execute = execute ?? throw new ArgumentNullException(nameof(execute));
     }
 
-    public async Task<PresetExecutionResult> ExecuteAsync(Preset preset, CancellationToken callerToken = default)
+    public Task<PresetExecutionResult> ExecuteAsync(Preset preset, CancellationToken callerToken = default) =>
+        ExecuteAsync(preset, progress: null, callerToken);
+
+    public async Task<PresetExecutionResult> ExecuteAsync(
+        Preset preset, IProgress<PresetProgress>? progress, CancellationToken callerToken = default)
     {
         ArgumentNullException.ThrowIfNull(preset);
         var jobId = Guid.NewGuid();
@@ -33,7 +37,7 @@ public sealed class MacroJobRunner : IDisposable
 
         try
         {
-            return await _execute(preset, jobId, cts.Token).ConfigureAwait(false);
+            return await _execute(preset, jobId, progress, cts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
