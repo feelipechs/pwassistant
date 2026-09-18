@@ -17,7 +17,7 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
 
 - C# / .NET 8 + WPF. Testes: xUnit. SO de execução/validade: **Windows**
   (WinAPI + jogo não rodam no Linux).
-- Comandos: `dotnet build ditto.sln`, `dotnet test`, `dotnet publish` (detalhes
+- Comandos: `dotnet build pwassistant.sln`, `dotnet test`, `dotnet publish` (detalhes
   por marco). PowerShell 5.1 nos scripts de prova (`tools/provas-winapi/`).
 
 ## Idioma e estilo (convenção do repo)
@@ -38,7 +38,7 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
 1. **Sem driver kernel, sem injeção/DLL no jogo, sem `SendInput` como padrão.**
    Caminho único do v1: `PostMessage` com priming (receita exata no
    `doc/04-arquitetura.md` + skill `pw-winapi`).
-2. **Todo P/Invoke em `src/PwHelper.WinApi`.** Nenhum `DllImport` fora dele.
+2. **Todo P/Invoke em `src/PwAssistant.WinApi`.** Nenhum `DllImport` fora dele.
    `Core` não conhece WinAPI (fala por `IInputStrategy`/`IWindowTarget`).
 3. **Alvo sempre PID → HWND via `EnumWindows`.** Nunca `MainWindowHandle`
    cacheado, nunca título como chave, nunca broadcast cego (só HWNDs de PIDs
@@ -85,7 +85,7 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
 
 ## Fim de sessão (obrigatório se mexeu no repo)
 
-1. `dotnet build ditto.sln` + `dotnet test` verdes (ou registrar o que quebrou).
+1. `dotnet build pwassistant.sln` + `dotnet test` verdes (ou registrar o que quebrou).
 2. Commits por etapa/bloco concluído (regra acima).
 3. Reescrever `doc/HANDOFF.md` neste template, sempre curto (história fica
    no git log, nunca em prosa acumulada). Sessão só-leitura não precisa disso.

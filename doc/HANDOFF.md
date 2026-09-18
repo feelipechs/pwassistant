@@ -19,7 +19,7 @@
   reativo (`NotifyPropertyChangedFor`).
 - `dotnet build` 0 erros/warnings; `dotnet test` 31/31 (runtime .NET 8
   lado a lado).
-- `DllImport` só em `PwHelper.WinApi` (lei nº 2).
+- `DllImport` só em `PwAssistant.WinApi` (lei nº 2).
 
 ## Pronto (código, pendente de jogo/Windows)
 

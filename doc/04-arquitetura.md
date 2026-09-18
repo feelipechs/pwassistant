@@ -1,4 +1,4 @@
-# Arquitetura — ditto (PW Launcher/Helper próprio)
+# Arquitetura — ditto (PW Assistant próprio)
 
 Decisões travadas por prova real (ver `03-pesquisa-e-validacoes.md` item 1 e
 `HANDOFF.md`): input sem foco via `PostMessage` com priming de ativação.
@@ -7,11 +7,11 @@ Sem driver, sem injeção, sem foco real, sem flicker.
 ## Solução e projetos (.NET 8, C#)
 
 ```
-ditto.sln
-├─ src/PwHelper.Core    → models, regras, MacroExecutor, SyncService, storage (SEM WinAPI)
-├─ src/PwHelper.WinApi  → TODO P/Invoke isolado (único projeto que referencia user32)
-└─ src/PwHelper.App     → WPF + MVVM (depende de Core e WinApi)
-tests/PwHelper.Core.Tests → xUnit, só lógica sem WinAPI/jogo
+pwassistant.sln
+├─ src/PwAssistant.Core    → models, regras, MacroExecutor, SyncService, storage (SEM WinAPI)
+├─ src/PwAssistant.WinApi  → TODO P/Invoke isolado (único projeto que referencia user32)
+└─ src/PwAssistant.App     → WPF + MVVM (depende de Core e WinApi)
+tests/PwAssistant.Core.Tests → xUnit, só lógica sem WinAPI/jogo
 ```
 
 Regras de dependência (valem para IA e revisões):

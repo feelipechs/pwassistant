@@ -1,4 +1,4 @@
-# PW Launcher/Helper — Visão Geral
+# PW Assistant — Visão Geral
 
 ## Objetivo
 
@@ -55,9 +55,9 @@ limitada para o CRUD/Modo Grupo e stacks com distribuição inferior a um
 ## Camadas do projeto (proposta)
 
 ```
-PwHelper.Core     → models, lógica de negócio, storage (sem dependência de WinAPI)
-PwHelper.WinApi   → wrapper isolado de P/Invoke (FindWindow, PostMessage, etc.)
-PwHelper.App      → WPF, telas, viewmodels (MVVM)
+PwAssistant.Core     → models, lógica de negócio, storage (sem dependência de WinAPI)
+PwAssistant.WinApi   → wrapper isolado de P/Invoke (FindWindow, PostMessage, etc.)
+PwAssistant.App      → WPF, telas, viewmodels (MVVM)
 ```
 
 Separar `WinApi` do `Core` é proposital: se a estratégia de input mudar

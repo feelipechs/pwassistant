@@ -10,9 +10,9 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 - Resultado: teclas e UI-clicks sem foco via priming (T1/C4); chão 3D fora.
 - Aceite: F1 toggle 3/3 sem foco em 2 PIDs + UI-click (Sim/Não) sem foco. ✅
 
-## M1 — `PwHelper.WinApi` + console de validação
+## M1 — `PwAssistant.WinApi` + console de validação
 
-- Escopo: solução `ditto.sln`; `PwHelper.WinApi` com `EnumWindows→HWND`,
+- Escopo: solução `pwassistant.sln`; `PwAssistant.WinApi` com `EnumWindows→HWND`,
   `MapVirtualKey`, `PostMessageBackgroundStrategy` (receita exata do
   `04-arquitetura.md`: prime T1 / prime C4 / higiene `WA_INACTIVE`); console
   `tools`-like que replica T1 (tecla) e C4 (UI-click) contra 2 PIDs reais.
@@ -20,15 +20,15 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   observados no jogo; nenhum `DllImport` fora do `WinApi` (`grep` comprova).
 - Pré-requisito: SDK .NET 8 instalado no Windows.
 - **Status (2026-09-16):** código implementado no Linux
-  (`src/PwHelper.WinApi`, `src/PwHelper.Probe`); `dotnet build` + `grep`
+  (`src/PwAssistant.WinApi`, `src/PwAssistant.Probe`); `dotnet build` + `grep`
   verdes. Aceite contra o jogo real **pendente no Windows**:
-  `PwHelper.Probe key --pid <pid> --key F1` e
-  `PwHelper.Probe click --pid <pid> --x <cx> --y <cy>`.
+  `PwAssistant.Probe key --pid <pid> --key F1` e
+  `PwAssistant.Probe click --pid <pid> --x <cx> --y <cy>`.
 - **Aceite (2026-09-17, Windows):** ✅ `Probe key --pid 2992/7688 --key F1`
   (montaria) 3/3 em cada PID sem foco + `Probe click --x 1343 --y 305`
   (fechar inventário) 1/1 em cada PID sem foco.
 
-## M2 — `PwHelper.Core` (models + storage)
+## M2 — `PwAssistant.Core` (models + storage)
 
 - Escopo: models verbatim do `01-modelo-dados-e-telas.md` + `05-regras`;
   storage JSON único com segredos AES (decidir: senha mestra vs DPAPI —
@@ -39,7 +39,7 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   Sem senha para digitar; chave guardada pelo Windows, amarrada ao
   usuário/máquina. Contrato atrás de `ISecretProtector` para permitir troca
   futura sem reescrever o storage.
-- **Status (2026-09-16):** implementado (`src/PwHelper.Core` + 30 testes
+- **Status (2026-09-16):** implementado (`src/PwAssistant.Core` + 30 testes
   xUnit verdes no Linux).
 
 ## M3 — `MacroExecutor` + presets
@@ -73,13 +73,13 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   por clique). Harness novo: `probe sync` (hook + `MessageLoop` no
   `WinApi`, fan-out no Probe, sem principal fixo).
 
-## M5 — `PwHelper.App` (WPF/MVVM)
+## M5 — `PwAssistant.App` (WPF/MVVM)
 
 - Escopo: shell (servidores + cards + play via `startbypatcher` com polling
   de HWND), CRUD servidor/conta, Modo Grupo (grid online + botões de preset).
 - Aceite: fluxo completo sem foco do app: login 2 contas → preset → Sync,
   tudo observável no jogo; overlay de captura de posição funcional.
-- **Status (2026-09-16):** `PwHelper.App` (WPF/MVVM + DI, `MainWindow`,
+- **Status (2026-09-16):** `PwAssistant.App` (WPF/MVVM + DI, `MainWindow`,
   `GroupWindow`, diálogos, overlay, `.resx` pt-BR) implementado; compila e
   publica `win-x64` self-contained a partir do Linux. Aceite funcional
   **pendente no Windows**.

@@ -1,0 +1,73 @@
+<Window x:Class="PwAssistant.App.Views.PresetEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:PwAssistant.Core.Models;assembly=PwAssistant.Core"
+        xmlns:res="clr-namespace:PwAssistant.App.Resources"
+        Title="Preset" Height="450" Width="860" WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}" Foreground="White">
+    <DockPanel Margin="12">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Save" Click="OnSave"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="NameCaption" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox x:Name="NameBox" Width="220" Margin="0,0,16,0"/>
+                <TextBlock x:Name="HotkeyCaption" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock x:Name="HotkeyValueLabel" Width="160" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Button x:Name="RecordHotkeyButton" Click="OnRecordHotkey"/>
+            </StackPanel>
+            <TextBlock x:Name="HotkeyHintLabel" Margin="0,4,0,0" FontStyle="Italic" FontSize="11" TextWrapping="Wrap"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="AddCommandButton" Click="OnAddCommand" Margin="0,0,8,0"/>
+                <Button x:Name="AddClickButton" Click="OnAddClick"/>
+            </StackPanel>
+            <TextBlock x:Name="ErrorLabel" Margin="0,4,0,0" FontStyle="Italic" FontSize="11" Foreground="Tomato"/>
+        </StackPanel>
+        <ListBox x:Name="ActionList">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox Width="170" Margin="0,0,8,0"
+                                  ItemsSource="{Binding DataContext.MemberAccounts, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  DisplayMemberPath="DisplayName"
+                                  SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"/>
+                        <ComboBox Width="80" Margin="0,0,8,0"
+                                  ItemsSource="{Binding DataContext.ActionTypes, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  SelectedItem="{Binding Type, Mode=TwoWay}"/>
+                        <ComboBox x:Name="RowKeyBox" Width="90" Margin="0,0,8,0"
+                                  ItemsSource="{Binding DataContext.AvailableKeys, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  SelectedItem="{Binding Key, Mode=TwoWay}"/>
+                        <Button x:Name="RowCaptureButton" Click="OnCaptureRow" Margin="0,0,8,0"
+                                Content="{x:Static res:Strings.CaptureClick}"/>
+                        <ComboBox x:Name="RowButtonBox" Width="90" Margin="0,0,8,0"
+                                  ItemsSource="{Binding DataContext.MouseButtons, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  SelectedItem="{Binding Button, Mode=TwoWay}"/>
+                        <TextBlock x:Name="RowPositionText" Width="130" Margin="0,0,8,0" VerticalAlignment="Center"
+                                   Text="{Binding PositionLabel}"/>
+                        <TextBox Width="70" Margin="0,0,8,0" ToolTip="{x:Static res:Strings.DelayMs}"
+                                 Text="{Binding DelayBeforeMs, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+                        <Button Click="OnDuplicateRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Duplicate}">⧉</Button>
+                        <Button Click="OnRemoveRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Delete}">✕</Button>
+                        <Button Click="OnMoveRowUp" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.MoveUp}">↑</Button>
+                        <Button Click="OnMoveRowDown" ToolTip="{x:Static res:Strings.MoveDown}">↓</Button>
+                    </StackPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Type}" Value="{x:Static models:ActionType.Key}">
+                            <Setter TargetName="RowCaptureButton" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="RowPositionText" Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Type}" Value="{x:Static models:ActionType.Click}">
+                            <Setter TargetName="RowKeyBox" Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Type}" Value="{x:Static models:ActionType.Key}">
+                            <Setter TargetName="RowButtonBox" Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>
