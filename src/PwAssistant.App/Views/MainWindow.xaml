@@ -36,14 +36,32 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Margin="0,0,0,8" Padding="8">
-                            <StackPanel Orientation="Horizontal">
-                                <StackPanel Width="250">
-                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding StatusText}"/>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel Width="250">
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding StatusText}"/>
+                                    </StackPanel>
+                                    <Button Content="Play"
+                                            Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Content="{Binding DataContext.EditText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            Command="{Binding DataContext.EditAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Content="{Binding DataContext.DeleteText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            Command="{Binding DataContext.DeleteAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"/>
                                 </StackPanel>
-                                <Button Content="Play"
-                                        Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock Text="{Binding Model.Login}" Width="150" VerticalAlignment="Center"/>
+                                    <Button Content="{Binding DataContext.CopyText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            Command="{Binding DataContext.CopyLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"/>
+                                    <TextBlock Text="•••" Width="60" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                    <Button Content="{Binding DataContext.CopyText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>

@@ -52,6 +52,7 @@
   <data name="InvalidDelay" xml:space="preserve"><value>Delay deve ser 0 ms ou mais.</value></data>
   <data name="Edit" xml:space="preserve"><value>Editar</value></data>
   <data name="Delete" xml:space="preserve"><value>Excluir</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copiar</value></data>
   <data name="AddCommand" xml:space="preserve"><value>Adicionar comando</value></data>
   <data name="AddClick" xml:space="preserve"><value>Adicionar clique</value></data>
   <data name="Duplicate" xml:space="preserve"><value>Duplicar linha</value></data>

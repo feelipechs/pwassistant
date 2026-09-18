@@ -58,6 +58,7 @@ public static class Strings
     public static string InvalidDelay => Get(nameof(InvalidDelay));
     public static string Edit => Get(nameof(Edit));
     public static string Delete => Get(nameof(Delete));
+    public static string Copy => Get(nameof(Copy));
     public static string AddCommand => Get(nameof(AddCommand));
     public static string AddClick => Get(nameof(AddClick));
     public static string Duplicate => Get(nameof(Duplicate));

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PwAssistant.App.Services;
@@ -50,6 +51,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private string statusMessage = string.Empty;
+
+    public string EditText => AppStrings.Edit;
+    public string DeleteText => AppStrings.Delete;
+    public string CopyText => AppStrings.Copy;
 
     public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, IServiceProvider services)
     {
@@ -172,6 +177,52 @@ public sealed partial class MainViewModel : ObservableObject
         {
             // Process already gone; status refresh will show it offline.
         }
+    }
+
+    [RelayCommand]
+    private async Task EditAccountAsync(AccountCard? card)
+    {
+        if (card is null || SelectedServer is null) return;
+        var dialog = new AccountDialog { RequirePassword = false };
+        dialog.Prefill(card.Model.Login, card.Model.Role);
+        if (dialog.ShowDialog() != true) return;
+        card.Model.Login = dialog.Login;
+        card.Model.Role = dialog.Role;
+        if (!string.IsNullOrEmpty(dialog.Password))
+            _state.SetPassword(card.Model, dialog.Password);
+        await _state.SaveAsync().ConfigureAwait(false);
+        App.Current.Dispatcher.Invoke(() => OnSelectedServerChanged(SelectedServer));
+    }
+
+    [RelayCommand]
+    private async Task DeleteAccountAsync(AccountCard? card)
+    {
+        if (card is null || SelectedServer is null) return;
+        Guid id = card.Model.Id;
+        SelectedServer.Accounts.Remove(card.Model);
+        foreach (Group group in _state.Data.Groups)
+            group.AccountIds.Remove(id);
+        foreach (Preset preset in _state.Data.Presets)
+            preset.Actions.RemoveAll(a => a.AccountId == id);
+        await _state.SaveAsync().ConfigureAwait(false);
+        App.Current.Dispatcher.Invoke(() => OnSelectedServerChanged(SelectedServer));
+    }
+
+    [RelayCommand]
+    private void CopyLogin(AccountCard? card)
+    {
+        if (card is null) return;
+        // Clipboard is readable by other apps; same exposure as in-memory
+        // reveal at dispatch. Standard manager behavior, user-initiated.
+        Clipboard.SetText(card.Model.Login);
+    }
+
+    [RelayCommand]
+    private void CopyPassword(AccountCard? card)
+    {
+        if (card is null) return;
+        // See CopyLogin re clipboard exposure.
+        Clipboard.SetText(_state.RevealPassword(card.Model));
     }
 
     [RelayCommand]
