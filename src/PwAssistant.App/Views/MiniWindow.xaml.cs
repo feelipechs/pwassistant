@@ -3,6 +3,7 @@ using System.Windows.Threading;
 using PwAssistant.App.Resources;
 using PwAssistant.App.ViewModels;
 using PwAssistant.Core.Input;
+using PwAssistant.WinApi;
 
 namespace PwAssistant.App.Views;
 
@@ -37,6 +38,14 @@ public partial class MiniWindow : Window
             Dispatcher);
         _activeTracker.Start();
         Closed += (_, _) => _activeTracker.Stop();
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        IntPtr handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        if (handle != IntPtr.Zero)
+            WindowFocus.PreventActivation(handle);
     }
 
     /// <summary>Highlights the member owning the foreground window.</summary>

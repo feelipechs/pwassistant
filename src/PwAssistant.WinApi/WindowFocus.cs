@@ -10,6 +10,18 @@ public static class WindowFocus
     private const int SW_RESTORE = 9;
     private const byte VK_MENU = 0x12;
     private const uint KEYEVENTF_KEYUP = 0x0002;
+    private const int GWL_EXSTYLE = -20;
+    private static readonly IntPtr WS_EX_NOACTIVATE = (IntPtr)0x08000000;
+
+    /// <summary>
+    /// Makes a floating window never steal activation: mouse clicks reach
+    /// its controls while the previous foreground window keeps the keyboard.
+    /// </summary>
+    public static void PreventActivation(IntPtr windowHandle)
+    {
+        IntPtr style = NativeMethods.GetWindowLongPtr(windowHandle, GWL_EXSTYLE);
+        NativeMethods.SetWindowLongPtr(windowHandle, GWL_EXSTYLE, (IntPtr)(style.ToInt64() | WS_EX_NOACTIVATE.ToInt64()));
+    }
 
     public static bool BringToFront(IntPtr windowHandle)
     {
