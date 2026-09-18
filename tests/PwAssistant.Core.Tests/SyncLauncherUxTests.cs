@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using PwAssistant.Core.Launcher;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Sync;
@@ -92,34 +91,13 @@ public sealed class GameLauncherTests
     }
 
     [Fact]
-    public void ShortcutDefinition_IsUniquePerAccount_AndMirrorsArguments()
+    public void TaskbarAppId_IsUniquePerAccount()
     {
-        var server = new Server { ElementClientPath = @"C:\pw\elementclient.exe" };
-        var first = new Account { Login = "a", Role = "A" };
-        var second = new Account { Login = "b", Role = "B" };
+        string one = TaskbarAppId.ForAccount(Guid.NewGuid());
+        string two = TaskbarAppId.ForAccount(Guid.NewGuid());
 
-        ShortcutDefinition one = GameLauncher.BuildShortcutDefinition(server, first, "pw", @"C:\clients");
-        ShortcutDefinition two = GameLauncher.BuildShortcutDefinition(server, second, "pw", @"C:\clients");
-
-        Assert.EndsWith(".lnk", one.ShortcutPath);
-        Assert.NotEqual(one.ShortcutPath, two.ShortcutPath);
-        Assert.NotEqual(one.AppUserModelId, two.AppUserModelId);
-        Assert.Equal(
-            GameLauncher.BuildStartInfo(server, first, "pw").Arguments,
-            one.Arguments);
-    }
-
-    [Fact]
-    public void ShortcutStartInfo_UsesShellExecute()
-    {
-        var definition = new ShortcutDefinition(
-            @"C:\clients\x.lnk", @"C:\pw\elementclient.exe",
-            "startbypatcher", @"C:\pw", "PwAssistant.Client.x", @"C:\pw\elementclient.exe");
-
-        ProcessStartInfo info = GameLauncher.BuildShortcutStartInfo(definition);
-
-        Assert.Equal(definition.ShortcutPath, info.FileName);
-        Assert.True(info.UseShellExecute);
+        Assert.StartsWith("PwAssistant.Client.", one);
+        Assert.NotEqual(one, two);
     }
 
     [Fact]

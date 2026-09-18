@@ -43,9 +43,7 @@ public partial class App : Application
             AppState.DefaultFilePath()));
         services.AddSingleton(sp => new GameLauncher(
             sp.GetRequiredService<IWindowResolver>(),
-            def => ShortcutCreator.EnsureShortcut(
-                def.ShortcutPath, def.TargetPath, def.Arguments,
-                def.WorkingDirectory, def.AppUserModelId, def.IconLocation)));
+            (hwnd, accountId) => TaskbarIdentity.TrySetAppId(hwnd, TaskbarAppId.ForAccount(accountId))));
         services.AddSingleton<MacroExecutor>(sp => new MacroExecutor(
             sp.GetRequiredService<IInputStrategy>(),
             id => sp.GetRequiredService<AppState>().ResolveTarget(id)));

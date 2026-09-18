@@ -8,18 +8,11 @@ namespace PwAssistant.Core.Launcher;
 /// <summary>Live session spawned by the launcher for one account.</summary>
 public sealed record GameSession(Guid AccountId, int ProcessId, DateTimeOffset StartedAt);
 
-/// <summary>
-/// Per-account shortcut definition. Launching through a .lnk with a
-/// distinct AppUserModelID gives each client its own taskbar button.
-/// Pure data — the App layer materializes the file via WinApi.
-/// </summary>
-public sealed record ShortcutDefinition(
-    string ShortcutPath,
-    string TargetPath,
-    string Arguments,
-    string WorkingDirectory,
-    string AppUserModelId,
-    string IconLocation);
+/// <summary>Taskbar identity per account (one button per client).</summary>
+public static class TaskbarAppId
+{
+    public static string ForAccount(Guid accountId) => $"PwAssistant.Client.{accountId:N}";
+}
 
 /// <summary>
 /// Spawns elementclient.exe with startbypatcher credentials and polls for
@@ -29,12 +22,12 @@ public sealed record ShortcutDefinition(
 public sealed class GameLauncher
 {
     private readonly IWindowResolver _resolver;
-    private readonly Action<ShortcutDefinition>? _ensureShortcut;
+    private readonly Action<IntPtr, Guid>? _windowReady;
 
-    public GameLauncher(IWindowResolver resolver, Action<ShortcutDefinition>? ensureShortcut = null)
+    public GameLauncher(IWindowResolver resolver, Action<IntPtr, Guid>? windowReady = null)
     {
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
-        _ensureShortcut = ensureShortcut;
+        _windowReady = windowReady;
     }
 
     public static ProcessStartInfo BuildStartInfo(Server server, Account account, string plaintextPassword)
@@ -57,32 +50,6 @@ public sealed class GameLauncher
         };
     }
 
-    public static string DefaultClientsDirectory() => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "PwAssistant", "clients");
-
-    public static ShortcutDefinition BuildShortcutDefinition(
-        Server server, Account account, string plaintextPassword, string clientsDirectory)
-    {
-        ProcessStartInfo direct = BuildStartInfo(server, account, plaintextPassword);
-        return new ShortcutDefinition(
-            ShortcutPath: Path.Combine(clientsDirectory, $"{account.Id:N}.lnk"),
-            TargetPath: server.ElementClientPath,
-            Arguments: direct.Arguments,
-            WorkingDirectory: direct.WorkingDirectory,
-            AppUserModelId: $"PwAssistant.Client.{account.Id:N}",
-            IconLocation: server.ElementClientPath);
-    }
-
-    public static ProcessStartInfo BuildShortcutStartInfo(ShortcutDefinition definition) =>
-        new()
-        {
-            // .lnk execution requires the shell: WorkingDirectory and icon
-            // come from the shortcut file itself.
-            FileName = definition.ShortcutPath,
-            UseShellExecute = true,
-        };
-
     public async Task<GameSession> LaunchAsync(
         Server server,
         Account account,
@@ -90,18 +57,7 @@ public sealed class GameLauncher
         TimeSpan windowTimeout,
         CancellationToken cancellationToken = default)
     {
-        ProcessStartInfo startInfo;
-        if (_ensureShortcut is null)
-        {
-            startInfo = BuildStartInfo(server, account, plaintextPassword);
-        }
-        else
-        {
-            ShortcutDefinition definition = BuildShortcutDefinition(
-                server, account, plaintextPassword, DefaultClientsDirectory());
-            _ensureShortcut(definition);
-            startInfo = BuildShortcutStartInfo(definition);
-        }
+        ProcessStartInfo startInfo = BuildStartInfo(server, account, plaintextPassword);
         Process? process = Process.Start(startInfo)
             ?? throw new InvalidOperationException("Failed to start the game client.");
 
@@ -110,6 +66,7 @@ public sealed class GameLauncher
             IntPtr hwnd = await WaitForWindowAsync(
                 process.Id, windowTimeout, cancellationToken).ConfigureAwait(false);
 
+            _windowReady?.Invoke(hwnd, account.Id);
             account.ProcessId = process.Id;
             account.WindowHandle = hwnd;
             return new GameSession(account.Id, process.Id, DateTimeOffset.UtcNow);

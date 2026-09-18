@@ -94,6 +94,11 @@ internal static class NativeMethods
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
     internal static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 
+    [DllImport("shell32.dll")]
+    internal static extern int SHGetPropertyStoreForWindow(
+        IntPtr hwnd, ref Guid riid,
+        [MarshalAs(UnmanagedType.Interface)] out object? propertyStore);
+
     public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
