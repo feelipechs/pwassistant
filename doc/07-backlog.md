@@ -85,6 +85,12 @@ Validar em cada item abaixo.
   só com botões de preset + liga/desliga do Sync.
 - Aceite: jogável ao lado do client sem atrapalhar; config completa
   continua na janela normal.
+- **Aceite (2026-09-18, Windows):** ✅ compacta `Topmost` colapsável com
+  Fire + Sync + legenda B4; lista de membros com a conta ativa destacada
+  (poll 500 ms); Fire/toggles sem roubar foco (`Focusable=False`,
+  1 clique); toggles moram só no mini; `Cancelar disparos` com tooltip.
+  B4-config (teclas configuráveis) vira item futuro, conjunto fixo
+  documentado no B4.
 
 ## B4 — Troca de janela por tecla (foco explícito a pedido)
 

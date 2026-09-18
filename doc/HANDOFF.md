@@ -29,8 +29,9 @@
 
 ## Próximo passo
 
-B3 mini-mode (compacta, Topmost, botões de preset + Sync + legenda das
-teclas B4). B1/B1b/B2/B2d/B4 aceitos.
+Backlog esgotado no escopo combinado (M1–M6, B1/B1b/B2/B2d/B3/B4 aceitos).
+Futuro: B4-config (teclas configuráveis), polimentos (Play→Stop, dnd
+condicional, auto-refresh do grid por evento).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
