@@ -41,7 +41,11 @@ public partial class App : Application
             sp.GetRequiredService<IAccountStore>(),
             sp.GetRequiredService<IWindowResolver>(),
             AppState.DefaultFilePath()));
-        services.AddSingleton<GameLauncher>();
+        services.AddSingleton(sp => new GameLauncher(
+            sp.GetRequiredService<IWindowResolver>(),
+            def => ShortcutCreator.EnsureShortcut(
+                def.ShortcutPath, def.TargetPath, def.Arguments,
+                def.WorkingDirectory, def.AppUserModelId, def.IconLocation)));
         services.AddSingleton<MacroExecutor>(sp => new MacroExecutor(
             sp.GetRequiredService<IInputStrategy>(),
             id => sp.GetRequiredService<AppState>().ResolveTarget(id)));
