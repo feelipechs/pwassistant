@@ -8,11 +8,18 @@ namespace PwAssistant.Core.Launcher;
 /// <summary>Live session spawned by the launcher for one account.</summary>
 public sealed record GameSession(Guid AccountId, int ProcessId, DateTimeOffset StartedAt);
 
-/// <summary>Taskbar identity per account (one button per client).</summary>
-public static class TaskbarAppId
-{
-    public static string ForAccount(Guid accountId) => $"PwAssistant.Client.{accountId:N}";
-}
+/// <summary>
+/// Per-account launch shortcut (target + args + working dir + icon).
+/// The taskbar associates each client with its own shortcut file,
+/// yielding one button per account (proven by manual experiment).
+/// Pure data — the App layer materializes the file via WinApi.
+/// </summary>
+public sealed record ShortcutDefinition(
+    string ShortcutPath,
+    string TargetPath,
+    string Arguments,
+    string WorkingDirectory,
+    string IconLocation);
 
 /// <summary>
 /// Spawns elementclient.exe with startbypatcher credentials and polls for
@@ -22,10 +29,12 @@ public static class TaskbarAppId
 public sealed class GameLauncher
 {
     private readonly IWindowResolver _resolver;
+    private readonly Action<ShortcutDefinition>? _ensureShortcut;
 
-    public GameLauncher(IWindowResolver resolver)
+    public GameLauncher(IWindowResolver resolver, Action<ShortcutDefinition>? ensureShortcut = null)
     {
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
+        _ensureShortcut = ensureShortcut;
     }
 
     public static ProcessStartInfo BuildStartInfo(Server server, Account account, string plaintextPassword)
@@ -48,6 +57,38 @@ public sealed class GameLauncher
         };
     }
 
+    public static string DefaultClientsDirectory() => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "PwAssistant", "clients");
+
+    public static string IconDirectory() => Path.Combine(
+        AppContext.BaseDirectory, "Resources", "Classes");
+
+    public static ShortcutDefinition BuildShortcutDefinition(
+        Server server, Account account, string plaintextPassword,
+        string clientsDirectory, string iconDirectory)
+    {
+        ProcessStartInfo direct = BuildStartInfo(server, account, plaintextPassword);
+        string icon = ClassCatalog.TryGet(account.Class, out ClassInfo info)
+            ? Path.Combine(iconDirectory, info.Key + ".ico")
+            : server.ElementClientPath;
+        return new ShortcutDefinition(
+            ShortcutPath: Path.Combine(clientsDirectory, $"{account.Id:N}.lnk"),
+            TargetPath: server.ElementClientPath,
+            Arguments: direct.Arguments,
+            WorkingDirectory: direct.WorkingDirectory,
+            IconLocation: icon);
+    }
+
+    public static ProcessStartInfo BuildShortcutStartInfo(ShortcutDefinition definition) =>
+        new()
+        {
+            // .lnk execution requires the shell: working dir and icon come
+            // from the shortcut file itself.
+            FileName = definition.ShortcutPath,
+            UseShellExecute = true,
+        };
+
     public async Task<GameSession> LaunchAsync(
         Server server,
         Account account,
@@ -55,7 +96,18 @@ public sealed class GameLauncher
         TimeSpan windowTimeout,
         CancellationToken cancellationToken = default)
     {
-        ProcessStartInfo startInfo = BuildStartInfo(server, account, plaintextPassword);
+        ProcessStartInfo startInfo;
+        if (_ensureShortcut is null)
+        {
+            startInfo = BuildStartInfo(server, account, plaintextPassword);
+        }
+        else
+        {
+            ShortcutDefinition definition = BuildShortcutDefinition(
+                server, account, plaintextPassword, DefaultClientsDirectory(), IconDirectory());
+            _ensureShortcut(definition);
+            startInfo = BuildShortcutStartInfo(definition);
+        }
         Process? process = Process.Start(startInfo)
             ?? throw new InvalidOperationException("Failed to start the game client.");
 

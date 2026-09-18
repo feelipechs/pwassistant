@@ -91,13 +91,34 @@ public sealed class GameLauncherTests
     }
 
     [Fact]
-    public void TaskbarAppId_IsUniquePerAccount()
+    public void ShortcutDefinition_IsUniquePerAccount_AndMirrorsArguments()
     {
-        string one = TaskbarAppId.ForAccount(Guid.NewGuid());
-        string two = TaskbarAppId.ForAccount(Guid.NewGuid());
+        var server = new Server { ElementClientPath = @"C:\pw\elementclient.exe" };
+        var first = new Account { Login = "a", Role = "A" };
+        var second = new Account { Login = "b", Role = "B" };
 
-        Assert.StartsWith("PwAssistant.Client.", one);
-        Assert.NotEqual(one, two);
+        ShortcutDefinition one = GameLauncher.BuildShortcutDefinition(
+            server, first, "pw", @"C:\clients", @"C:\icons");
+        ShortcutDefinition two = GameLauncher.BuildShortcutDefinition(
+            server, second, "pw", @"C:\clients", @"C:\icons");
+
+        Assert.EndsWith(".lnk", one.ShortcutPath);
+        Assert.NotEqual(one.ShortcutPath, two.ShortcutPath);
+        Assert.Equal(
+            GameLauncher.BuildStartInfo(server, first, "pw").Arguments,
+            one.Arguments);
+    }
+
+    [Fact]
+    public void ShortcutDefinition_UsesClassIcon_WhenKnown()
+    {
+        var server = new Server { ElementClientPath = @"C:\pw\elementclient.exe" };
+        var account = new Account { Login = "a", Role = "A", Class = "barbaro" };
+
+        ShortcutDefinition definition = GameLauncher.BuildShortcutDefinition(
+            server, account, "pw", @"C:\clients", @"C:\icons");
+
+        Assert.Equal(@"C:\icons\barbaro.ico", definition.IconLocation);
     }
 
     [Fact]
