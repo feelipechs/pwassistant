@@ -13,9 +13,6 @@ public partial class GroupWindow : Window
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
-        viewModel.HotkeysChanged = RefreshMainHotkeys;
-        SyncCheck.Content = Strings.SyncEnabled;
-        FocusCheck.Content = Strings.FocusSwitch;
         LimitationLabel.Text = Strings.GroundClickLimitation;
         OnlineLabel.Text = Strings.OnlineMembers;
         MembersLabel.Text = Strings.Members;
@@ -27,6 +24,7 @@ public partial class GroupWindow : Window
         PresetsLabel.Text = Strings.Presets;
         NewPresetButton.Content = Strings.NewPreset;
         CancelButton.Content = Strings.Cancel;
+        CancelButton.ToolTip = Strings.CancelHint;
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
     }

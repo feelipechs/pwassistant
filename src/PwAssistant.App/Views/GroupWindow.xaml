@@ -20,8 +20,6 @@
                 <Button x:Name="SaveFormationButton" Command="{Binding SaveFormationCommand}"/>
                 <Button x:Name="LoadFormationButton" Command="{Binding LoadFormationCommand}"/>
             </StackPanel>
-            <CheckBox x:Name="SyncCheck" Margin="8" IsChecked="{Binding SyncEnabled}"/>
-            <CheckBox x:Name="FocusCheck" Margin="8" IsChecked="{Binding FocusEnabled}"/>
             <TextBlock x:Name="LimitationLabel" Margin="8" TextWrapping="Wrap" FontStyle="Italic" FontSize="11"/>
         </StackPanel>
         <StackPanel Margin="8">
