@@ -67,4 +67,5 @@
   <data name="NoHotkey" xml:space="preserve"><value>(nenhum)</value></data>
   <data name="PresetNameRequired" xml:space="preserve"><value>Preset precisa de um nome.</value></data>
   <data name="InvalidHotkey" xml:space="preserve"><value>Atalho precisa de modificadores + tecla, ex. CTRL+SHIFT+F9.</value></data>
+  <data name="ExecutionMode" xml:space="preserve"><value>Modo</value></data>
 </root>

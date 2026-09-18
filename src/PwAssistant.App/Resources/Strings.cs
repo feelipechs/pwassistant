@@ -72,6 +72,7 @@ public static class Strings
     public static string NoHotkey => Get(nameof(NoHotkey));
     public static string PresetNameRequired => Get(nameof(PresetNameRequired));
     public static string InvalidHotkey => Get(nameof(InvalidHotkey));
+    public static string ExecutionMode => Get(nameof(ExecutionMode));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }

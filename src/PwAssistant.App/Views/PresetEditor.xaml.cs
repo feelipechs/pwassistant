@@ -123,6 +123,9 @@ public partial class PresetEditor : Window
         AddClickButton.Content = Strings.AddClick;
         NameCaption.Text = Strings.PresetName;
         NameBox.Text = preset.Name;
+        ModeCaption.Text = Strings.ExecutionMode;
+        ModeBox.ItemsSource = Enum.GetValues<ExecutionMode>();
+        ModeBox.SelectedItem = preset.ExecutionMode;
         HotkeyCaption.Text = Strings.Hotkey;
         _recordedHotkey = preset.Hotkey ?? string.Empty;
         UpdateHotkeyLabel();
@@ -348,6 +351,9 @@ public partial class PresetEditor : Window
 
         _preset.Name = name;
         _preset.Hotkey = string.IsNullOrEmpty(hotkey) ? null : hotkey;
+        _preset.ExecutionMode = ModeBox.SelectedItem is ExecutionMode mode
+            ? mode
+            : ExecutionMode.Simultaneous;
         _preset.Actions.Clear();
         _preset.Actions.AddRange(rebuilt);
         DialogResult = true;
