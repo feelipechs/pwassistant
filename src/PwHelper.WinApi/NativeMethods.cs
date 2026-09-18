@@ -78,6 +78,11 @@ internal static class NativeMethods
 
     public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+    public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    internal static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct RECT
     {
@@ -99,6 +104,16 @@ internal static class NativeMethods
     {
         public POINT pt;
         public uint mouseData;
+        public uint flags;
+        public uint time;
+        public IntPtr dwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct KBDLLHOOKSTRUCT
+    {
+        public uint vkCode;
+        public uint scanCode;
         public uint flags;
         public uint time;
         public IntPtr dwExtraInfo;

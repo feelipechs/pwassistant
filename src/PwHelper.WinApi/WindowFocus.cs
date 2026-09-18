@@ -9,7 +9,8 @@ public static class WindowFocus
 {
     public static void BringToFront(IntPtr windowHandle)
     {
-        if (windowHandle == IntPtr.Zero) return;
+        if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))
+            return;
         NativeMethods.SetForegroundWindow(windowHandle);
     }
 }
