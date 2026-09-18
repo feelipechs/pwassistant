@@ -105,6 +105,24 @@ Validar em cada item abaixo.
 - Aceite: editar login/role e trocar senha pela UI; excluir some dos
   grupos/presets e persiste; copiar cola login/senha.
   (Validação no jogo pendente — roteiro entregue.)
+- **Aceite (2026-09-18, Windows):** ✅ edição/remoção/cópia + apelido
+  (espelha o role com "mesmo do personagem") + classe com ícone.
+
+## Taskbar por conta (2026-09-18)
+
+- Cada conta lança via `.lnk` próprio em `%AppData%\PwAssistant\clients`
+  com `AppUserModelID` distinto (`PwAssistant.Client.{guid}`) → um botão
+  de taskbar por client. `.lnk` exige `UseShellExecute`; fallback direto
+  mantido sem `ensureShortcut` (testes). Ícone do atalho = elementclient.
+- Aceite: 2 Plays → 2 botões separados na taskbar.
+
+## Refinos pós-validação (2026-09-18, Windows)
+
+- Fire vira **Parar** com preset em loop (mesmo comando, rótulo alterna).
+- Play vira **Stop** online (`CloseMainWindow` + `Kill` após 5 s;
+  crash-watch conclui).
+- Removidos: Fire do modo grupo e botão Cancelar (`CancelAll` segue no
+  código para jobs/loops).
 
 ## B4 — Troca de janela por tecla (foco explícito a pedido)
 

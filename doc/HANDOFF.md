@@ -29,9 +29,8 @@
 
 ## Próximo passo
 
-Validar: mini 1-clique, destaque ~250 ms, modo por preset + `i/n (Role)`,
-CRUD de conta + copiar, loop 1 s, fechar-X desliga modos, apelido/classe,
-logs. Depois: B4-config (teclas configuráveis).
+Validar: taskbar 2 botões, Fire⇄Parar, espelho do apelido, Play⇄Stop,
+remoções. Depois: B4-config (teclas configuráveis).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
