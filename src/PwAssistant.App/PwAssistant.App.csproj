@@ -20,6 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Resources\Classes\*.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PwAssistant.Core\PwAssistant.Core.csproj" />
     <ProjectReference Include="..\PwAssistant.WinApi\PwAssistant.WinApi.csproj" />
   </ItemGroup>

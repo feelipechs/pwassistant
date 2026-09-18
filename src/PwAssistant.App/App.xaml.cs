@@ -41,9 +41,7 @@ public partial class App : Application
             sp.GetRequiredService<IAccountStore>(),
             sp.GetRequiredService<IWindowResolver>(),
             AppState.DefaultFilePath()));
-        services.AddSingleton(sp => new GameLauncher(
-            sp.GetRequiredService<IWindowResolver>(),
-            (hwnd, accountId) => TaskbarIdentity.TrySetAppId(hwnd, TaskbarAppId.ForAccount(accountId))));
+        services.AddSingleton<GameLauncher>();
         services.AddSingleton<MacroExecutor>(sp => new MacroExecutor(
             sp.GetRequiredService<IInputStrategy>(),
             id => sp.GetRequiredService<AppState>().ResolveTarget(id)));

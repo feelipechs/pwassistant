@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,6 +9,7 @@ using PwAssistant.App.Views;
 using PwAssistant.Core.Launcher;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Ux;
+using PwAssistant.WinApi;
 using AppStrings = PwAssistant.App.Resources.Strings;
 
 namespace PwAssistant.App.ViewModels;
@@ -173,6 +175,7 @@ public sealed partial class MainViewModel : ObservableObject
             string password = _state.RevealPassword(card.Model);
             GameSession session = await _launcher.LaunchAsync(
                 SelectedServer, card.Model, password, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+            MarkClientWindow(card.Model);
             _log.Info($"Launched {card.Model.Login} pid={session.ProcessId}.");
             WatchSession(session, card);
             await _state.SaveAsync().ConfigureAwait(false);
@@ -184,6 +187,24 @@ public sealed partial class MainViewModel : ObservableObject
             StatusMessage = ex.Message;
             _log.Error($"Launch {card?.Model.Login} failed: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Own taskbar button (per-account AppUserModelID) + class icon.
+    /// Best effort with persisted diagnostics; never fails the launch.
+    /// </summary>
+    private void MarkClientWindow(Account account)
+    {
+        bool idOk = TaskbarIdentity.TrySetAppId(
+            account.WindowHandle, TaskbarAppId.ForAccount(account.Id));
+        bool iconOk = false;
+        if (ClassCatalog.TryGet(account.Class, out ClassInfo info))
+        {
+            string iconPath = Path.Combine(
+                AppContext.BaseDirectory, "Resources", "Classes", info.Key + ".ico");
+            iconOk = WindowIcon.TrySetIcon(account.WindowHandle, iconPath);
+        }
+        _log.Info($"Marked {account.Login}: taskbarId={idOk} icon={iconOk}.");
     }
 
     /// <summary>

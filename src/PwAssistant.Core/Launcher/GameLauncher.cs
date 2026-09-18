@@ -22,12 +22,10 @@ public static class TaskbarAppId
 public sealed class GameLauncher
 {
     private readonly IWindowResolver _resolver;
-    private readonly Action<IntPtr, Guid>? _windowReady;
 
-    public GameLauncher(IWindowResolver resolver, Action<IntPtr, Guid>? windowReady = null)
+    public GameLauncher(IWindowResolver resolver)
     {
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
-        _windowReady = windowReady;
     }
 
     public static ProcessStartInfo BuildStartInfo(Server server, Account account, string plaintextPassword)
@@ -66,7 +64,6 @@ public sealed class GameLauncher
             IntPtr hwnd = await WaitForWindowAsync(
                 process.Id, windowTimeout, cancellationToken).ConfigureAwait(false);
 
-            _windowReady?.Invoke(hwnd, account.Id);
             account.ProcessId = process.Id;
             account.WindowHandle = hwnd;
             return new GameSession(account.Id, process.Id, DateTimeOffset.UtcNow);
