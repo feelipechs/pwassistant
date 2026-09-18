@@ -110,10 +110,11 @@ Validar em cada item abaixo.
 
 ## Taskbar por conta (2026-09-18)
 
-- Cada conta lança via `.lnk` próprio em `%AppData%\PwAssistant\clients`
-  com `AppUserModelID` distinto (`PwAssistant.Client.{guid}`) → um botão
-  de taskbar por client. `.lnk` exige `UseShellExecute`; fallback direto
-  mantido sem `ensureShortcut` (testes). Ícone do atalho = elementclient.
+- Cada janela viva recebe `AppUserModelID` distinto
+  (`PwAssistant.Client.{guid}`) via `SHGetPropertyStoreForWindow` →
+  um botão de taskbar por client. Via `.lnk` refutada no jogo
+  (`QueryInterface` p/ `IPropertyStore` falhou no `Play` — documentado
+  aqui pela lei nº 5); launch segue `.exe` direto.
 - Aceite: 2 Plays → 2 botões separados na taskbar.
 
 ## Refinos pós-validação (2026-09-18, Windows)
