@@ -15,6 +15,7 @@ public partial class GroupWindow : Window
         InitializeComponent();
         viewModel.HotkeysChanged = RefreshMainHotkeys;
         SyncCheck.Content = Strings.SyncEnabled;
+        FocusCheck.Content = Strings.FocusSwitch;
         LimitationLabel.Text = Strings.GroundClickLimitation;
         OnlineLabel.Text = Strings.OnlineMembers;
         MembersLabel.Text = Strings.Members;

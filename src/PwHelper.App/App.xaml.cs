@@ -27,7 +27,9 @@ public partial class App : Application
         services.AddSingleton<IWindowResolver, WindowResolver>();
         services.AddSingleton<IInputStrategy, PostMessageBackgroundStrategy>();
         services.AddSingleton<MouseHook>();
+        services.AddSingleton<KeyboardHook>();
         services.AddSingleton<SyncService>();
+        services.AddSingleton<FocusService>();
         services.AddSingleton<AppState>(sp => new AppState(
             sp.GetRequiredService<IAccountStore>(),
             sp.GetRequiredService<IWindowResolver>(),
@@ -40,6 +42,7 @@ public partial class App : Application
             (preset, jobId, ct) => sp.GetRequiredService<MacroExecutor>().ExecuteAsync(preset, jobId, ct)));
         services.AddSingleton<PresetDispatcher>();
         services.AddSingleton<SyncController>();
+        services.AddSingleton<FocusController>();
         services.AddTransient<MainViewModel>();
         services.AddTransient<GroupViewModel>();
         services.AddTransient<MainWindow>();
@@ -53,6 +56,8 @@ public partial class App : Application
 
         var sync = _provider.GetRequiredService<SyncController>();
         sync.Start();
+        var focus = _provider.GetRequiredService<FocusController>();
+        focus.Start();
 
         var main = _provider.GetRequiredService<MainWindow>();
         MainWindow = main;
@@ -75,6 +80,7 @@ public partial class App : Application
         if (_provider is not null)
         {
             _provider.GetService<SyncController>()?.Dispose();
+            _provider.GetService<FocusController>()?.Dispose();
             _provider.GetService<MacroJobRunner>()?.Dispose();
             _provider.Dispose();
         }

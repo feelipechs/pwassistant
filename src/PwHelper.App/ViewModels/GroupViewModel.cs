@@ -30,6 +30,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly AppState _state;
     private readonly PresetDispatcher _dispatcher;
     private readonly SyncController _sync;
+    private readonly FocusController _focus;
     private readonly Func<Preset, PresetEditor> _editorFactory;
 
     public ObservableCollection<Group> Groups { get; } = new();
@@ -52,6 +53,9 @@ public sealed partial class GroupViewModel : ObservableObject
     private bool syncEnabled;
 
     [ObservableProperty]
+    private bool focusEnabled;
+
+    [ObservableProperty]
     private string statusMessage = string.Empty;
 
     public string RemoveText => AppStrings.Remove;
@@ -64,11 +68,12 @@ public sealed partial class GroupViewModel : ObservableObject
 
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
-        Func<Preset, PresetEditor> editorFactory)
+        FocusController focus, Func<Preset, PresetEditor> editorFactory)
     {
         _state = state;
         _dispatcher = dispatcher;
         _sync = sync;
+        _focus = focus;
         _editorFactory = editorFactory;
     }
 
@@ -122,9 +127,12 @@ public sealed partial class GroupViewModel : ObservableObject
             Presets.Add(preset);
 
         _sync.SetSyncedAccounts(OnlineMembers.Select(a => a.Id));
+        _focus.SetOrder(OnlineMembers.Select(a => a.Id));
     }
 
     partial void OnSyncEnabledChanged(bool value) => _sync.Enabled = value;
+
+    partial void OnFocusEnabledChanged(bool value) => _focus.Enabled = value;
 
     [RelayCommand]
     private async Task AddGroupAsync()

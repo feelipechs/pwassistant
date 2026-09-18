@@ -30,6 +30,7 @@ public static class Strings
     public static string GroupName => Get(nameof(GroupName));
     public static string PresetName => Get(nameof(PresetName));
     public static string SyncEnabled => Get(nameof(SyncEnabled));
+    public static string FocusSwitch => Get(nameof(FocusSwitch));
     public static string CaptureClick => Get(nameof(CaptureClick));
     public static string ClickOverlayHint => Get(nameof(ClickOverlayHint));
     public static string GroundClickLimitation => Get(nameof(GroundClickLimitation));
