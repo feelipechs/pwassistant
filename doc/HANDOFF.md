@@ -1,41 +1,29 @@
-# HANDOFF — estado em 2026-09-17, base be09b9c
+# HANDOFF — estado em 2026-09-20, base cd54b9d
 
 ## Pronto (validado)
 
-- M1 (PIDs 2992/7688): `Probe key F1` 3/3 por PID + `Probe click (1343,305)`
-  1/1 por PID, sem foco.
-- M3: `Probe preset` (`Simultaneous`, F1 + click) nas 2 contas sem foco;
-  fantasma `SKIPPED (offline)`, `canceled=False`.
-- M4: `Probe sync` bidirecional `(1346,303)`/`(1340,307) OK`, sem eco.
-- M5 (contas `flp-wb`/`flp-wf`): Play via `startbypatcher` (fix
-  `WorkingDirectory`) → Fire `F1 x2` (`fired=2`) → Sync bidirecional com
-  sobreposição (fix conversão-única + Z-order) → overlay
-  `captured=(0.98,0.40)` estável.
-- M6: crash-watch Online→Offline ✅, countdown ✅, hotkey `CTRL+SHIFT+F9`
-  com jogo em foco ✅ (após fix da corrida de inicialização), `README`
-  revisado ✅, checklist final adaptado a 2 contas ✅.
-- Fixes de UI: `ItemsSource` em `ServerList`/`GroupList`/`OnlineList`,
-  cabeçalho "Contas — {0}", seleção com `AccentBrush`, `StatusText`
-  reativo (`NotifyPropertyChangedFor`).
-- `dotnet build` 0 erros/warnings; `dotnet test` 31/31 (runtime .NET 8
-  lado a lado).
-- `DllImport` só em `PwAssistant.WinApi` (lei nº 2).
+- M1–M6, B1/B1b/B2/B2d/B3/B4/B4-config, B5, taskbar (2 botões + ícones,
+  classes iguais e diferentes), loop 1 s, fechar-X desliga modos,
+  apelido/classe, copiar + auto-clear 30 s, mini 1-clique (NOACTIVATE),
+  destaque ~250 ms, modo por preset + `i/n (Role)`, Fire⇄Parar,
+  Play⇄Stop, gravação livre de tecla, Save/descarta, mini só-online.
+- Build 0 erros/warnings em `%TEMP%\ditto-build`; testes 52/52.
+- `DllImport`/COM só em `PwAssistant.WinApi` (lei nº 2).
 
 ## Pronto (código, pendente de jogo/Windows)
 
-- M2 sem pendência de jogo (DPAPI `CurrentUser` + 31 testes).
-- Publish Release self-contained + teste AV/Defender dedicado (sem
-  alertas nos binários Debug da sessão).
+- Publish Release self-contained + teste AV/Defender dedicado.
+- `images/` original (PNGs/ICOs do usuário) untracked na raiz.
 
 ## Próximo passo
 
-Validar B4-config final (gravação livre, Save/descarta, mini só-online).
-Depois: polimentos finais (dnd condicional, auto-refresh do grid).
+Nova sessão: B4-config já validado pelo usuário (“tudo funcional”);
+restam polimentos (dnd condicional, auto-refresh do grid por evento,
+visibilidade da senha, ícone do exe a partir dos ICOs).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
-Ver acima. Polimentos anotados: Play→Stop/indicador Online, auto-foco
-da janela-alvo na captura, taskbar (Win: nunca combinar — sem código).
+Ver arquivo; B4-config carimbado; polimentos acima + Play→Stop feito.
 
 ## Perguntas abertas
 
