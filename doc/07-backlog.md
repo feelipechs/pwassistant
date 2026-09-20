@@ -155,3 +155,6 @@ Validar em cada item abaixo.
   numpad e Shift-toque ligáveis, tudo na janela Configurações
   (engrenagem na principal); mini só arma o modo e mostra a legenda
   com a tecla ativa. Modo on/off segue sessão; config persiste.
+- **B4-config final (2026-09-20):** gravação livre de tecla única
+  (default `` ` ``, sem avisos por decisão do usuário); Salvar persiste
+  e fecha, Fechar/X descarta via snapshot; mini lista só online.

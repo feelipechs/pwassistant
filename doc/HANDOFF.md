@@ -29,9 +29,8 @@
 
 ## Próximo passo
 
-Validar B4-config (F8 marcada com aviso, toggles, persistência, legenda
-do mini). Depois: polimentos finais (dnd condicional, auto-refresh do
-grid por evento).
+Validar B4-config final (gravação livre, Save/descarta, mini só-online).
+Depois: polimentos finais (dnd condicional, auto-refresh do grid).
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
