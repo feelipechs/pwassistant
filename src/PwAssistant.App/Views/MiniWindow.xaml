@@ -1,6 +1,7 @@
 <Window x:Class="PwAssistant.App.Views.MiniWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:PwAssistant.Core.Models;assembly=PwAssistant.Core"
         Title="PW Assistant Mini" Height="320" Width="280"
         Topmost="True" WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundBrush}" Foreground="White">
@@ -14,6 +15,15 @@
         </StackPanel>
         <StackPanel x:Name="ContentPanel" Margin="0,8,0,0">
             <ListBox x:Name="MiniMembersList" Height="80" ItemsSource="{Binding Members}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Account.Status}" Value="{x:Static models:AccountStatus.Offline}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock x:Name="MemberName" Text="{Binding DisplayName}" VerticalAlignment="Center"/>
