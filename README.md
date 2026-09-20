@@ -30,6 +30,15 @@ No Linux, o projeto `PwAssistant.App` compila graças a
 Para rodar os testes é preciso o **runtime .NET 8** instalado
 (lado a lado com outras versões, sem conflito).
 
+## Acesso Controlado a Pastas (Windows Security)
+
+Saídas de build (`bin/`, `obj/`) vão para `%TEMP%\ditto-build`
+(via `Directory.Build.props`), nunca para dentro do repo — assim o
+compilador não bate no Acesso Controlado mesmo com o repo dentro de
+Documentos. Se o Windows barrar o App em runtime (raro: só escrevemos
+em `%AppData%`), libere em Segurança do Windows → Proteção contra
+ransomware → *Permitir um aplicativo*.
+
 ## Uso no Windows (fluxo validado — ver `doc/06-marcos.md`)
 
 ```powershell

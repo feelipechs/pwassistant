@@ -105,6 +105,10 @@ Validar em cada item abaixo.
 - Aceite: editar login/role e trocar senha pela UI; excluir some dos
   grupos/presets e persiste; copiar cola login/senha.
   (Validação no jogo pendente — roteiro entregue.)
+- **Aceite (2026-09-20, Windows):** ✅ CRUD de conta, apelido/classe,
+  copiar com auto-clear 30 s, loop 1 s com parada, fechar-X desliga
+  modos, mini 1-clique, destaque ~250 ms, modo por preset + `i/n (Role)`,
+  Fire⇄Parar, Play⇄Stop, logs sem segredo.
 - **Aceite (2026-09-18, Windows):** ✅ edição/remoção/cópia + apelido
   (espelha o role com "mesmo do personagem") + classe com ícone.
 
@@ -115,11 +119,13 @@ Validar em cada item abaixo.
   cada client ao seu atalho → um botão por conta (confirmado por
   experimento manual do usuário; só `IShellLinkW`+`IPersistFile`, sem COM
   frágil). Launch segue com `UseShellExecute`.
-- Refutadas e registradas (lei nº 5): `AppUserModelID` no `.lnk` (QI
-  `IPropertyStore` falhou no `Play`) e na janela viva (`E_NOINTERFACE`
-  consistente, 10 retries).
+- Refutadas e registradas (lei nº 5): `AppUserModelID` no `.lnk`
+  (QI `IPropertyStore` falhou no `Play`) e na janela viva
+  (`E_NOINTERFACE` consistente, com retries).
 - Aceite: 2 Plays (classes iguais e diferentes) → 2 botões separados,
   cada um com o ícone da classe.
+- **Aceite (2026-09-20, Windows):** ✅ 2 botões separados com ícones por
+  classe (iguais e diferentes); log `Marked … icon=True`.
 
 ## Refinos pós-validação (2026-09-18, Windows)
 
@@ -158,3 +164,5 @@ Validar em cada item abaixo.
 - **B4-config final (2026-09-20):** gravação livre de tecla única
   (default `` ` ``, sem avisos por decisão do usuário); Salvar persiste
   e fecha, Fechar/X descarta via snapshot; mini lista só online.
+- **Aceite (2026-09-20, Windows):** ✅ B4-config funcional (gravação,
+  Save/descarta, mini só-online, legenda viva).

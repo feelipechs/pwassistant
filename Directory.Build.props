@@ -5,5 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <!-- The repo may live under a Controlled-Folder-Access protected dir
+         (e.g. Documents): keep all build outputs outside the tree so the
+         compiler never trips ransomware protection. -->
+    <BaseIntermediateOutputPath>$(TEMP)/ditto-build/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(TEMP)/ditto-build/bin/$(MSBuildProjectName)/</BaseOutputPath>
   </PropertyGroup>
 </Project>
