@@ -49,9 +49,6 @@ public sealed partial class MemberOption : ObservableObject
         : AppStrings.Offline;
 }
 
-/// <summary>One cycle-key choice (curated safe set, no typing hijack).</summary>
-public sealed record CycleKeyOption(int Code, string Label);
-
 public sealed partial class GroupViewModel : ObservableObject
 {
     private readonly AppState _state;
@@ -70,24 +67,6 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<MemberOption> AvailableAccounts { get; } = new();
     public ObservableCollection<Formation> Formations { get; } = new();
     public ObservableCollection<MiniPresetRow> MiniRows { get; } = new();
-
-    public static IReadOnlyList<CycleKeyOption> CycleKeyOptions { get; } =
-    [
-        new(0xC0, "`"),
-        new(0x70, "F1"),
-        new(0x71, "F2"),
-        new(0x72, "F3"),
-        new(0x73, "F4"),
-        new(0x74, "F5"),
-        new(0x75, "F6"),
-        new(0x76, "F7"),
-        new(0x77, "F8"),
-        new(0x78, "F9"),
-        new(0x79, "F10"),
-        new(0x7A, "F11"),
-        new(0x7B, "F12"),
-        new(0x13, "Pause"),
-    ];
 
     [ObservableProperty]
     private Formation? selectedFormation;
@@ -151,15 +130,8 @@ public sealed partial class GroupViewModel : ObservableObject
     }
 
     /// <summary>Mini-mode legend with the live cycle key.</summary>
-    public string FocusKeysLegend
-    {
-        get
-        {
-            string label = CycleKeyOptions.FirstOrDefault(o => o.Code == _focus.Settings.CycleKey)?.Label
-                ?? FocusSettings.DefaultCycleKey.ToString();
-            return string.Format(AppStrings.FocusKeysLive, label);
-        }
-    }
+    public string FocusKeysLegend => string.Format(
+        AppStrings.FocusKeysLive, Views.SettingsWindow.CycleKeyLabel(_focus.Settings.CycleKey));
 
     partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);
 
