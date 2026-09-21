@@ -141,7 +141,13 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   tab; `RemoveFromTab` sem `ConfigureAwait(false)` antes de tocar coleções
   de UI (crash cross-thread); `ListBoxItem` com template próprio (seleção
   gold, sem azul/cinza do default); `MainWindow` em clusters `DockPanel`;
-  status humanizados via resx; Mini com switches e sem legenda.
+  status humanizados via resx;   Mini com switches e sem legenda.
+- **U6 cards de grupo (2026-09-21, código pendente de validação):** `GroupCard`
+  (membros, contagens, `IsActive`, `IsMenuOpen`) + `Pool` (sem grupo) +
+  `ActiveCard` (espelha `SelectedGroup`, preservando sync/foco/Mini/hotkeys);
+  `RebuildAll` por união; DnD pool→card (`DropAccountOntoGroupAsync`);
+  presets em `GroupPresetsWindow` (ativa o grupo ao abrir); formações por
+  card; sem `ConfigureAwait(false)` antes de tocar coleções de UI.
 - **U1 Redesign (2026-09-20, código pendente de validação no Windows):**
   cláusula acima acionada — redesign completo mantido em XAML próprio, sem
   novo pacote: `Themes/Tokens.xaml` (paleta dark + gold, radius, espaçamentos,

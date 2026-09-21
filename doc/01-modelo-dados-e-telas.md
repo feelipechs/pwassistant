@@ -86,16 +86,15 @@ Notas:
 - Botão "Adicionar Conta" (login/senha/role).
 - Botão de play no card → spawna processo com `startbypatcher`.
 
-### Modo Grupo (janela separada)
-- Lista de grupos (criar/editar/excluir).
-- Grid mostrando as contas do grupo **que estão online no momento**
-  (cruzamento AccountId → Hwnd ativo).
-- Área de Presets, cada um como um botão:
-  - Criar preset: selecionar contas online → definir Ação por conta
-    (tecla ou click, com captura de posição via overlay) → definir delay
-    → salvar.
-  - Clicar no botão do preset → dispara `MacroExecutor` (ver
-    `02-motor-de-macro.md`).
+### Modo Grupo (janela separada, repaginada em cards em 2026-09-21)
+
+- Esquerda: pool de personagens sem grupo (dot online/offline); arrastar
+  para um card adiciona (sai do pool; ✕ devolve).
+- Direita: um card por grupo (clicar ativa — borda gold; sync, troca de
+  janelas, Mini e hotkeys seguem o ativo). Cada card tem `...` com
+  Renomear/Excluir, Presets (janelinha própria com Novo/Editar/Duplicar/
+  Excluir) e Salvar/Carregar Formação (snapshot dos membros do card).
+- Offline edita preset normalmente; no disparo é pulado com log.
 
 ## Fora do escopo do modelo v1
 

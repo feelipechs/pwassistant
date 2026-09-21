@@ -16,9 +16,11 @@
   abaixo/teclado-mouse.
 - U5: Tag travada na criação, fix crash do ✕, seleção sem azul,
   clusters, lado a lado, status humanizados, Mini labels.
-- Roteiro Windows: criar conta na PT02 (tag travada); clicar ✕ (ex-crash);
-  switches; popup `...`; duplicar abaixo; Mini com jogo focado;
-  DPI 100/150%; screenshots.
+- U6: Modo Grupo em cards (pool + DnD, ativo gold, `...` com CRUD/
+  presets em janelinha própria).
+- Roteiro Windows: arrastar pool→card; ✕ devolve ao pool; `...`;
+  presets do grupo; salvar/carregar formação por card; ativo seguido
+  pelo Mini; criar conta na PT02; DPI 100/150%; screenshots.
 
 ## Próximo passo
 
