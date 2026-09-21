@@ -12,7 +12,8 @@ public partial class TextPromptDialog : Window
         InitializeComponent();
         PromptLabel.Text = Strings.Get(labelKey);
         ValueBox.Text = initial;
-        SaveButton.ToolTip = Strings.Save;
+        SaveButton.Content = Strings.Save;
+        CancelButton.Content = Strings.CancelDialog;
         Loaded += (_, _) => ValueBox.Focus();
     }
 
@@ -22,4 +23,6 @@ public partial class TextPromptDialog : Window
             return;
         DialogResult = true;
     }
+
+    private void OnCancel(object sender, RoutedEventArgs e) => Close();
 }

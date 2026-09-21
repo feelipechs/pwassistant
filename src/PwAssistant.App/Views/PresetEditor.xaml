@@ -8,7 +8,8 @@
         FontFamily="{StaticResource AppFont}">
     <DockPanel Margin="16,12,16,12">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button Content="&#xE74E;" Click="OnSave" Style="{StaticResource IconButton}" Width="36" Height="32"/>
+            <Button Content="{x:Static res:Strings.CancelDialog}" Click="OnCancel" Style="{StaticResource GhostButton}"/>
+            <Button Content="{x:Static res:Strings.Save}" Click="OnSave" Style="{StaticResource PrimaryButton}" MinWidth="110"/>
         </StackPanel>
         <Border DockPanel.Dock="Top" Style="{StaticResource CardBorder}">
             <StackPanel>

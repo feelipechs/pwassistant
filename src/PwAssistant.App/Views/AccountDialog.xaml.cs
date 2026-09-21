@@ -38,7 +38,8 @@ public partial class AccountDialog : Window
         ClassBox.ItemsSource = ClassCatalog.All;
         ClassBox.SelectedIndex = -1;
         TagLabel.Text = Strings.Tag;
-        SaveButton.ToolTip = Strings.Save;
+        SaveButton.Content = Strings.Save;
+        CancelButton.Content = Strings.CancelDialog;
         SameAsRoleCheck.Checked += (_, _) => MirrorRole();
         SameAsRoleCheck.Unchecked += (_, _) => NicknameBox.IsEnabled = true;
         RoleBox.TextChanged += (_, _) => MirrorRole();
@@ -76,4 +77,6 @@ public partial class AccountDialog : Window
             return;
         DialogResult = true;
     }
+
+    private void OnCancel(object sender, RoutedEventArgs e) => Close();
 }

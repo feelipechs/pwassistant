@@ -95,8 +95,11 @@
                 <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}"
                            DockPanel.Dock="Right" Margin="0,0,12,0"/>
             </DockPanel>
-            <!-- Tab strip: All + named tabs + manage + add account -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <!-- Tab strip: All + named tabs + manage ... add account pinned right -->
+            <DockPanel Grid.Row="1" Margin="0,0,0,8">
+                <Button x:Name="AddAccountButton" Content="&#xE710;" Command="{Binding AddAccountCommand}"
+                        DockPanel.Dock="Right" Style="{StaticResource PrimaryIconButton}"/>
+                <StackPanel Orientation="Horizontal">
                 <ItemsControl x:Name="TabStrip" ItemsSource="{Binding TabItems}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -133,10 +136,8 @@
                             Command="{Binding DeleteTabCommand}" CommandParameter="{Binding SelectedTab}"
                             Style="{StaticResource IconButton}"/>
                 </StackPanel>
-                <Border Width="1" Margin="8,4" Background="{StaticResource BorderBrush}"/>
-                <Button x:Name="AddAccountButton" Content="&#xE710;" Command="{Binding AddAccountCommand}"
-                        Style="{StaticResource PrimaryIconButton}"/>
-            </StackPanel>
+                </StackPanel>
+            </DockPanel>
             <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="AccountCards" ItemsSource="{Binding Accounts}">
                     <ItemsControl.ItemsPanel>
@@ -210,31 +211,35 @@
                                             HorizontalAlignment="Stretch" MinHeight="36"/>
                                     <Border Height="1" Margin="0,8" Background="{StaticResource BorderBrush}"/>
                                     <Border Style="{StaticResource InputBox}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Model.Login}" MaxWidth="118" VerticalAlignment="Center"
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                <Button Content="&#xE8C8;"
+                                                        Command="{Binding DataContext.CopyLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Model.Login}" VerticalAlignment="Center"
                                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
                                                        TextTrimming="CharacterEllipsis"/>
-                                            <Button Content="&#xE8C8;"
-                                                    Command="{Binding DataContext.CopyLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                        </StackPanel>
+                                        </DockPanel>
                                     </Border>
                                     <Border Style="{StaticResource InputBox}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding PasswordDisplay}" MaxWidth="96" VerticalAlignment="Center"
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                <Button Content="&#xE7B3;"
+                                                        ToolTip="{Binding PasswordToggleHint}"
+                                                        Command="{Binding DataContext.TogglePasswordVisibilityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                                <Button Content="&#xE8C8;"
+                                                        Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding PasswordDisplay}" VerticalAlignment="Center"
                                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
                                                        TextTrimming="CharacterEllipsis"/>
-                                            <Button Content="&#xE7B3;"
-                                                    ToolTip="{Binding PasswordToggleHint}"
-                                                    Command="{Binding DataContext.TogglePasswordVisibilityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                            <Button Content="&#xE8C8;"
-                                                    Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                        </StackPanel>
+                                        </DockPanel>
                                     </Border>
                                 </StackPanel>
                             </Border>

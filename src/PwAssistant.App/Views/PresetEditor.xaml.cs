@@ -346,6 +346,12 @@ public partial class PresetEditor : Window
 
     private void Error(string message) => ErrorLabel.Text = message;
 
+    private void OnCancel(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+
     private void OnSave(object sender, RoutedEventArgs e)
     {
         string name = NameBox.Text.Trim();

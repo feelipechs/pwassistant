@@ -15,7 +15,8 @@ public partial class ServerDialog : Window
         InitializeComponent();
         NameLabel.Text = Strings.ServerName;
         PathLabel.Text = Strings.ClientPath;
-        SaveButton.ToolTip = Strings.Save;
+        SaveButton.Content = Strings.Save;
+        CancelButton.Content = Strings.CancelDialog;
     }
 
     public void Prefill(Server server)
@@ -37,4 +38,6 @@ public partial class ServerDialog : Window
             return;
         DialogResult = true;
     }
+
+    private void OnCancel(object sender, RoutedEventArgs e) => Close();
 }
