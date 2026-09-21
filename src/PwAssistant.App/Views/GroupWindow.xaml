@@ -12,7 +12,8 @@
             <StackPanel>
                 <DockPanel>
                     <Button x:Name="MiniModeButton" Command="{Binding OpenMiniModeCommand}"
-                            DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="12,0,0,0"/>
+                            DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="12,0,0,0"
+                            MinWidth="110" VerticalAlignment="Center"/>
                     <Border Width="1" Margin="8,2" Background="{StaticResource BorderBrush}"
                             DockPanel.Dock="Right"/>
                     <StackPanel Orientation="Horizontal">
@@ -133,11 +134,11 @@
             <TabItem Header="{x:Static res:Strings.Presets}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,4,0,0">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <DockPanel Margin="0,0,0,8">
                             <Button x:Name="NewPresetButton" Content="&#xE710;" Command="{Binding AddPresetCommand}"
-                                    Style="{StaticResource IconButton}" Margin="0,0,8,0"/>
+                                    DockPanel.Dock="Right" Style="{StaticResource IconButton}"/>
                             <TextBlock x:Name="PresetsLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        </DockPanel>
                         <ItemsControl ItemsSource="{Binding Presets}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
