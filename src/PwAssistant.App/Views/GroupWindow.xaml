@@ -57,23 +57,21 @@
             <!-- Group cards -->
             <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="6,0,0,8">
+                    <DockPanel Margin="6,0,0,8">
                         <Button x:Name="AddGroupButton" Content="&#xE710;" Command="{Binding AddGroupCommand}"
-                                Style="{StaticResource IconButton}"/>
-                        <TextBlock x:Name="NewGroupHint" Style="{StaticResource MutedText}"
-                                   VerticalAlignment="Center" Margin="8,0,0,0" FontStyle="Normal"/>
-                    </StackPanel>
+                                DockPanel.Dock="Right" Style="{StaticResource IconButton}"/>
+                    </DockPanel>
                     <ItemsControl ItemsSource="{Binding GroupCards}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border x:Name="CardBorder" Style="{StaticResource CardBorder}" Margin="6,0,0,8"
-                                        AllowDrop="True" Drop="OnCardDrop" DragOver="OnCardDragOver">
+                                        AllowDrop="True" Drop="OnCardDrop" DragOver="OnCardDragOver" DragLeave="OnCardDragLeave">
                                     <StackPanel>
                                         <DockPanel MouseLeftButtonUp="OnCardActivate">
-                                            <ToggleButton DockPanel.Dock="Right" Width="28" Height="28"
-                                                          FontFamily="{StaticResource IconFont}" FontSize="14"
-                                                          Content="&#xE712;"
-                                                          IsChecked="{Binding IsMenuOpen, Mode=TwoWay}"/>
+                                            <Button DockPanel.Dock="Right" Width="28" Height="28"
+                                                    FontFamily="{StaticResource IconFont}" FontSize="14"
+                                                    Content="&#xE712;" Click="OnCardMenuToggle"
+                                                    Style="{StaticResource IconButton}"/>
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Group.Name}" FontWeight="SemiBold" FontSize="13"
                                                            Foreground="{StaticResource TextPrimaryBrush}"/>
@@ -100,19 +98,25 @@
                                                             CommandParameter="{Binding}"
                                                             Style="{StaticResource GhostButton}" HorizontalAlignment="Stretch"/>
                                                     <Border Height="1" Margin="0,6" Background="{StaticResource BorderBrush}"/>
-                                                    <ComboBox ItemsSource="{Binding DataContext.Formations, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                              DisplayMemberPath="Name"
-                                                              SelectedItem="{Binding DataContext.SelectedFormation, RelativeSource={RelativeSource AncestorType=Window}}"/>
-                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-                                                        <Button Content="{Binding DataContext.SaveFormationText, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                Command="{Binding DataContext.SaveFormationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                CommandParameter="{Binding}"
-                                                                Style="{StaticResource GhostButton}"/>
-                                                        <Button Content="{Binding DataContext.LoadFormationText, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                Command="{Binding DataContext.LoadFormationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                CommandParameter="{Binding}"
-                                                                Style="{StaticResource GhostButton}"/>
-                                                    </StackPanel>
+                                                    <Button Content="{Binding DataContext.SaveFormationText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            Command="{Binding DataContext.SaveFormationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource GhostButton}" HorizontalAlignment="Stretch"/>
+                                                    <TextBlock Text="{Binding DataContext.LoadFormationText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                               Style="{StaticResource SectionTitle}" Margin="0,8,0,4"/>
+                                                    <ItemsControl ItemsSource="{Binding DataContext.Formations, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <DockPanel Margin="0,1">
+                                                                    <Button Content="&#xE73E;"
+                                                                            DockPanel.Dock="Right"
+                                                                            Click="OnLoadFormationClick"
+                                                                            Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                                                </DockPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </StackPanel>
                                             </Border>
                                         </Popup>
@@ -150,6 +154,10 @@
                                     <DataTrigger Binding="{Binding IsActive}" Value="True">
                                         <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                                         <Setter TargetName="CardBorder" Property="BorderThickness" Value="2"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsDragOver}" Value="True">
+                                        <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}"/>
+                                        <Setter TargetName="CardBorder" Property="BorderThickness" Value="3"/>
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>

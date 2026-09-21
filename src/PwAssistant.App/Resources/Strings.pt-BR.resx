@@ -105,6 +105,6 @@
   <data name="PresetCanceled" xml:space="preserve"><value>Cancelado</value></data>
   <data name="SkippedMark" xml:space="preserve"><value>ignorado</value></data>
   <data name="NoActiveGroup" xml:space="preserve"><value>Selecione um grupo primeiro</value></data>
-  <data name="Ungrouped" xml:space="preserve"><value>Sem grupo</value></data>
+  <data name="Ungrouped" xml:space="preserve"><value>Disponíveis</value></data>
   <data name="GroupCardStats" xml:space="preserve"><value>{0} membros • {1} online • {2} presets</value></data>
 </root>

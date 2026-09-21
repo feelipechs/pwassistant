@@ -70,6 +70,9 @@ public sealed partial class GroupCard : ObservableObject
     private bool isMenuOpen;
 
     [ObservableProperty]
+    private bool isDragOver;
+
+    [ObservableProperty]
     private int onlineCount;
 
     [ObservableProperty]
@@ -111,9 +114,6 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<MemberOption> Members { get; } = new();
     public ObservableCollection<Formation> Formations { get; } = new();
     public ObservableCollection<MiniPresetRow> MiniRows { get; } = new();
-
-    [ObservableProperty]
-    private Formation? selectedFormation;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGroupSelected))]
@@ -175,7 +175,6 @@ public sealed partial class GroupViewModel : ObservableObject
         Formations.Clear();
         foreach (Formation formation in _state.Data.Formations)
             Formations.Add(formation);
-        SelectedFormation = null;
         _state.Data.FocusSettings ??= new FocusSettings();
         _focus.Settings = _state.Data.FocusSettings;
         RebuildAll();
@@ -457,26 +456,24 @@ public sealed partial class GroupViewModel : ObservableObject
         };
         _state.Data.Formations.Add(formation);
         Formations.Add(formation);
-        SelectedFormation = formation;
         await _state.SaveAsync();
     }
 
-    [RelayCommand]
-    private async Task LoadFormationAsync(GroupCard? card)
+    /// <summary>Applies a saved formation to the card (used by the load list).</summary>
+    public async Task LoadFormationForAsync(GroupCard card, Formation formation)
     {
-        if (card is null || SelectedFormation is null) return;
         var known = _state.Data.Servers
             .SelectMany(s => s.Accounts)
             .Select(a => a.Id);
         (IReadOnlyList<Guid> applied, int skipped) =
-            FormationApplicator.Apply(SelectedFormation, known);
+            FormationApplicator.Apply(formation, known);
         card.Group.AccountIds = new List<Guid>(applied);
         ActiveCard = card;
         await _state.SaveAsync();
         RebuildAll();
         StatusMessage = skipped == 0
-            ? AppStrings.FormationApplied(SelectedFormation.Name, applied.Count)
-            : AppStrings.FormationAppliedSkipped(SelectedFormation.Name, applied.Count, skipped);
+            ? AppStrings.FormationApplied(formation.Name, applied.Count)
+            : AppStrings.FormationAppliedSkipped(formation.Name, applied.Count, skipped);
     }
 
     [RelayCommand]
