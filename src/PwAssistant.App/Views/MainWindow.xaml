@@ -10,12 +10,15 @@
         <Border DockPanel.Dock="Left" Width="264" Background="{StaticResource SurfaceBrush}"
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0" Padding="12">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="RefreshButton" Content="&#xE72C;" Command="{Binding RefreshStatusCommand}"
-                            Style="{StaticResource IconButton}"/>
-                    <Button x:Name="SettingsButton" Content="&#xE713;" Click="OnOpenSettings"
-                            Style="{StaticResource IconButton}"/>
-                </StackPanel>
+                <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="RefreshButton" Content="&#xE72C;" Command="{Binding RefreshStatusCommand}"
+                                Style="{StaticResource IconButton}"/>
+                        <Button x:Name="SettingsButton" Content="&#xE713;" Click="OnOpenSettings"
+                                Style="{StaticResource IconButton}"/>
+                    </StackPanel>
+                </Border>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
                     <Border Width="8" Height="28" CornerRadius="4" Margin="0,0,8,0"
                             Background="{StaticResource AccentBrush}"/>
@@ -33,17 +36,18 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="14"/>
                                     <ColumnDefinition/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="56"/>
                                 </Grid.ColumnDefinitions>
                                 <Ellipse x:Name="ServerDot" Width="8" Height="8"
                                          Fill="{StaticResource TextMutedBrush}"/>
-                                <StackPanel Grid.Column="1">
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
                                                Foreground="{StaticResource TextPrimaryBrush}"/>
                                     <TextBlock Text="{Binding StatsText}" FontSize="11"
                                                Foreground="{StaticResource TextSecondaryBrush}"/>
                                 </StackPanel>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <StackPanel x:Name="ServerActions" Grid.Column="2" Orientation="Horizontal"
+                                            VerticalAlignment="Center" Visibility="Collapsed">
                                     <Button Content="&#xE70F;"
                                             Command="{Binding DataContext.EditServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                             CommandParameter="{Binding}"
@@ -58,6 +62,12 @@
                                 <DataTrigger Binding="{Binding HasOnline}" Value="True">
                                     <Setter TargetName="ServerDot" Property="Fill" Value="{StaticResource SuccessBrush}"/>
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                    <Setter TargetName="ServerActions" Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                    <Setter TargetName="ServerActions" Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -65,18 +75,23 @@
             </DockPanel>
         </Border>
         <!-- Main area -->
-        <StackPanel Margin="16,12,16,12">
-            <DockPanel Margin="0,0,0,4">
+        <Grid Margin="16,12,16,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" Margin="0,0,0,4">
                 <TextBlock x:Name="AccountsHeaderLabel" FontSize="16" FontWeight="SemiBold"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            Text="{Binding AccountsHeader}" VerticalAlignment="Center"/>
                 <Button x:Name="GroupModeButton" Content="Group" Command="{Binding OpenGroupModeCommand}"
-                        DockPanel.Dock="Right" Style="{StaticResource GhostButton}"/>
+                        DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}"/>
                 <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}"
                            DockPanel.Dock="Right" Margin="0,0,12,0"/>
             </DockPanel>
             <!-- Tab strip: All + named tabs + manage + add account -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
                 <ItemsControl x:Name="TabStrip" ItemsSource="{Binding TabItems}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -115,9 +130,9 @@
                 </StackPanel>
                 <Border Width="1" Margin="8,4" Background="{StaticResource BorderBrush}"/>
                 <Button x:Name="AddAccountButton" Content="&#xE710;" Command="{Binding AddAccountCommand}"
-                        Style="{StaticResource PrimaryButton}" Width="32" Height="28"/>
+                        Style="{StaticResource PrimaryIconButton}"/>
             </StackPanel>
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="AccountCards" ItemsSource="{Binding Accounts}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -184,29 +199,33 @@
                                             Style="{StaticResource PrimaryButton}"
                                             HorizontalAlignment="Stretch" MinHeight="36"/>
                                     <Border Height="1" Margin="0,8" Background="{StaticResource BorderBrush}"/>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Model.Login}" MaxWidth="120" VerticalAlignment="Center"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
-                                                   TextTrimming="CharacterEllipsis"/>
-                                        <Button Content="&#xE8C8;"
-                                                Command="{Binding DataContext.CopyLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding PasswordDisplay}" MaxWidth="110" VerticalAlignment="Center"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
-                                                   TextTrimming="CharacterEllipsis"/>
-                                        <Button Content="&#xE7B3;"
-                                                ToolTip="{Binding PasswordToggleHint}"
-                                                Command="{Binding DataContext.TogglePasswordVisibilityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                        <Button Content="&#xE8C8;"
-                                                Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                    </StackPanel>
+                                    <Border Style="{StaticResource InputBox}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Model.Login}" MaxWidth="118" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <Button Content="&#xE8C8;"
+                                                    Command="{Binding DataContext.CopyLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource InputBox}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding PasswordDisplay}" MaxWidth="96" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <Button Content="&#xE7B3;"
+                                                    ToolTip="{Binding PasswordToggleHint}"
+                                                    Command="{Binding DataContext.TogglePasswordVisibilityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                            <Button Content="&#xE8C8;"
+                                                    Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
                             </Border>
                             <DataTemplate.Triggers>
@@ -218,6 +237,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-        </StackPanel>
+        </Grid>
     </DockPanel>
 </Window>

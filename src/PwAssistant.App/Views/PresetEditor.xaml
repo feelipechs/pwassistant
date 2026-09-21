@@ -33,7 +33,7 @@
                 <Button x:Name="AddCommandButton" Content="&#xE710;" Click="OnAddCommand" Margin="0,0,8,0"
                         Style="{StaticResource IconButton}"/>
                 <Button x:Name="AddClickButton" Content="&#xE710;" Click="OnAddClick"
-                        Style="{StaticResource PrimaryButton}" Width="32" Height="28"/>
+                        Style="{StaticResource PrimaryIconButton}"/>
             </StackPanel>
             <TextBlock x:Name="ErrorLabel" Margin="0,4,0,0" FontSize="11" Foreground="{StaticResource DangerBrush}"/>
         </StackPanel>
