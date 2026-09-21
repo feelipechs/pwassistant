@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PwAssistant.App.Services;
@@ -89,6 +90,7 @@ public sealed partial class GroupViewModel : ObservableObject
     public string RemoveText => AppStrings.Remove;
     public string EditText => AppStrings.Edit;
     public string DeleteText => AppStrings.Delete;
+    public string RenameText => AppStrings.Rename;
     public string DuplicatePresetText => AppStrings.DuplicatePreset;
     public string LoopText => AppStrings.Loop;
 
@@ -218,6 +220,45 @@ public sealed partial class GroupViewModel : ObservableObject
             SelectedGroup = group;
             await _state.SaveAsync().ConfigureAwait(false);
         }
+    }
+
+    [RelayCommand]
+    private async Task RenameGroupAsync()
+    {
+        if (SelectedGroup is null) return;
+        var dialog = new TextPromptDialog("GroupName", SelectedGroup.Name);
+        if (dialog.ShowDialog() != true) return;
+        SelectedGroup.Name = dialog.Value;
+        int index = Groups.IndexOf(SelectedGroup);
+        if (index >= 0)
+        {
+            Groups.RemoveAt(index);
+            Groups.Insert(index, SelectedGroup);
+        }
+        await _state.SaveAsync().ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task DeleteGroupAsync()
+    {
+        if (SelectedGroup is null) return;
+        MessageBoxResult confirm = MessageBox.Show(
+            AppStrings.DeleteGroupConfirm(SelectedGroup.Name),
+            AppStrings.DeleteGroupTitle,
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        Group doomed = SelectedGroup;
+        foreach (Preset preset in _state.Data.Presets.Where(p => p.GroupId == doomed.Id).ToList())
+        {
+            _loops.Stop(preset.Id);
+            _state.Data.Presets.Remove(preset);
+        }
+        _state.Data.Groups.Remove(doomed);
+        Groups.Remove(doomed);
+        SelectedGroup = null;
+        await _state.SaveAsync().ConfigureAwait(false);
     }
 
     [RelayCommand]
