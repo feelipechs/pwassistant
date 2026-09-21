@@ -9,19 +9,17 @@
 
 ## Pronto (código, pendente de jogo/Windows)
 
-- U1 (temas/tokens, 7 janelas) + publish Release + ícone placeholder.
-- U2 iconografia + layout: MDL2, templates, `AccountTab`, `ServerRow`,
-  cards quadrados, server/group CRUD com cascata, grupo em abas.
-- U3 responsividade: grid com scroll real, hover-actions, `InputBox`,
-  dots via `Style`, membros em lista única + filtro, formações via `...`,
-  Mini só-nome.
-- Roteiro Windows: janela 800px scrolla sem redimensionar; hover nos
-  servidores; popup de formações; filtro só-online; Mini intacto
-  (NOACTIVATE); DPI 100/150%; screenshots.
+- U1–U3 (temas, cards, tabs, grupo em abas, responsividade).
+- U4: switches, scrollbars finas, Mini sem collapse/barrinha, tabs por
+  Tag (migração preenche a partir dos membros), Save texto + Cancelar,
+  space-between, lista de adição no grupo, preset só-nome/duplicar
+  abaixo/teclado-mouse.
+- Roteiro Windows: fluxo etiqueta→tab; switches; popup `...`; duplicar
+  abaixo; Mini com jogo focado; DPI 100/150%; screenshots.
 
 ## Próximo passo
 
-- Validar U2/U3 no Windows (roteiro acima); ícone próprio do app pendente.
+- Validar U4 no Windows (roteiro acima); ícone próprio do app pendente.
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 
