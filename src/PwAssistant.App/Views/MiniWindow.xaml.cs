@@ -33,7 +33,7 @@ public partial class MiniWindow : Window
         _activeTracker = new DispatcherTimer(
             TimeSpan.FromMilliseconds(250),
             DispatcherPriority.Background,
-            (_, _) => TrackActiveMember(),
+            (_, _) => OnTrackerTick(),
             Dispatcher);
         _activeTracker.Start();
         Closed += (_, _) => _activeTracker.Stop();
@@ -59,6 +59,19 @@ public partial class MiniWindow : Window
         IntPtr handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
         if (handle != IntPtr.Zero)
             WindowFocus.PreventActivation(handle);
+    }
+
+    private int _tickCount;
+
+    /// <summary>
+    /// Fast active-member highlight (250 ms) + slow online-set refresh (~2 s,
+    /// same event-oriented rule as the group grid).
+    /// </summary>
+    private void OnTrackerTick()
+    {
+        TrackActiveMember();
+        if (++_tickCount % 8 == 0)
+            ViewModel.RefreshIfOnlineChanged();
     }
 
     /// <summary>Highlights the member owning the foreground window.</summary>

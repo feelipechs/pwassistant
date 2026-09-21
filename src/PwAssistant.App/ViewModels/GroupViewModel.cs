@@ -138,6 +138,31 @@ public sealed partial class GroupViewModel : ObservableObject
     /// <summary>Recompute members/online/presets (also the Activated refresh).</summary>
     public void Refresh() => Rebuild(SelectedGroup);
 
+    /// <summary>
+    /// Event-oriented grid refresh: re-resolves online status and rebuilds
+    /// only when the visible online set changed (cheap to poll on a timer).
+    /// Must run on the UI thread (touches bound collections).
+    /// Returns true when a rebuild happened.
+    /// </summary>
+    public bool RefreshIfOnlineChanged()
+    {
+        if (SelectedGroup is null) return false;
+        _state.RefreshOnlineStatus();
+        var accountsById = _state.Data.Servers
+            .SelectMany(s => s.Accounts)
+            .ToDictionary(a => a.Id);
+        var live = SelectedGroup.AccountIds
+            .Where(accountsById.ContainsKey)
+            .Select(id => accountsById[id])
+            .Where(a => a.Status == AccountStatus.Online)
+            .Select(a => a.Id)
+            .ToHashSet();
+        var shown = OnlineMembers.Select(a => a.Id).ToHashSet();
+        if (live.SetEquals(shown)) return false;
+        Rebuild(SelectedGroup);
+        return true;
+    }
+
     private void Rebuild(Group? value)
     {
         OnlineMembers.Clear();
