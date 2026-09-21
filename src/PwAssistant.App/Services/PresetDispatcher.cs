@@ -5,8 +5,8 @@ using PwAssistant.Core.Ux;
 namespace PwAssistant.App.Services;
 
 /// <summary>
-/// Preset firing pipeline (M6): countdown → dispatch → per-account log.
-/// Countdown first so the user looks away from the game before anything fires.
+/// Preset firing pipeline: optional countdown → dispatch → per-account log.
+/// Countdown defaults to zero (the early 3s test delay is gone).
 /// </summary>
 public sealed class PresetDispatcher
 {
@@ -19,7 +19,7 @@ public sealed class PresetDispatcher
 
     public async Task<PresetExecutionResult> FireAsync(
         Preset preset,
-        int countdownSeconds = 3,
+        int countdownSeconds = 0,
         IProgress<int>? countdown = null,
         IProgress<PresetProgress>? fireProgress = null,
         CancellationToken cancellationToken = default)

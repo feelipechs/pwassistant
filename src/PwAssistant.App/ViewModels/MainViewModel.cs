@@ -29,6 +29,10 @@ public sealed partial class AccountCard : ObservableObject
     [NotifyPropertyChangedFor(nameof(PasswordToggleHint))]
     private bool isPasswordRevealed;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayGlyph))]
+    private bool isLaunching;
+
     private string? _revealedPassword;
 
     public AccountCard(Account model)
@@ -45,7 +49,7 @@ public sealed partial class AccountCard : ObservableObject
     public string PlayText => Status == AccountStatus.Online ? AppStrings.Stop : AppStrings.Play;
 
     /// <summary>Segoe MDL2 play/stop glyphs (icon font applied in XAML).</summary>
-    public string PlayGlyph => Status == AccountStatus.Online ? "\uE71A" : "\uE768";
+    public string PlayGlyph => IsLaunching ? "..." : Status == AccountStatus.Online ? "\uE71A" : "\uE768";
 
     public string PasswordToggleHint =>
         IsPasswordRevealed ? AppStrings.HidePassword : AppStrings.ShowPassword;
@@ -465,10 +469,11 @@ public sealed partial class MainViewModel : ObservableObject
         await _state.SaveAsync().ConfigureAwait(false);
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task PlayAsync(AccountCard? card)
     {
         if (card is null || SelectedServer is null) return;
+        if (card.IsLaunching) return;
         if (card.Model.Status == AccountStatus.Online)
         {
             await StopClientAsync(card).ConfigureAwait(false);
@@ -476,6 +481,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         try
         {
+            card.IsLaunching = true;
             StatusMessage = "...";
             string password = _state.RevealPassword(card.Model);
             GameSession session = await _launcher.LaunchAsync(
@@ -495,6 +501,10 @@ public sealed partial class MainViewModel : ObservableObject
         {
             StatusMessage = ex.Message;
             _log.Error($"Launch {card?.Model.Login} failed: {ex.Message}");
+        }
+        finally
+        {
+            App.Current.Dispatcher.Invoke(() => card.IsLaunching = false);
         }
     }
 

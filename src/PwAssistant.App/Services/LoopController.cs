@@ -76,11 +76,9 @@ public sealed class LoopController : IDisposable
 
         try
         {
-            bool first = true;
             while (!cts.Token.IsCancellationRequested)
             {
-                await _dispatcher.FireAsync(preset, first ? 3 : 0, null, null, cts.Token).ConfigureAwait(false);
-                first = false;
+                await _dispatcher.FireAsync(preset, 0, null, null, cts.Token).ConfigureAwait(false);
                 await Task.Delay(IterationGap, cts.Token).ConfigureAwait(false);
             }
         }
