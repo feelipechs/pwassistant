@@ -66,7 +66,6 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<Account> OnlineMembers { get; } = new();
     public ObservableCollection<Preset> Presets { get; } = new();
     public ObservableCollection<MemberOption> Members { get; } = new();
-    public ObservableCollection<MemberOption> VisibleMembers { get; } = new();
     public ObservableCollection<MemberOption> AvailableAccounts { get; } = new();
     public ObservableCollection<Formation> Formations { get; } = new();
     public ObservableCollection<MiniPresetRow> MiniRows { get; } = new();
@@ -83,9 +82,6 @@ public sealed partial class GroupViewModel : ObservableObject
 
     [ObservableProperty]
     private bool focusEnabled;
-
-    [ObservableProperty]
-    private bool showOnlineOnly;
 
     [ObservableProperty]
     private string statusMessage = string.Empty;
@@ -143,17 +139,6 @@ public sealed partial class GroupViewModel : ObservableObject
 
     partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);
 
-    partial void OnShowOnlineOnlyChanged(bool value) => RebuildVisibleMembers();
-
-    /// <summary>Single management list, optionally hiding offline members.</summary>
-    private void RebuildVisibleMembers()
-    {
-        VisibleMembers.Clear();
-        foreach (MemberOption member in Members.Where(m =>
-            !ShowOnlineOnly || m.Account.Status == AccountStatus.Online))
-            VisibleMembers.Add(member);
-    }
-
     /// <summary>Recompute members/online/presets (also the Activated refresh).</summary>
     public void Refresh() => Rebuild(SelectedGroup);
 
@@ -187,7 +172,6 @@ public sealed partial class GroupViewModel : ObservableObject
         OnlineMembers.Clear();
         Presets.Clear();
         Members.Clear();
-        VisibleMembers.Clear();
         AvailableAccounts.Clear();
         if (value is null) return;
 
@@ -218,7 +202,6 @@ public sealed partial class GroupViewModel : ObservableObject
 
         _sync.SetSyncedAccounts(OnlineMembers.Select(a => a.Id));
         _focus.SetOrder(OnlineMembers.Select(a => a.Id));
-        RebuildVisibleMembers();
         OnPropertyChanged(nameof(FocusKeysLegend));
     }
 
@@ -299,18 +282,18 @@ public sealed partial class GroupViewModel : ObservableObject
                 .ToDictionary(a => a.Id, a => string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role);
             var fire = new Progress<PresetProgress>(p =>
                 StatusMessage = $"{p.Index}/{p.Total} ({(names.TryGetValue(p.AccountId, out string? n) ? n : "?")})"
-                    + (p.Skipped ? " skipped" : ""));
+                    + (p.Skipped ? " " + AppStrings.SkippedMark : ""));
             PresetExecutionResult result = await _dispatcher.FireAsync(
                 preset, countdownSeconds: 3, countdown, fire).ConfigureAwait(false);
 
             int fired = result.Accounts.Count(r => !r.Skipped);
             int skipped = result.Accounts.Count(r => r.Skipped);
-            StatusMessage = $"fired={fired} skipped={skipped}";
+            StatusMessage = AppStrings.PresetFired(fired, skipped);
             _log.Info($"Fired preset {preset.Name}: fired={fired} skipped={skipped}.");
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "canceled";
+            StatusMessage = AppStrings.PresetCanceled;
             _log.Info($"Fired preset {preset.Name}: canceled.");
         }
         catch (Exception ex)
@@ -371,8 +354,8 @@ public sealed partial class GroupViewModel : ObservableObject
         await _state.SaveAsync();
         Rebuild(SelectedGroup);
         StatusMessage = skipped == 0
-            ? $"formation={SelectedFormation.Name} members={applied.Count}"
-            : $"formation={SelectedFormation.Name} members={applied.Count} skipped={skipped}";
+            ? AppStrings.FormationApplied(SelectedFormation.Name, applied.Count)
+            : AppStrings.FormationAppliedSkipped(SelectedFormation.Name, applied.Count, skipped);
     }
 
     [RelayCommand]

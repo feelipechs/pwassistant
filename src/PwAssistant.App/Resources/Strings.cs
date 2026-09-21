@@ -104,9 +104,16 @@ public static class Strings
     public static string CopyLogin => Get(nameof(CopyLogin));
     public static string CopyPassword => Get(nameof(CopyPassword));
     public static string Refresh => Get(nameof(Refresh));
-    public static string OnlineOnly => Get(nameof(OnlineOnly));
     public static string Tag => Get(nameof(Tag));
     public static string CancelDialog => Get(nameof(CancelDialog));
+    public static string FormationApplied(string name, int members) =>
+        string.Format(Get(nameof(FormationApplied)), name, members);
+    public static string FormationAppliedSkipped(string name, int members, int skipped) =>
+        string.Format(Get(nameof(FormationAppliedSkipped)), name, members, skipped);
+    public static string PresetFired(int fired, int skipped) =>
+        string.Format(Get(nameof(PresetFired)), fired, skipped);
+    public static string PresetCanceled => Get(nameof(PresetCanceled));
+    public static string SkippedMark => Get(nameof(SkippedMark));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }

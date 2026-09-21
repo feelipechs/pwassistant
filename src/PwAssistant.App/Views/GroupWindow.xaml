@@ -69,16 +69,15 @@
         <TabControl>
             <TabItem Header="{x:Static res:Strings.Members}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="0,4,0,0">
-                        <Border Style="{StaticResource CardBorder}">
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,5,8">
                             <StackPanel>
-                                <DockPanel Margin="0,0,0,4">
-                                    <TextBlock x:Name="MembersLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
-                                    <CheckBox x:Name="OnlineOnlyCheck" DockPanel.Dock="Right"
-                                              Style="{StaticResource ToggleSwitch}"
-                                              IsChecked="{Binding ShowOnlineOnly}" VerticalAlignment="Center"/>
-                                </DockPanel>
-                                <ListBox x:Name="MembersList" Height="220" ItemsSource="{Binding VisibleMembers}">
+                                <TextBlock x:Name="MembersLabel" Style="{StaticResource SectionTitle}"/>
+                                <ListBox x:Name="MembersList" Height="220" ItemsSource="{Binding Members}">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <DockPanel>
@@ -100,9 +99,7 @@
                                                             </Style>
                                                         </Ellipse.Style>
                                                     </Ellipse>
-                                                    <TextBlock Text="{Binding DisplayName}" Width="240" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="{Binding StatusText}" Width="80" VerticalAlignment="Center"
-                                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"/>
                                                 </StackPanel>
                                             </DockPanel>
                                         </DataTemplate>
@@ -124,7 +121,13 @@
                                 </ListBox>
                             </StackPanel>
                         </Border>
-                    </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="5,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static res:Strings.OnlineMembers}" Style="{StaticResource SectionTitle}"/>
+                                <ListBox x:Name="OnlineList" Height="220" ItemsSource="{Binding OnlineMembers}" DisplayMemberPath="Role"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="{x:Static res:Strings.Presets}">

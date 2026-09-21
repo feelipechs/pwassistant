@@ -98,7 +98,11 @@
   <data name="CopyLogin" xml:space="preserve"><value>Copy login</value></data>
   <data name="CopyPassword" xml:space="preserve"><value>Copy password</value></data>
   <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
-  <data name="OnlineOnly" xml:space="preserve"><value>Online only</value></data>
   <data name="Tag" xml:space="preserve"><value>Tag</value></data>
   <data name="CancelDialog" xml:space="preserve"><value>Cancel</value></data>
+  <data name="FormationApplied" xml:space="preserve"><value>Formation '{0}': {1} members</value></data>
+  <data name="FormationAppliedSkipped" xml:space="preserve"><value>Formation '{0}': {1} members, {2} skipped</value></data>
+  <data name="PresetFired" xml:space="preserve"><value>Fired {0}, skipped {1}</value></data>
+  <data name="PresetCanceled" xml:space="preserve"><value>Canceled</value></data>
+  <data name="SkippedMark" xml:space="preserve"><value>skipped</value></data>
 </root>

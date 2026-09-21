@@ -16,7 +16,6 @@ public partial class GroupWindow : Window
         DataContext = viewModel;
         InitializeComponent();
         MembersLabel.Text = Strings.Members;
-        OnlineOnlyCheck.Content = Strings.OnlineOnly;
         MiniModeButton.Content = Strings.MiniMode;
         FormationsLabel.Text = Strings.Formations;
         SaveFormationButton.Content = Strings.SaveFormation;
