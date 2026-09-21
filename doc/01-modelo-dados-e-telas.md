@@ -29,6 +29,13 @@ Group
  ├─ Name
  └─ AccountIds: List<Guid>   (membros possíveis; nem todos precisam estar online)
 
+AccountTab
+ ├─ Id
+ ├─ ServerId
+ ├─ Name
+ └─ AccountIds: List<Guid>   (ordenados; organização pura — excluir a tab
+     nunca exclui contas)
+
 Preset
  ├─ Id
  ├─ GroupId

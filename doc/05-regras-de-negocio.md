@@ -16,6 +16,12 @@ normativa; em caso de conflito com código, o código deve ser corrigido
     `EnumWindows`, nunca via cache).
 - **Group**: `Id, Name, AccountIds[]`. Membro offline é admitido no grupo,
   mas **pulado silenciosamente com log** no disparo (nunca aborta o lote).
+  Excluir grupo pede confirmação e exclui os presets dele em cascata.
+- **AccountTab**: `Id, ServerId, Name, AccountIds[]` (ordenados).
+  Organização pura das contas de um servidor (ex.: PT1, PT2): membership
+  explícito; excluir a tab nunca exclui contas. "Todas" é implícita.
+- **Server**: excluir pede confirmação e limpa em cascata (contas saem de
+  grupos, tabs e ações de preset que as citam).
 - **Preset**: `Id, GroupId, Name, Hotkey?, ExecutionMode, Actions[]`.
 - **AccountAction**: `AccountId + Action`.
 - **Action**: `Type (Key|Click), Key?, RelativePosition?, DelayBeforeMs,

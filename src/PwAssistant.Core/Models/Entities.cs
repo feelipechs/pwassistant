@@ -55,6 +55,20 @@ public sealed class Group
 }
 
 /// <summary>
+/// Named account tab inside a server (pure organization, like a PT label).
+/// Membership is explicit; deleting a tab never deletes accounts.
+/// </summary>
+public sealed class AccountTab
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ServerId { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Ordered member account ids.</summary>
+    public List<Guid> AccountIds { get; set; } = new();
+}
+
+/// <summary>
 /// Named, ordered snapshot of party members. Order is significant
 /// (numpad selection in B4 follows it). No presets (they persist per group).
 /// </summary>

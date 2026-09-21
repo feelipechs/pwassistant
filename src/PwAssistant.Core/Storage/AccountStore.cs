@@ -13,6 +13,7 @@ public sealed class AppData
     public List<Group> Groups { get; set; } = new();
     public List<Preset> Presets { get; set; } = new();
     public List<Formation> Formations { get; set; } = new();
+    public List<AccountTab> Tabs { get; set; } = new();
     public FocusSettings FocusSettings { get; set; } = new();
 
     /// <summary>Last server selected in the shell (restored on launch).</summary>
