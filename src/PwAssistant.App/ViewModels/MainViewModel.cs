@@ -393,6 +393,14 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedServer is null) return;
         var dialog = new TextPromptDialog("TabName", string.Empty);
         if (dialog.ShowDialog() != true) return;
+        AccountTab? existing = _state.Data.Tabs.FirstOrDefault(t =>
+            t.ServerId == SelectedServer.Model.Id &&
+            string.Equals(t.Name, dialog.Value, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            SelectedTab = existing;
+            return;
+        }
         var tab = new AccountTab { ServerId = SelectedServer.Model.Id, Name = dialog.Value };
         _state.Data.Tabs.Add(tab);
         Tabs.Add(tab);
@@ -410,6 +418,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (dialog.ShowDialog() != true) return;
         tab.Name = dialog.Value;
         foreach (Account account in _state.Data.Servers
+            .Where(s => s.Id == tab.ServerId)
             .SelectMany(s => s.Accounts)
             .Where(a => string.Equals(a.Tag, oldName, StringComparison.OrdinalIgnoreCase)))
             account.Tag = tab.Name;
@@ -422,6 +431,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         foreach (TabItem item in TabItems.Where(i => i.Tab == tab))
             item.RefreshTitle();
+        RebuildAccounts();
         await _state.SaveAsync().ConfigureAwait(false);
     }
 
@@ -432,6 +442,7 @@ public sealed partial class MainViewModel : ObservableObject
         _state.Data.Tabs.Remove(tab);
         Tabs.Remove(tab);
         foreach (Account account in _state.Data.Servers
+            .Where(s => s.Id == tab.ServerId)
             .SelectMany(s => s.Accounts)
             .Where(a => string.Equals(a.Tag, tab.Name, StringComparison.OrdinalIgnoreCase)))
             account.Tag = null;
