@@ -106,6 +106,8 @@ public static class Strings
     public static string CopyPassword => Get(nameof(CopyPassword));
     public static string Refresh => Get(nameof(Refresh));
     public static string OnlineOnly => Get(nameof(OnlineOnly));
+    public static string Tag => Get(nameof(Tag));
+    public static string CancelDialog => Get(nameof(CancelDialog));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }

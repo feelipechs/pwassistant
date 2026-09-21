@@ -100,4 +100,6 @@
   <data name="CopyPassword" xml:space="preserve"><value>Copiar senha</value></data>
   <data name="Refresh" xml:space="preserve"><value>Atualizar</value></data>
   <data name="OnlineOnly" xml:space="preserve"><value>Só online</value></data>
+  <data name="Tag" xml:space="preserve"><value>Etiqueta</value></data>
+  <data name="CancelDialog" xml:space="preserve"><value>Cancelar</value></data>
 </root>

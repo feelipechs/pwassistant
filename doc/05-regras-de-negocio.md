@@ -17,9 +17,11 @@ normativa; em caso de conflito com código, o código deve ser corrigido
 - **Group**: `Id, Name, AccountIds[]`. Membro offline é admitido no grupo,
   mas **pulado silenciosamente com log** no disparo (nunca aborta o lote).
   Excluir grupo pede confirmação e exclui os presets dele em cascata.
-- **AccountTab**: `Id, ServerId, Name, AccountIds[]` (ordenados).
-  Organização pura das contas de um servidor (ex.: PT1, PT2): membership
-  explícito; excluir a tab nunca exclui contas. "Todas" é implícita.
+- **AccountTab**: `Id, ServerId, Name` (+ `AccountIds` legado, ver `01`).
+  Organização pura (ex.: PT1, PT2): a tab guarda nome/ordem e os membros
+  são as contas com `Account.Tag == Name` (case-insensitive). Renomear
+  retaggeia em massa; excluir limpa as Tags (contas caem em "Todas",
+  nunca são excluídas). "Todas" é implícita.
 - **Server**: excluir pede confirmação e limpa em cascata (contas saem de
   grupos, tabs e ações de preset que as citam).
 - **Preset**: `Id, GroupId, Name, Hotkey?, ExecutionMode, Actions[]`.

@@ -183,6 +183,17 @@ public sealed partial class MainViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         await _state.LoadAsync().ConfigureAwait(false);
+        if (MigrateTabsToTags())
+        {
+            try
+            {
+                await _state.SaveAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = ex.Message;
+            }
+        }
         App.Current.Dispatcher.Invoke(() =>
         {
             Servers.Clear();
@@ -192,6 +203,33 @@ public sealed partial class MainViewModel : ObservableObject
             SelectedServer = Servers.FirstOrDefault(s => s.Model.Id == _state.Data.LastSelectedServerId);
             RefreshServerRows();
         });
+    }
+
+    /// <summary>
+    /// One-time migration: legacy tab AccountIds become Account.Tag
+    /// (first-claim wins); membership is Tag-based from then on.
+    /// </summary>
+    private bool MigrateTabsToTags()
+    {
+        bool changed = false;
+        var byId = _state.Data.Servers.SelectMany(s => s.Accounts).ToDictionary(a => a.Id);
+        foreach (AccountTab tab in _state.Data.Tabs)
+        {
+            foreach (Guid id in tab.AccountIds)
+            {
+                if (byId.TryGetValue(id, out Account? account) && string.IsNullOrWhiteSpace(account.Tag))
+                {
+                    account.Tag = tab.Name;
+                    changed = true;
+                }
+            }
+            if (tab.AccountIds.Count > 0)
+            {
+                tab.AccountIds.Clear();
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     partial void OnSelectedServerChanged(ServerRow? value)
@@ -237,10 +275,10 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Accounts.Clear();
         if (SelectedServer is null) return;
-        var byId = SelectedServer.Model.Accounts.ToDictionary(a => a.Id);
         IEnumerable<Account> scope = SelectedTab is null
             ? SelectedServer.Model.Accounts
-            : SelectedTab.AccountIds.Where(byId.ContainsKey).Select(id => byId[id]);
+            : SelectedServer.Model.Accounts.Where(a =>
+                string.Equals(a.Tag, SelectedTab.Name, StringComparison.OrdinalIgnoreCase));
         foreach (Account account in scope)
             Accounts.Add(new AccountCard(account));
     }
@@ -322,6 +360,12 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (SelectedServer is null) return;
         var dialog = new AccountDialog();
+        dialog.KnownTags = _state.Data.Tabs
+            .Where(t => t.ServerId == SelectedServer.Model.Id)
+            .Select(t => t.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(n => n)
+            .ToList();
         if (dialog.ShowDialog() == true)
         {
             var account = new Account
@@ -330,11 +374,11 @@ public sealed partial class MainViewModel : ObservableObject
                 Login = dialog.Login,
                 Role = dialog.Role,
                 Nickname = dialog.Nickname,
-                Class = dialog.Class
+                Class = dialog.Class,
+                Tag = SelectedTab?.Name
             };
             _state.SetPassword(account, dialog.Password);
             SelectedServer.Model.Accounts.Add(account);
-            SelectedTab?.AccountIds.Add(account.Id);
             RebuildAccounts();
             RefreshServerRows();
             await _state.SaveAsync().ConfigureAwait(false);
@@ -359,9 +403,14 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RenameTabAsync(AccountTab? tab)
     {
         if (tab is null) return;
+        string oldName = tab.Name;
         var dialog = new TextPromptDialog("TabName", tab.Name);
         if (dialog.ShowDialog() != true) return;
         tab.Name = dialog.Value;
+        foreach (Account account in _state.Data.Servers
+            .SelectMany(s => s.Accounts)
+            .Where(a => string.Equals(a.Tag, oldName, StringComparison.OrdinalIgnoreCase)))
+            account.Tag = tab.Name;
         // ObservableCollection holds the reference; force a re-read.
         int index = Tabs.IndexOf(tab);
         if (index >= 0)
@@ -380,6 +429,10 @@ public sealed partial class MainViewModel : ObservableObject
         if (tab is null) return;
         _state.Data.Tabs.Remove(tab);
         Tabs.Remove(tab);
+        foreach (Account account in _state.Data.Servers
+            .SelectMany(s => s.Accounts)
+            .Where(a => string.Equals(a.Tag, tab.Name, StringComparison.OrdinalIgnoreCase)))
+            account.Tag = null;
         TabItem? strip = TabItems.FirstOrDefault(i => i.Tab == tab);
         if (strip is not null)
             TabItems.Remove(strip);
@@ -392,7 +445,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RemoveFromTabAsync(AccountCard? card)
     {
         if (card is null || SelectedTab is null) return;
-        SelectedTab.AccountIds.Remove(card.Model.Id);
+        card.Model.Tag = null;
         await _state.SaveAsync().ConfigureAwait(false);
         RebuildAccounts();
     }
@@ -534,12 +587,19 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (card is null || SelectedServer is null) return;
         var dialog = new AccountDialog { RequirePassword = false };
+        dialog.KnownTags = _state.Data.Tabs
+            .Where(t => t.ServerId == SelectedServer.Model.Id)
+            .Select(t => t.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(n => n)
+            .ToList();
         dialog.Prefill(card.Model);
         if (dialog.ShowDialog() != true) return;
         card.Model.Login = dialog.Login;
         card.Model.Role = dialog.Role;
         card.Model.Nickname = dialog.Nickname;
         card.Model.Class = dialog.Class;
+        card.Model.Tag = dialog.AccountTag;
         if (!string.IsNullOrEmpty(dialog.Password))
             _state.SetPassword(card.Model, dialog.Password);
         await _state.SaveAsync().ConfigureAwait(false);

@@ -14,6 +14,14 @@ public partial class AccountDialog : Window
         : (string.IsNullOrWhiteSpace(NicknameBox.Text) ? null : NicknameBox.Text.Trim());
     public string? Class => (ClassBox.SelectedItem as ClassInfo)?.Key;
 
+    /// <summary>Tab tag: free text with the existing tabs as suggestions.</summary>
+    public string? AccountTag => string.IsNullOrWhiteSpace(TagBox.Text) ? null : TagBox.Text.Trim();
+
+    public IEnumerable<string> KnownTags
+    {
+        set => TagBox.ItemsSource = value;
+    }
+
     /// <summary>When false (edit mode), an empty password keeps the stored one.</summary>
     public bool RequirePassword { get; set; } = true;
 
@@ -29,6 +37,7 @@ public partial class AccountDialog : Window
         ClassLabel.Text = Strings.Class;
         ClassBox.ItemsSource = ClassCatalog.All;
         ClassBox.SelectedIndex = -1;
+        TagLabel.Text = Strings.Tag;
         SaveButton.ToolTip = Strings.Save;
         SameAsRoleCheck.Checked += (_, _) => MirrorRole();
         SameAsRoleCheck.Unchecked += (_, _) => NicknameBox.IsEnabled = true;
@@ -56,6 +65,7 @@ public partial class AccountDialog : Window
         NicknameBox.Text = account.Nickname ?? string.Empty;
         SameAsRoleCheck.IsChecked = string.IsNullOrWhiteSpace(account.Nickname);
         ClassBox.SelectedItem = ClassCatalog.TryGet(account.Class, out ClassInfo info) ? info : null;
+        TagBox.Text = account.Tag ?? string.Empty;
     }
 
     private void OnSave(object sender, RoutedEventArgs e)

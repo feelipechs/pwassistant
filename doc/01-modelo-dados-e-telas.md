@@ -33,8 +33,9 @@ AccountTab
  ├─ Id
  ├─ ServerId
  ├─ Name
- └─ AccountIds: List<Guid>   (ordenados; organização pura — excluir a tab
-     nunca exclui contas)
+ └─ AccountIds: List<Guid>   (legado: migração 2026-09-21 preencheu
+     `Account.Tag` e limpou; membros = contas com `Tag == Name`,
+     case-insensitive; excluir a tab nunca exclui contas)
 
 Preset
  ├─ Id

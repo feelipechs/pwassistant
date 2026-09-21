@@ -16,6 +16,8 @@
         <CheckBox x:Name="SameAsRoleCheck" Margin="0,6,0,0" Style="{StaticResource ToggleSwitch}"/>
         <TextBlock x:Name="ClassLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
         <ComboBox x:Name="ClassBox" DisplayMemberPath="Display"/>
+        <TextBlock x:Name="TagLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+        <ComboBox x:Name="TagBox" IsEditable="True"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button x:Name="SaveButton" Content="&#xE74E;" Click="OnSave" Style="{StaticResource IconButton}" Width="36" Height="32"/>
         </StackPanel>
