@@ -377,7 +377,7 @@ public sealed partial class MainViewModel : ObservableObject
                 Role = dialog.Role,
                 Nickname = dialog.Nickname,
                 Class = dialog.Class,
-                Tag = SelectedTab?.Name
+                Tag = dialog.AccountTag
             };
             _state.SetPassword(account, dialog.Password);
             SelectedServer.Model.Accounts.Add(account);
