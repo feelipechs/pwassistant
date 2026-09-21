@@ -110,6 +110,18 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   converte via `ScreenToClient`).
 - **Estilo v1**: recursos XAML próprios, tema escuro simples, sem toolkit
   pesado (ex.: MahApps) — reavaliar só se a UI pedir.
+- **U1 Redesign (2026-09-20, código pendente de validação no Windows):**
+  cláusula acima acionada — redesign completo mantido em XAML próprio, sem
+  novo pacote: `Themes/Tokens.xaml` (paleta dark + gold, radius, espaçamentos,
+  fonte) + `Themes/Controls.xaml` (Button Primary/Danger/Ghost/Icon,
+  ToggleButton com estado checked dourado, inputs, ListBox, CardBorder,
+  SectionTitle/Muted/Status). `App.xaml` só mescla os dicionários (aliases
+  `BackgroundBrush/SurfaceBrush/AccentBrush` preservados). `MiniWindow`
+  mantém `WS_EX_NOACTIVATE` + `Focusable=False` (1-clique sem roubar foco).
+  `<ApplicationIcon>` = `Resources\Classes\guerreiro.ico` (placeholder; ícone
+  próprio do app pendente). `images/` raiz é duplicata dos originais do
+  usuário (verificado por hash) e está no `.gitignore`; canônico é
+  `Resources/Classes`.
 - **Idioma**: código/XAML-names em inglês; todo texto visível em pt-BR via
   `.resx` (`Resources.pt-BR`), nunca hardcoded em inglês na tela.
 - ViewModels nunca referenciam HWND/PID (falam com `Core` por Ids); `App`

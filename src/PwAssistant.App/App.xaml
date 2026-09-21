@@ -3,20 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <Color x:Key="BackgroundColor">#1E1E1E</Color>
-            <Color x:Key="SurfaceColor">#2D2D30</Color>
-            <Color x:Key="AccentColor">#007ACC</Color>
-            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-            <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
-            <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-            <Style TargetType="Button">
-                <Setter Property="Margin" Value="4"/>
-                <Setter Property="Padding" Value="10,4"/>
-            </Style>
-            <Style TargetType="TextBox">
-                <Setter Property="Margin" Value="4"/>
-                <Setter Property="Padding" Value="4"/>
-            </Style>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Tokens.xaml"/>
+                <ResourceDictionary Source="Themes/Controls.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
