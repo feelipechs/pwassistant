@@ -166,3 +166,8 @@ Validar em cada item abaixo.
   e fecha, Fechar/X descarta via snapshot; mini lista só online.
 - **Aceite (2026-09-20, Windows):** ✅ B4-config funcional (gravação,
   Save/descarta, mini só-online, legenda viva).
+
+## U9-futuro — Grade do Mini configurável (2026-09-21, ideia)
+
+- Oferecer opções de layout no Mini (grade lateral personagens+presets,
+  tabela única, etc.). Levantado ao compactar o Mini; fora do lote atual.

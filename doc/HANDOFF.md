@@ -20,9 +20,19 @@
   presets e formações, presets em janelinha própria).
 - U7: retag por servidor, scrollbar, fantasma de arrasto, formações
   separadas, "Disponíveis", `+` grupo à direita.
-- Roteiro Windows: renomear PT1 com 2 servidores (outro intacto);
-  arrastar com fantasma + highlight; salvar/carregar formação por card;
-  ativo seguido pelo Mini; DPI 100/150%; screenshots.
+- U8 (AGUARDANDO VALIDAÇÃO, NÃO COMMITAR): seta do TagBox clicável
+  (dropdown puro via SelectedItem), scroll no diálogo de conta, cards
+  quadrados 300px, indicadores de drop + sem flicker, ícone próprio do
+  app, `+` grupo no topo, popup sem cantos, reorder com linha de
+  inserção, membership só-DnD (pool aceita drop, mini-cards nome+ícone),
+  formações em janelinha, DnD nas linhas e na ordem dos presets, roda do
+  mouse não troca select fechado (rola a página), play/fire concorrentes
+  sem countdown, Mini nome+ícone, launch mostra `...` (U+2026 fora do
+  MDL2), Mini compacto com toggles no topo (grade configurável no
+   backlog como U9-futuro), pílulas de preset em WrapPanel com switch
+   embutido, ativação no card inteiro.
+- Roteiro Windows: abrir TagBox no clique; dialog com scroll; arrastar
+  com cards acesos; exe com o novo ícone; DPI 100/150%; screenshots.
 
 ## Próximo passo
 

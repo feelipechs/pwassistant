@@ -142,6 +142,9 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   de UI (crash cross-thread); `ListBoxItem` com template próprio (seleção
   gold, sem azul/cinza do default); `MainWindow` em clusters `DockPanel`;
   status humanizados via resx;   Mini com switches e sem legenda.
+  Formações em `GroupFormationsWindow` (clique aplica + fecha); DnD nas
+  linhas do preset (sem setas, com linha de inserção) e na ordem dos
+  presets (`MovePresetAsync`, helper `InsertionPreview` compartilhado).
 - **U7 grupo final (2026-09-21, código pendente de validação):** retag de tabs
   por servidor (sem vazamento cross-server) + trava anti-duplicada;
   `ScrollBar` com botões colapsados e Thumb mínimo (paging na trilha sai);
@@ -149,12 +152,30 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   + highlight `IsDragOver` (gap posicional não se aplica a alvo-card);
   formações separadas (Salvar via prompt, Carregar por linha);
   `Ungrouped` = "Disponíveis"/"Available"; `+` grupo à direita.
+  Play/Fire concorrentes (`AllowConcurrentExecutions`), countdown 0 nos
+  3 pontos, `IsLaunching` por card (`…` + anti-duplo-launch); Mini com
+  mini-cards nome+ícone (sem login, sem DnD).
+  `+` grupo na barra superior; popup com `PlacementTarget` + transparência;
+  cards 300px em `WrapPanel`; reorder de membros com linha de inserção
+  (`InsertionAdorner`, payload `MemberDrag`); ordem do grupo dirige
+  numpad/foco; membership 100% DnD (pool vira alvo de drop p/ desagrupar),
+  mini-cards só ícone+nome (`MiniCard`).
+- **U8 validação UX (2026-09-21, código pendente de validação):** `ComboBox`
+  editável com zona de seta clicável (`*` + 28px); `ScrollViewer` no
+  `AccountDialog`; cards em `WrapPanel` 300px; `IsDragging` global acende
+  todos os cards + contador Enter/Leave contra flicker; `App.ico`
+  multi-tamanho (16/32/48/256) gerado do PNG 1920.
 - **U6 cards de grupo (2026-09-21, código pendente de validação):** `GroupCard`
   (membros, contagens, `IsActive`, `IsMenuOpen`) + `Pool` (sem grupo) +
   `ActiveCard` (espelha `SelectedGroup`, preservando sync/foco/Mini/hotkeys);
   `RebuildAll` por união; DnD pool→card (`DropAccountOntoGroupAsync`);
   presets em `GroupPresetsWindow` (ativa o grupo ao abrir); formações por
-  card; sem `ConfigureAwait(false)` antes de tocar coleções de UI.
+  card;   sem `ConfigureAwait(false)` antes de tocar coleções de UI.
+- **U8 validação UX (2026-09-21, código pendente de validação):** um drop =
+  um move (`e.Handled` no drop interno; sem isso o move duplicava e dois
+  `SaveAsync` concorriam no `.tmp` → `IOException`); `SaveAsync` com
+  `SemaphoreSlim` + teste de saves paralelos; pool sem seleção
+  (`ItemsControl`); drops com try/catch → `StatusMessage`.
 - **U1 Redesign (2026-09-20, código pendente de validação no Windows):**
   cláusula acima acionada — redesign completo mantido em XAML próprio, sem
   novo pacote: `Themes/Tokens.xaml` (paleta dark + gold, radius, espaçamentos,
