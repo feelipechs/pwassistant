@@ -59,9 +59,7 @@
                           Style="{StaticResource ToggleSwitch}" IsChecked="{Binding SyncEnabled}"/>
                 <CheckBox x:Name="FocusCheck" Margin="0,2,0,0" Focusable="False"
                           Style="{StaticResource ToggleSwitch}" IsChecked="{Binding FocusEnabled}"/>
-                <TextBlock x:Name="KeysLabel" Margin="0,8,0,0" Style="{StaticResource MutedText}"
-                           Text="{Binding FocusKeysLegend}"/>
-                <TextBlock Text="{Binding StatusMessage}" Margin="0,4,0,0" Style="{StaticResource StatusText}" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding StatusMessage}" Margin="0,8,0,0" Style="{StaticResource StatusText}" TextWrapping="Wrap"/>
             </StackPanel>
         </StackPanel>
     </Border>

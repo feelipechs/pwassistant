@@ -127,16 +127,21 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   direita da `MainWindow` em `Grid` (header/strip/`*` — `ScrollViewer` em
   `StackPanel` nunca scrolla); ações de servidor só no hover/seleção;
   credenciais em caixas `InputBox`; dots de status via `Style` (valor local
-  vence trigger — nunca fixar `Fill` direto). `GroupWindow`: lista única
-  de membros com dot + filtro "só online" (`VisibleMembers`; `OnlineMembers`
-  segue alimentando sync/foco, fora da UI); formações via botão `...`
-  (`Popup`, sem aba);   Mini mostra só o nome do preset (loop no toggle).
+  vence trigger — nunca fixar `Fill` direto). `GroupWindow`: membros lado a
+  lado (todos | online compacto, sem filtro); formações via botão `...`
+  (`Popup`, sem aba); Mini mostra só o nome do preset (loop no toggle).
 - **U4 refinamentos (2026-09-21, código pendente de validação):** `ToggleSwitch`
   (CheckBox) para Sync/Focus/Loop/opções; `ScrollBar` fina; Mini sem collapse
   e sem barrinha; tabs por `Tag` (ver `01`/`05`); Save em texto + Cancelar;
   layouts `DockPanel` extremidade-a-extremidade; membros com lista de adição
   (`+` por linha); preset mostra só o nome do personagem, duplicar insere
   abaixo, ícones teclado/mouse e glyphs MDL2 nas linhas.
+- **U5 polimento UX (2026-09-21, código pendente de validação):** `ComboBox`
+  editável com `PART_EditableTextBox`; Tag travada ao criar conta dentro da
+  tab; `RemoveFromTab` sem `ConfigureAwait(false)` antes de tocar coleções
+  de UI (crash cross-thread); `ListBoxItem` com template próprio (seleção
+  gold, sem azul/cinza do default); `MainWindow` em clusters `DockPanel`;
+  status humanizados via resx; Mini com switches e sem legenda.
 - **U1 Redesign (2026-09-20, código pendente de validação no Windows):**
   cláusula acima acionada — redesign completo mantido em XAML próprio, sem
   novo pacote: `Themes/Tokens.xaml` (paleta dark + gold, radius, espaçamentos,

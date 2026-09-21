@@ -37,7 +37,6 @@ public static class Strings
     public static string CycleKey => Get(nameof(CycleKey));
     public static string NumpadSelect => Get(nameof(NumpadSelect));
     public static string ShiftTapToggle => Get(nameof(ShiftTapToggle));
-    public static string FocusKeysLive => Get(nameof(FocusKeysLive));
     public static string Settings => Get(nameof(Settings));
     public static string Close => Get(nameof(Close));
     public static string ArmingHint => Get(nameof(ArmingHint));

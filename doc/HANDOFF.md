@@ -14,8 +14,11 @@
   Tag (migração preenche a partir dos membros), Save texto + Cancelar,
   space-between, lista de adição no grupo, preset só-nome/duplicar
   abaixo/teclado-mouse.
-- Roteiro Windows: fluxo etiqueta→tab; switches; popup `...`; duplicar
-  abaixo; Mini com jogo focado; DPI 100/150%; screenshots.
+- U5: Tag travada na criação, fix crash do ✕, seleção sem azul,
+  clusters, lado a lado, status humanizados, Mini labels.
+- Roteiro Windows: criar conta na PT02 (tag travada); clicar ✕ (ex-crash);
+  switches; popup `...`; duplicar abaixo; Mini com jogo focado;
+  DPI 100/150%; screenshots.
 
 ## Próximo passo
 

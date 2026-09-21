@@ -25,15 +25,14 @@
   <data name="ClientPath" xml:space="preserve"><value>Caminho do client (elementclient.exe)</value></data>
   <data name="GroupName" xml:space="preserve"><value>Nome do grupo</value></data>
   <data name="PresetName" xml:space="preserve"><value>Nome do preset</value></data>
-  <data name="SyncEnabled" xml:space="preserve"><value>Sincronizar clicks</value></data>
-  <data name="FocusSwitch" xml:space="preserve"><value>Troca de janelas (`/Shift/numpad)</value></data>
+  <data name="SyncEnabled" xml:space="preserve"><value>Sync click</value></data>
+  <data name="FocusSwitch" xml:space="preserve"><value>Troca de janelas</value></data>
   <data name="MiniMode" xml:space="preserve"><value>Mini-mode</value></data>
   <data name="FocusKeysHint" xml:space="preserve"><value>` alterna, toque de Shift troca as duas, numpad 1-9,0 seleciona (troca ligada).</value></data>
   <data name="FocusConfig" xml:space="preserve"><value>Teclas de troca de janela</value></data>
   <data name="CycleKey" xml:space="preserve"><value>Tecla de ciclo</value></data>
   <data name="NumpadSelect" xml:space="preserve"><value>Seleção pelo numpad</value></data>
   <data name="ShiftTapToggle" xml:space="preserve"><value>Alternar com Shift</value></data>
-  <data name="FocusKeysLive" xml:space="preserve"><value>{0} alterna, toque de Shift troca as duas, numpad 1-9,0 seleciona (troca ligada).</value></data>
   <data name="Settings" xml:space="preserve"><value>Configurações</value></data>
   <data name="Close" xml:space="preserve"><value>Fechar</value></data>
   <data name="ArmingHint" xml:space="preserve"><value>A troca em si é ligada na janela mini-mode.</value></data>

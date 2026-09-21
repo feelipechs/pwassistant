@@ -26,14 +26,13 @@
   <data name="GroupName" xml:space="preserve"><value>Group name</value></data>
   <data name="PresetName" xml:space="preserve"><value>Preset name</value></data>
   <data name="SyncEnabled" xml:space="preserve"><value>Sync click</value></data>
-  <data name="FocusSwitch" xml:space="preserve"><value>Window switching (`/Shift/numpad)</value></data>
+  <data name="FocusSwitch" xml:space="preserve"><value>Window switching</value></data>
   <data name="MiniMode" xml:space="preserve"><value>Mini-mode</value></data>
   <data name="FocusKeysHint" xml:space="preserve"><value>` cycles, Shift-tap toggles, numpad 1-9,0 selects (switching on).</value></data>
   <data name="FocusConfig" xml:space="preserve"><value>Window switching keys</value></data>
   <data name="CycleKey" xml:space="preserve"><value>Cycle key</value></data>
   <data name="NumpadSelect" xml:space="preserve"><value>Numpad selection</value></data>
   <data name="ShiftTapToggle" xml:space="preserve"><value>Shift-tap toggle</value></data>
-  <data name="FocusKeysLive" xml:space="preserve"><value>{0} cycles, Shift-tap toggles, numpad 1-9,0 selects (switching on).</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="Close" xml:space="preserve"><value>Close</value></data>
   <data name="ArmingHint" xml:space="preserve"><value>Switching itself is armed in the mini-mode window.</value></data>

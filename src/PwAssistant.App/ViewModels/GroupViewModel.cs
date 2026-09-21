@@ -130,12 +130,7 @@ public sealed partial class GroupViewModel : ObservableObject
         SelectedFormation = null;
         _state.Data.FocusSettings ??= new FocusSettings();
         _focus.Settings = _state.Data.FocusSettings;
-        OnPropertyChanged(nameof(FocusKeysLegend));
     }
-
-    /// <summary>Mini-mode legend with the live cycle key.</summary>
-    public string FocusKeysLegend => string.Format(
-        AppStrings.FocusKeysLive, Views.SettingsWindow.CycleKeyLabel(_focus.Settings.CycleKey));
 
     partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);
 
@@ -202,7 +197,6 @@ public sealed partial class GroupViewModel : ObservableObject
 
         _sync.SetSyncedAccounts(OnlineMembers.Select(a => a.Id));
         _focus.SetOrder(OnlineMembers.Select(a => a.Id));
-        OnPropertyChanged(nameof(FocusKeysLegend));
     }
 
     partial void OnSyncEnabledChanged(bool value) => _sync.Enabled = value;
