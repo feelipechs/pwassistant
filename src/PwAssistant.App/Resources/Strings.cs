@@ -113,6 +113,9 @@ public static class Strings
         string.Format(Get(nameof(PresetFired)), fired, skipped);
     public static string PresetCanceled => Get(nameof(PresetCanceled));
     public static string SkippedMark => Get(nameof(SkippedMark));
+    public static string NoActiveGroup => Get(nameof(NoActiveGroup));
+    public static string Ungrouped => Get(nameof(Ungrouped));
+    public static string GroupCardStats => Get(nameof(GroupCardStats));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }

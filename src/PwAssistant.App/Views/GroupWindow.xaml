@@ -2,178 +2,161 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:PwAssistant.Core.Models;assembly=PwAssistant.Core"
-        xmlns:res="clr-namespace:PwAssistant.App.Resources"
-        Title="Group Mode" Height="620" Width="880"
+        Title="Group Mode" Height="640" Width="980"
         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="{StaticResource AppFont}">
     <DockPanel Margin="16,12,16,12">
-        <!-- Group selector + management -->
-        <Border DockPanel.Dock="Top" Style="{StaticResource CardBorder}">
-            <StackPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button x:Name="MiniModeButton" Command="{Binding OpenMiniModeCommand}"
+                    DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}"
+                    MinWidth="110" VerticalAlignment="Center"/>
+            <TextBlock x:Name="TitleLabel" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+        </DockPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!-- Pool: ungrouped characters, drag source -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,6,0">
                 <DockPanel>
-                    <Button x:Name="MiniModeButton" Command="{Binding OpenMiniModeCommand}"
-                            DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="12,0,0,0"
-                            MinWidth="110" VerticalAlignment="Center"/>
-                    <Border Width="1" Margin="8,2" Background="{StaticResource BorderBrush}"
-                            DockPanel.Dock="Right"/>
-                    <StackPanel Orientation="Horizontal">
-                        <ComboBox x:Name="GroupBox" Width="260" Margin="0,0,4,0"
-                                  ItemsSource="{Binding Groups}"
-                                  DisplayMemberPath="Name"
-                                  SelectedItem="{Binding SelectedGroup}"/>
+                    <TextBlock x:Name="PoolLabel" DockPanel.Dock="Top" Style="{StaticResource SectionTitle}"/>
+                    <ListBox x:Name="PoolList" ItemsSource="{Binding Pool}"
+                             PreviewMouseLeftButtonDown="OnPoolPreviewMouseDown"
+                             PreviewMouseMove="OnPoolPreviewMouseMove">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <Button Content="&#xE710;"
+                                            DockPanel.Dock="Right"
+                                            Command="{Binding DataContext.AddMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="8" Height="8" Margin="0,0,8,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="{StaticResource TextMutedBrush}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Account.Status}" Value="{x:Static models:AccountStatus.Online}">
+                                                            <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                        <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+            <!-- Group cards -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="6,0,0,8">
                         <Button x:Name="AddGroupButton" Content="&#xE710;" Command="{Binding AddGroupCommand}"
                                 Style="{StaticResource IconButton}"/>
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsGroupSelected}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <Border Width="1" Margin="4,4" Background="{StaticResource BorderBrush}"/>
-                            <Button x:Name="RenameGroupButton" Content="&#xE70F;" Command="{Binding RenameGroupCommand}"
-                                    Style="{StaticResource IconButton}"/>
-                            <Button x:Name="DeleteGroupButton" Content="&#xE74D;" Command="{Binding DeleteGroupCommand}"
-                                    Style="{StaticResource IconButton}"/>
-                        </StackPanel>
-                        <Button x:Name="FormationsButton" Content="&#xE712;" Click="OnFormationsToggle"
-                                Style="{StaticResource IconButton}"/>
-                    <Popup x:Name="FormationsPopup" Placement="Bottom"
-                           PlacementTarget="{Binding ElementName=FormationsButton}"
-                           StaysOpen="False">
-                        <Border Background="{StaticResource SurfaceBrush}"
-                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8"
-                                Padding="12" Width="300">
-                            <StackPanel>
-                                <TextBlock x:Name="FormationsLabel" Style="{StaticResource SectionTitle}"/>
-                                <ComboBox x:Name="FormationBox"
-                                          ItemsSource="{Binding Formations}"
-                                          DisplayMemberPath="Name"
-                                          SelectedItem="{Binding SelectedFormation}"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                    <Button x:Name="SaveFormationButton" Command="{Binding SaveFormationCommand}"
-                                            Style="{StaticResource GhostButton}"/>
-                                    <Button x:Name="LoadFormationButton" Command="{Binding LoadFormationCommand}"
-                                            Style="{StaticResource GhostButton}"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </Popup>
+                        <TextBlock x:Name="NewGroupHint" Style="{StaticResource MutedText}"
+                                   VerticalAlignment="Center" Margin="8,0,0,0" FontStyle="Normal"/>
                     </StackPanel>
-                </DockPanel>
-            </StackPanel>
-        </Border>
-        <TabControl>
-            <TabItem Header="{x:Static res:Strings.Members}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="0,4,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="3*"/>
-                            <ColumnDefinition Width="2*"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,5,8">
-                            <StackPanel>
-                                <TextBlock x:Name="MembersLabel" Style="{StaticResource SectionTitle}"/>
-                                <ListBox x:Name="MembersList" Height="220" ItemsSource="{Binding Members}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <DockPanel>
-                                                <Button Content="&#xE74D;"
-                                                        DockPanel.Dock="Right"
-                                                        Command="{Binding DataContext.RemoveMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Ellipse Width="8" Height="8" Margin="0,0,8,0">
-                                                        <Ellipse.Style>
-                                                            <Style TargetType="Ellipse">
-                                                                <Setter Property="Fill" Value="{StaticResource TextMutedBrush}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Account.Status}" Value="{x:Static models:AccountStatus.Online}">
-                                                                        <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Ellipse.Style>
-                                                    </Ellipse>
-                                                    <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </DockPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                                <ListBox x:Name="AvailableList" Height="110" Margin="0,8,0,0" ItemsSource="{Binding AvailableAccounts}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <DockPanel>
-                                                <Button Content="&#xE710;"
-                                                        DockPanel.Dock="Right"
-                                                        Command="{Binding DataContext.AddMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
-                                            </DockPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="5,0,0,8">
-                            <StackPanel>
-                                <TextBlock Text="{x:Static res:Strings.OnlineMembers}" Style="{StaticResource SectionTitle}"/>
-                                <ListBox x:Name="OnlineList" Height="220" ItemsSource="{Binding OnlineMembers}" DisplayMemberPath="Role"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </ScrollViewer>
-            </TabItem>
-            <TabItem Header="{x:Static res:Strings.Presets}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="0,4,0,0">
-                        <DockPanel Margin="0,0,0,8">
-                            <Button x:Name="NewPresetButton" Content="&#xE710;" Command="{Binding AddPresetCommand}"
-                                    DockPanel.Dock="Right" Style="{StaticResource IconButton}"/>
-                            <TextBlock x:Name="PresetsLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
-                        </DockPanel>
-                        <ItemsControl ItemsSource="{Binding Presets}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}"
-                                            BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6">
-                                        <DockPanel>
-                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                                <Button Content="&#xE70F;"
-                                                        Command="{Binding DataContext.EditPresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource IconButton}"/>
-                                                <Button Content="&#xE8C8;"
-                                                        Command="{Binding DataContext.DuplicatePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource IconButton}"/>
-                                                <Button Content="&#xE74D;"
-                                                        Command="{Binding DataContext.DeletePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource IconButton}"/>
-                                            </StackPanel>
+                    <ItemsControl ItemsSource="{Binding GroupCards}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border x:Name="CardBorder" Style="{StaticResource CardBorder}" Margin="6,0,0,8"
+                                        AllowDrop="True" Drop="OnCardDrop" DragOver="OnCardDragOver">
+                                    <StackPanel>
+                                        <DockPanel MouseLeftButtonUp="OnCardActivate">
+                                            <ToggleButton DockPanel.Dock="Right" Width="28" Height="28"
+                                                          FontFamily="{StaticResource IconFont}" FontSize="14"
+                                                          Content="&#xE712;"
+                                                          IsChecked="{Binding IsMenuOpen, Mode=TwoWay}"/>
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                <TextBlock Text="{Binding Group.Name}" FontWeight="SemiBold" FontSize="13"
                                                            Foreground="{StaticResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="{Binding Hotkey}" FontSize="11"
-                                                           Foreground="{StaticResource AccentBrush}"/>
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="11"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"/>
                                             </StackPanel>
                                         </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}" Margin="0,6,0,0"/>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>
-        </TabControl>
+                                        <Popup IsOpen="{Binding IsMenuOpen, Mode=TwoWay}"
+                                               Placement="Bottom" StaysOpen="False" Closed="OnCardMenuClosed">
+                                            <Border Background="{StaticResource SurfaceBrush}"
+                                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                    CornerRadius="8" Padding="8" MinWidth="220">
+                                                <StackPanel>
+                                                    <Button Content="{Binding DataContext.RenameText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            Command="{Binding DataContext.RenameGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource GhostButton}" HorizontalAlignment="Stretch"/>
+                                                    <Button Content="{Binding DataContext.DeleteText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            Command="{Binding DataContext.DeleteGroupCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource GhostButton}" HorizontalAlignment="Stretch"/>
+                                                    <Button Content="{Binding DataContext.PresetsText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            Command="{Binding DataContext.OpenPresetsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Style="{StaticResource GhostButton}" HorizontalAlignment="Stretch"/>
+                                                    <Border Height="1" Margin="0,6" Background="{StaticResource BorderBrush}"/>
+                                                    <ComboBox ItemsSource="{Binding DataContext.Formations, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                              DisplayMemberPath="Name"
+                                                              SelectedItem="{Binding DataContext.SelectedFormation, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                                        <Button Content="{Binding DataContext.SaveFormationText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                Command="{Binding DataContext.SaveFormationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}"
+                                                                Style="{StaticResource GhostButton}"/>
+                                                        <Button Content="{Binding DataContext.LoadFormationText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                Command="{Binding DataContext.LoadFormationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}"
+                                                                Style="{StaticResource GhostButton}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </Popup>
+                                        <ItemsControl ItemsSource="{Binding Members}" Margin="0,6,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel Margin="0,1">
+                                                        <Button Content="&#xE74D;"
+                                                                DockPanel.Dock="Right"
+                                                                Command="{Binding DataContext.RemoveMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}"
+                                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Ellipse Width="8" Height="8" Margin="0,0,8,0">
+                                                                <Ellipse.Style>
+                                                                    <Style TargetType="Ellipse">
+                                                                        <Setter Property="Fill" Value="{StaticResource TextMutedBrush}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Account.Status}" Value="{x:Static models:AccountStatus.Online}">
+                                                                                <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Ellipse.Style>
+                                                            </Ellipse>
+                                                            <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter TargetName="CardBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                        <Setter TargetName="CardBorder" Property="BorderThickness" Value="2"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </DockPanel>
 </Window>

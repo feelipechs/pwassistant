@@ -104,4 +104,7 @@
   <data name="PresetFired" xml:space="preserve"><value>Fired {0}, skipped {1}</value></data>
   <data name="PresetCanceled" xml:space="preserve"><value>Canceled</value></data>
   <data name="SkippedMark" xml:space="preserve"><value>skipped</value></data>
+  <data name="NoActiveGroup" xml:space="preserve"><value>Select a group first</value></data>
+  <data name="Ungrouped" xml:space="preserve"><value>Ungrouped</value></data>
+  <data name="GroupCardStats" xml:space="preserve"><value>{0} members • {1} online • {2} presets</value></data>
 </root>
