@@ -17,7 +17,7 @@
         <TextBlock x:Name="ArmingHintLabel" Margin="0,12,0,0" Style="{StaticResource MutedText}"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button x:Name="CloseButton" Click="OnClose" Style="{StaticResource GhostButton}" MinWidth="90"/>
-            <Button x:Name="SaveButton" Click="OnSave" Style="{StaticResource PrimaryButton}" MinWidth="110"/>
+            <Button x:Name="SaveButton" Content="&#xE74E;" Click="OnSave" Style="{StaticResource IconButton}" Width="36" Height="32"/>
         </StackPanel>
     </StackPanel>
 </Window>

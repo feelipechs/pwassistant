@@ -110,6 +110,19 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   converte via `ScreenToClient`).
 - **Estilo v1**: recursos XAML próprios, tema escuro simples, sem toolkit
   pesado (ex.: MahApps) — reavaliar só se a UI pedir.
+- **U2 iconografia + layout (2026-09-21, código pendente de validação):**
+  glyphs **Segoe MDL2 Assets** (nativa do Windows): `+` add, lápis edit,
+  lixeira delete, engrenagem settings, disquete save, play/stop, copiar,
+  olho reveal — CRUD e verbos de ação são ícone com tooltip do resx;
+  navegação/rótulos ("Modo Grupo", Fire) continuam texto. `ComboBox` e
+  `CheckBox` com templates próprios; `TabToggle`/`TabItem` com underline
+  gold. `MainWindow`: sidebar com `+` acima da lista, linha de servidor
+  rica (`N contas • M online` + dot, via `ServerRow`), header com strip de
+  tabs (`AccountTab` + "Todas" + gerência), cards quadrados em `WrapPanel`
+  (`SquareCard`: imagem da classe, pill de status, Play ícone full-width,
+  credenciais com botões-ícone). `GroupWindow` em abas gerenciais
+  (Membros | Presets | Formações) com `+` de novo grupo no topo e
+  lápis/lixeira de grupo (cascata com confirmação).
 - **U1 Redesign (2026-09-20, código pendente de validação no Windows):**
   cláusula acima acionada — redesign completo mantido em XAML próprio, sem
   novo pacote: `Themes/Tokens.xaml` (paleta dark + gold, radius, espaçamentos,

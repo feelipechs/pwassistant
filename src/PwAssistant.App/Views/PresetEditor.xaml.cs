@@ -121,8 +121,8 @@ public partial class PresetEditor : Window
             });
         }
         ActionList.ItemsSource = Rows;
-        AddCommandButton.Content = Strings.AddCommand;
-        AddClickButton.Content = Strings.AddClick;
+        AddCommandButton.ToolTip = Strings.AddCommand;
+        AddClickButton.ToolTip = Strings.AddClick;
         NameCaption.Text = Strings.PresetName;
         NameBox.Text = preset.Name;
         ModeCaption.Text = Strings.ExecutionMode;

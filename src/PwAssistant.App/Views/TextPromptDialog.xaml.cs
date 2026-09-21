@@ -12,7 +12,7 @@ public partial class TextPromptDialog : Window
         InitializeComponent();
         PromptLabel.Text = Strings.Get(labelKey);
         ValueBox.Text = initial;
-        SaveButton.Content = Strings.Save;
+        SaveButton.ToolTip = Strings.Save;
         Loaded += (_, _) => ValueBox.Focus();
     }
 

@@ -8,7 +8,7 @@
         FontFamily="{StaticResource AppFont}">
     <DockPanel Margin="16,12,16,12">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button Content="Save" Click="OnSave" Style="{StaticResource PrimaryButton}" MinWidth="110"/>
+            <Button Content="&#xE74E;" Click="OnSave" Style="{StaticResource IconButton}" Width="36" Height="32"/>
         </StackPanel>
         <Border DockPanel.Dock="Top" Style="{StaticResource CardBorder}">
             <StackPanel>
@@ -30,8 +30,10 @@
         </Border>
         <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="AddCommandButton" Click="OnAddCommand" Margin="0,0,8,0"/>
-                <Button x:Name="AddClickButton" Click="OnAddClick" Style="{StaticResource PrimaryButton}"/>
+                <Button x:Name="AddCommandButton" Content="&#xE710;" Click="OnAddCommand" Margin="0,0,8,0"
+                        Style="{StaticResource IconButton}"/>
+                <Button x:Name="AddClickButton" Content="&#xE710;" Click="OnAddClick"
+                        Style="{StaticResource PrimaryButton}" Width="32" Height="28"/>
             </StackPanel>
             <TextBlock x:Name="ErrorLabel" Margin="0,4,0,0" FontSize="11" Foreground="{StaticResource DangerBrush}"/>
         </StackPanel>
@@ -66,7 +68,7 @@
                         <Button Click="OnDuplicateRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Duplicate}"
                                 Style="{StaticResource IconButton}">⧉</Button>
                         <Button Click="OnRemoveRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Delete}"
-                                Style="{StaticResource DangerButton}">✕</Button>
+                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE74D;</Button>
                         <Button Click="OnMoveRowUp" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.MoveUp}"
                                 Style="{StaticResource IconButton}">↑</Button>
                         <Button Click="OnMoveRowDown" ToolTip="{x:Static res:Strings.MoveDown}"

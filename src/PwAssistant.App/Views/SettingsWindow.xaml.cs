@@ -32,7 +32,7 @@ public partial class SettingsWindow : Window
         NumpadCheck.Content = Strings.NumpadSelect;
         ShiftTapCheck.Content = Strings.ShiftTapToggle;
         ArmingHintLabel.Text = Strings.ArmingHint;
-        SaveButton.Content = Strings.Save;
+        SaveButton.ToolTip = Strings.Save;
         RecordCycleButton.Content = Strings.RecordHotkey;
         CloseButton.Content = Strings.Close;
 

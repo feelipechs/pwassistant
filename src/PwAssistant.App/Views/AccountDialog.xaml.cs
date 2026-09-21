@@ -29,7 +29,7 @@ public partial class AccountDialog : Window
         ClassLabel.Text = Strings.Class;
         ClassBox.ItemsSource = ClassCatalog.All;
         ClassBox.SelectedIndex = -1;
-        SaveButton.Content = Strings.Save;
+        SaveButton.ToolTip = Strings.Save;
         SameAsRoleCheck.Checked += (_, _) => MirrorRole();
         SameAsRoleCheck.Unchecked += (_, _) => NicknameBox.IsEnabled = true;
         RoleBox.TextChanged += (_, _) => MirrorRole();
