@@ -18,7 +18,7 @@
             <StackPanel x:Name="ContentPanel" Margin="0,10,0,0">
                 <ListBox x:Name="MiniMembersList" Height="84" ItemsSource="{Binding Members}">
                     <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Account.Status}" Value="{x:Static models:AccountStatus.Offline}">
                                     <Setter Property="Visibility" Value="Collapsed"/>
