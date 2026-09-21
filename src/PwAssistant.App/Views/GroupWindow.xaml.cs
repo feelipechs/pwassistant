@@ -59,6 +59,9 @@ public partial class GroupWindow : Window
     }
 
     private DragAdorner? _dragAdorner;
+    private InsertionAdorner? _insertionAdorner;
+    private UIElement? _insertionHost;
+    private int _pendingIndex;
 
     private void OnPoolPreviewMouseDown(object sender, MouseButtonEventArgs e) =>
         _dragStartPoint = e.GetPosition(null);
@@ -66,14 +69,36 @@ public partial class GroupWindow : Window
     private void OnPoolPreviewMouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed) return;
-        if (sender is not ListBox list) return;
+        if (sender is not ItemsControl list) return;
         Point current = e.GetPosition(null);
         if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(current.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
             return;
-        ListBoxItem? item = FindRowContainer(list, e.GetPosition(list));
-        if (item?.DataContext is not MemberOption option) return;
+        MemberOption? option = FindDataContext<MemberOption>(
+            list.InputHitTest(e.GetPosition(list)) as DependencyObject);
+        if (option is null) return;
+        BeginMemberDrag(list, new MemberDrag(option.Account.Id, null), option.CharacterName);
+    }
 
+    private void OnMemberPreviewMouseDown(object sender, MouseButtonEventArgs e) =>
+        _dragStartPoint = e.GetPosition(null);
+
+    private void OnMemberPreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed) return;
+        if (sender is not ItemsControl list) return;
+        Point current = e.GetPosition(null);
+        if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(current.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+        MemberOption? option = FindDataContext<MemberOption>(list.InputHitTest(e.GetPosition(list)) as DependencyObject);
+        GroupCard? card = FindDataContext<GroupCard>(list);
+        if (option is null || card is null) return;
+        BeginMemberDrag(list, new MemberDrag(option.Account.Id, card.Group.Id), option.CharacterName);
+    }
+
+    private void BeginMemberDrag(FrameworkElement source, MemberDrag payload, string ghostText)
+    {
         AdornerLayer? layer = AdornerLayer.GetAdornerLayer(this);
         if (layer is not null)
         {
@@ -84,25 +109,40 @@ public partial class GroupWindow : Window
                 BorderThickness = new Thickness(1, 1, 1, 1),
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(10, 4, 10, 4),
-                Child = new TextBlock { Text = option.CharacterName }
+                Child = new TextBlock { Text = ghostText }
             };
             _dragAdorner = new DragAdorner(this, ghost, Mouse.GetPosition(this));
             layer.Add(_dragAdorner);
         }
-        list.GiveFeedback += OnDragFeedback;
+        source.GiveFeedback += OnDragFeedback;
+        ViewModel.IsDragging = true;
         try
         {
-            DragDrop.DoDragDrop(item, option.Account.Id, DragDropEffects.Move);
+            DragDrop.DoDragDrop(source, payload, DragDropEffects.Move);
         }
         finally
         {
-            list.GiveFeedback -= OnDragFeedback;
+            source.GiveFeedback -= OnDragFeedback;
             if (layer is not null && _dragAdorner is not null)
                 layer.Remove(_dragAdorner);
             _dragAdorner = null;
+            ClearInsertion();
+            _dragDepths.Clear();
+            ViewModel.IsDragging = false;
             foreach (GroupCard card in ViewModel.GroupCards)
                 card.IsDragOver = false;
         }
+    }
+
+    private static T? FindDataContext<T>(DependencyObject? node) where T : class
+    {
+        while (node is not null)
+        {
+            if ((node as FrameworkElement)?.DataContext is T match)
+                return match;
+            node = VisualTreeHelper.GetParent(node);
+        }
+        return null;
     }
 
     private void OnDragFeedback(object? sender, GiveFeedbackEventArgs e)
@@ -115,17 +155,49 @@ public partial class GroupWindow : Window
     private static GroupCard? CardOf(object? sender) =>
         (sender as FrameworkElement)?.DataContext as GroupCard;
 
-    private void OnCardDragOver(object sender, DragEventArgs e)
+    private readonly Dictionary<GroupCard, int> _dragDepths = new();
+
+    private static bool HasMemberDrag(DragEventArgs e) =>
+        e.Data.GetDataPresent(typeof(MemberDrag));
+
+    private static MemberDrag? DragOf(DragEventArgs e) =>
+        e.Data.GetData(typeof(MemberDrag)) as MemberDrag;
+
+    private void OnPoolDragOver(object sender, DragEventArgs e)
     {
-        GroupCard? card = CardOf(sender);
-        if (card is not null && e.Data.GetDataPresent(typeof(Guid)))
+        e.Effects = DragOf(e)?.SourceGroupId is not null ? DragDropEffects.Move : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void OnPoolDrop(object sender, DragEventArgs e)
+    {
+        MemberDrag? drag = DragOf(e);
+        if (drag is null) return;
+        try
         {
+            await ViewModel.UngroupMemberAsync(drag.AccountId, drag.SourceGroupId);
+        }
+        catch (Exception ex)
+        {
+            ViewModel.StatusMessage = ex.Message;
+        }
+    }
+
+    private void OnCardDragEnter(object sender, DragEventArgs e)
+    {
+        if (CardOf(sender) is GroupCard card && HasMemberDrag(e))
+        {
+            _dragDepths[card] = _dragDepths.TryGetValue(card, out int depth) ? depth + 1 : 1;
             card.IsDragOver = true;
             foreach (GroupCard other in ViewModel.GroupCards)
                 if (other != card)
                     other.IsDragOver = false;
         }
-        e.Effects = card is not null && e.Data.GetDataPresent(typeof(Guid))
+    }
+
+    private void OnCardDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = CardOf(sender) is not null && HasMemberDrag(e)
             ? DragDropEffects.Move
             : DragDropEffects.None;
         e.Handled = true;
@@ -133,37 +205,94 @@ public partial class GroupWindow : Window
 
     private void OnCardDragLeave(object sender, DragEventArgs e)
     {
-        if (CardOf(sender) is GroupCard card)
+        if (CardOf(sender) is not GroupCard card) return;
+        int depth = _dragDepths.TryGetValue(card, out int n) ? n - 1 : 0;
+        if (depth <= 0)
+        {
+            _dragDepths.Remove(card);
             card.IsDragOver = false;
+        }
+        else
+        {
+            _dragDepths[card] = depth;
+        }
     }
 
     private async void OnCardDrop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(typeof(Guid))) return;
+        MemberDrag? drag = DragOf(e);
+        if (drag is null) return;
         if (CardOf(sender) is not GroupCard card) return;
-        if (e.Data.GetData(typeof(Guid)) is not Guid accountId) return;
         card.IsDragOver = false;
-        await ViewModel.DropAccountOntoGroupAsync(accountId, card.Group.Id);
+        try
+        {
+            await ViewModel.MoveMemberAsync(drag.AccountId, drag.SourceGroupId, card.Group.Id, null);
+        }
+        catch (Exception ex)
+        {
+            ViewModel.StatusMessage = ex.Message;
+        }
     }
 
-    private async void OnLoadFormationClick(object sender, RoutedEventArgs e)
+    /// <summary>Live insertion preview inside a card member list.</summary>
+    private void OnMembersDragOver(object sender, DragEventArgs e)
     {
-        FrameworkElement? element = sender as FrameworkElement;
-        if (element?.DataContext is not Formation formation) return;
-        DependencyObject? node = element;
-        while (node is not null && (node as FrameworkElement)?.DataContext is not GroupCard)
-            node = VisualTreeHelper.GetParent(node);
-        if ((node as FrameworkElement)?.DataContext is not GroupCard card) return;
-        card.IsMenuOpen = false;
-        await ViewModel.LoadFormationForAsync(card, formation);
+        if (sender is not ItemsControl list || DragOf(e) is null)
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+        _pendingIndex = InsertionPreview.IndexAt(list, e.GetPosition(list), out double y);
+        ShowInsertion(list, y);
+        e.Effects = DragDropEffects.Move;
+        e.Handled = true;
     }
 
-    private static ListBoxItem? FindRowContainer(ListBox list, Point position)
+    private void OnMembersDragLeave(object sender, DragEventArgs e) => ClearInsertion();
+
+    private async void OnMembersDrop(object sender, DragEventArgs e)
     {
-        if (list.InputHitTest(position) is not DependencyObject hit) return null;
-        while (hit is not null && hit is not ListBoxItem)
-            hit = VisualTreeHelper.GetParent(hit);
-        return hit as ListBoxItem;
+        MemberDrag? drag = DragOf(e);
+        GroupCard? card = CardOf(sender);
+        int index = sender is ItemsControl list
+            ? InsertionPreview.IndexAt(list, e.GetPosition(list), out _)
+            : _pendingIndex;
+        ClearInsertion();
+        // Single drop: the card border below would run the same move again.
+        e.Handled = true;
+        if (drag is null || card is null) return;
+        card.IsDragOver = false;
+        try
+        {
+            await ViewModel.MoveMemberAsync(drag.AccountId, drag.SourceGroupId, card.Group.Id, index);
+        }
+        catch (Exception ex)
+        {
+            ViewModel.StatusMessage = ex.Message;
+        }
+    }
+
+    private void ShowInsertion(UIElement host, double y)
+    {
+        if (_insertionHost != host || _insertionAdorner is null)
+        {
+            ClearInsertion();
+            AdornerLayer? layer = AdornerLayer.GetAdornerLayer(host);
+            if (layer is null) return;
+            _insertionAdorner = new InsertionAdorner(host);
+            layer.Add(_insertionAdorner);
+            _insertionHost = host;
+        }
+        _insertionAdorner.SetY(y);
+    }
+
+    private void ClearInsertion()
+    {
+        if (_insertionHost is not null && _insertionAdorner is not null)
+            AdornerLayer.GetAdornerLayer(_insertionHost)?.Remove(_insertionAdorner);
+        _insertionAdorner = null;
+        _insertionHost = null;
     }
 
     private static void RefreshMainHotkeys()

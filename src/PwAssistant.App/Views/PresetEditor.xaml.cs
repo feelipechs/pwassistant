@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using MouseButton = PwAssistant.Core.Models.MouseButton;
@@ -269,30 +270,16 @@ public partial class PresetEditor : Window
             Rows.Remove(row);
     }
 
-    private void OnMoveRowUp(object sender, RoutedEventArgs e) =>
-        MoveRow(sender, -1);
-
-    private void OnMoveRowDown(object sender, RoutedEventArgs e) =>
-        MoveRow(sender, +1);
-
-    private void MoveRow(object sender, int delta)
-    {
-        if ((sender as FrameworkElement)?.DataContext is not PresetActionRow row)
-            return;
-        int from = Rows.IndexOf(row);
-        int to = from + delta;
-        if (from < 0 || to < 0 || to >= Rows.Count)
-            return;
-        Rows.Move(from, to);
-    }
-
     private Point _dragStartPoint;
+    private InsertionAdorner? _insertionAdorner;
+    private UIElement? _insertionHost;
+    private int _pendingIndex;
 
     private void OnRowPreviewMouseDown(object sender, MouseButtonEventArgs e) =>
         _dragStartPoint = e.GetPosition(null);
 
     /// <summary>
-    /// Drag &amp; drop reorder (↑↓ buttons stay as fallback). Drag starts only
+    /// Drag &amp; drop reorder (sole ordering gesture). Drag starts only
     /// from passive surfaces (labels/borders/padding) so text selection in
     /// TextBox and popup interaction in ComboBox/Button keep working.
     /// </summary>
@@ -312,11 +299,19 @@ public partial class PresetEditor : Window
 
     private void OnRowDragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(typeof(PresetActionRow))
-            ? DragDropEffects.Move
-            : DragDropEffects.None;
+        if (sender is not ListBox list || !e.Data.GetDataPresent(typeof(PresetActionRow)))
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+        _pendingIndex = InsertionPreview.IndexAt(list, e.GetPosition(list), out double y);
+        ShowInsertion(list, y);
+        e.Effects = DragDropEffects.Move;
         e.Handled = true;
     }
+
+    private void OnRowDragLeave(object sender, DragEventArgs e) => ClearInsertion();
 
     private void OnRowDrop(object sender, DragEventArgs e)
     {
@@ -324,13 +319,36 @@ public partial class PresetEditor : Window
         if (sender is not ListBox list) return;
         if (e.Data.GetData(typeof(PresetActionRow)) is not PresetActionRow dragged) return;
         int from = Rows.IndexOf(dragged);
-        ListBoxItem? targetItem = FindRowContainer(list, e.GetPosition(list));
-        int to = targetItem?.DataContext is PresetActionRow target
-            ? Rows.IndexOf(target)
-            : Rows.Count - 1;
-        if (from < 0 || to < 0 || from == to) return;
+        int to = InsertionPreview.IndexAt(list, e.GetPosition(list), out _);
+        ClearInsertion();
+        if (from < 0) return;
+        if (to > from) to--;
+        to = Math.Clamp(to, 0, Rows.Count - 1);
+        if (from == to) return;
         Rows.Move(from, to);
         list.SelectedItem = dragged;
+    }
+
+    private void ShowInsertion(UIElement host, double y)
+    {
+        if (_insertionHost != host || _insertionAdorner is null)
+        {
+            ClearInsertion();
+            AdornerLayer? layer = AdornerLayer.GetAdornerLayer(host);
+            if (layer is null) return;
+            _insertionAdorner = new InsertionAdorner(host);
+            layer.Add(_insertionAdorner);
+            _insertionHost = host;
+        }
+        _insertionAdorner.SetY(y);
+    }
+
+    private void ClearInsertion()
+    {
+        if (_insertionHost is not null && _insertionAdorner is not null)
+            AdornerLayer.GetAdornerLayer(_insertionHost)?.Remove(_insertionAdorner);
+        _insertionAdorner = null;
+        _insertionHost = null;
     }
 
     private static bool IsDragHandle(object? source) =>

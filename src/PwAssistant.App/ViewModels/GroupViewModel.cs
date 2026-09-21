@@ -32,9 +32,6 @@ public sealed partial class MemberOption : ObservableObject
 {
     public Account Account { get; }
 
-    /// <summary>Owning group for card rows; null for pool/ungrouped rows.</summary>
-    public Group? Group { get; set; }
-
     public MemberOption(Account account) => Account = account;
 
     [ObservableProperty]
@@ -52,7 +49,14 @@ public sealed partial class MemberOption : ObservableObject
     public string StatusText => Account.Status == AccountStatus.Online
         ? AppStrings.Online
         : AppStrings.Offline;
+
+    public string? ClassImagePath => string.IsNullOrWhiteSpace(Account.Class)
+        ? null
+        : $"/PwAssistant.App;component/Resources/Classes/{Account.Class.Trim().ToLowerInvariant()}.png";
 }
+
+/// <summary>Drag payload: which account, from which group (null = pool).</summary>
+public sealed record MemberDrag(Guid AccountId, Guid? SourceGroupId);
 
 /// <summary>One group card: members, counts and active highlight.</summary>
 public sealed partial class GroupCard : ObservableObject
@@ -121,6 +125,10 @@ public sealed partial class GroupViewModel : ObservableObject
 
     [ObservableProperty]
     private GroupCard? activeCard;
+
+    /// <summary>True while a pool member is being dragged (lights all cards).</summary>
+    [ObservableProperty]
+    private bool isDragging;
 
     [ObservableProperty]
     private bool syncEnabled;
@@ -205,7 +213,7 @@ public sealed partial class GroupViewModel : ObservableObject
             {
                 if (!byId.TryGetValue(id, out Account? account))
                     continue;
-                card.Members.Add(new MemberOption(account) { Group = group });
+                card.Members.Add(new MemberOption(account));
             }
             card.RefreshCounts(_state.Data.Presets.Count(p => p.GroupId == group.Id));
             GroupCards.Add(card);
@@ -355,13 +363,21 @@ public sealed partial class GroupViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void OpenFormations(GroupCard? card)
+    {
+        if (card is null) return;
+        ActiveCard = card;
+        new GroupFormationsWindow(this, card).Show();
+    }
+
+    [RelayCommand]
     private void ActivateCard(GroupCard? card)
     {
         if (card is null) return;
         ActiveCard = card;
     }
 
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     private async Task FirePresetAsync(Preset? preset)
     {
         if (preset is null) return;
@@ -383,7 +399,7 @@ public sealed partial class GroupViewModel : ObservableObject
                 StatusMessage = $"{p.Index}/{p.Total} ({(names.TryGetValue(p.AccountId, out string? n) ? n : "?")})"
                     + (p.Skipped ? " " + AppStrings.SkippedMark : ""));
             PresetExecutionResult result = await _dispatcher.FireAsync(
-                preset, countdownSeconds: 3, countdown, fire).ConfigureAwait(false);
+                preset, countdownSeconds: 0, countdown, fire).ConfigureAwait(false);
 
             int fired = result.Accounts.Count(r => !r.Skipped);
             int skipped = result.Accounts.Count(r => r.Skipped);
@@ -402,43 +418,48 @@ public sealed partial class GroupViewModel : ObservableObject
         }
     }
 
-    /// <summary>Drag-and-drop target: adds the account to the group.</summary>
-    public async Task DropAccountOntoGroupAsync(Guid accountId, Guid groupId)
+    /// <summary>
+    /// Moves an account between groups (or reorders inside one). Null index
+    /// appends. Group order drives numpad/focus order; preset actions are
+    /// per-account and unaffected.
+    /// </summary>
+    public async Task MoveMemberAsync(Guid accountId, Guid? sourceGroupId, Guid targetGroupId, int? index)
     {
-        Group? group = _state.Data.Groups.FirstOrDefault(g => g.Id == groupId);
-        if (group is null) return;
-        if (!group.AccountIds.Contains(accountId))
-            group.AccountIds.Add(accountId);
-        ActiveCard = GroupCards.FirstOrDefault(c => c.Group == group);
+        Group? target = _state.Data.Groups.FirstOrDefault(g => g.Id == targetGroupId);
+        if (target is null) return;
+        if (sourceGroupId == targetGroupId)
+        {
+            int from = target.AccountIds.IndexOf(accountId);
+            if (from < 0) return;
+            target.AccountIds.RemoveAt(from);
+            int to = index ?? target.AccountIds.Count;
+            if (to > from) to--;
+            target.AccountIds.Insert(Math.Clamp(to, 0, target.AccountIds.Count), accountId);
+        }
+        else
+        {
+            if (sourceGroupId.HasValue)
+                _state.Data.Groups
+                    .FirstOrDefault(g => g.Id == sourceGroupId.Value)?.AccountIds.Remove(accountId);
+            if (!target.AccountIds.Contains(accountId))
+            {
+                int to = index ?? target.AccountIds.Count;
+                target.AccountIds.Insert(Math.Clamp(to, 0, target.AccountIds.Count), accountId);
+            }
+        }
+        ActiveCard = GroupCards.FirstOrDefault(c => c.Group == target);
         // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
         await _state.SaveAsync();
         RebuildAll();
     }
 
-    [RelayCommand]
-    private async Task AddMemberAsync(MemberOption? option)
+    /// <summary>Dragged back to the pool: leaves whatever group it was in.</summary>
+    public async Task UngroupMemberAsync(Guid accountId, Guid? sourceGroupId)
     {
-        Group? target = option?.Group ?? ActiveCard?.Group;
-        if (target is null || option is null)
-        {
-            StatusMessage = AppStrings.NoActiveGroup;
-            return;
-        }
-        if (!target.AccountIds.Contains(option.Account.Id))
-            target.AccountIds.Add(option.Account.Id);
-        ActiveCard = GroupCards.FirstOrDefault(c => c.Group == target);
-        // No ConfigureAwait(false): see DropAccountOntoGroupAsync.
-        await _state.SaveAsync();
-        RebuildAll();
-    }
-
-    [RelayCommand]
-    private async Task RemoveMemberAsync(MemberOption? option)
-    {
-        Group? target = option?.Group ?? ActiveCard?.Group;
-        if (target is null || option is null) return;
-        target.AccountIds.Remove(option.Account.Id);
-        // No ConfigureAwait(false): see DropAccountOntoGroupAsync.
+        if (sourceGroupId.HasValue)
+            _state.Data.Groups
+                .FirstOrDefault(g => g.Id == sourceGroupId.Value)?.AccountIds.Remove(accountId);
+        // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
         await _state.SaveAsync();
         RebuildAll();
     }
@@ -500,9 +521,7 @@ public sealed partial class GroupViewModel : ObservableObject
         PresetEditor editor = _editorFactory(preset);
         if (editor.ShowDialog() != true) return;
         await _state.SaveAsync();
-        MiniRows.Clear();
-        foreach (Preset existing in Presets)
-            MiniRows.Add(new MiniPresetRow(existing) { IsLooping = _loops.IsLooping(existing.Id) });
+        RefreshMiniRows();
         Refresh();
         HotkeysChanged?.Invoke();
     }
@@ -569,6 +588,50 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         foreach (MiniPresetRow row in MiniRows)
             row.IsLooping = _loops.IsLooping(row.Preset.Id);
+    }
+
+    private void RefreshMiniRows()
+    {
+        MiniRows.Clear();
+        foreach (Preset existing in Presets)
+            MiniRows.Add(new MiniPresetRow(existing) { IsLooping = _loops.IsLooping(existing.Id) });
+    }
+
+    /// <summary>
+    /// Reorders a preset inside its group (filtered position). Persists the
+    /// global order and mirrors the live collections when active.
+    /// </summary>
+    public async Task MovePresetAsync(Guid groupId, Guid presetId, int toFiltered)
+    {
+        List<Preset> ordered = _state.Data.Presets.Where(p => p.GroupId == groupId).ToList();
+        Preset? moving = ordered.FirstOrDefault(p => p.Id == presetId);
+        if (moving is null) return;
+        ordered.Remove(moving);
+        int to = Math.Clamp(toFiltered, 0, ordered.Count);
+        Preset? anchor = to < ordered.Count ? ordered[to] : null;
+        _state.Data.Presets.Remove(moving);
+        if (anchor is null)
+        {
+            int last = _state.Data.Presets.FindLastIndex(p => p.GroupId == groupId);
+            if (last < 0)
+                _state.Data.Presets.Add(moving);
+            else
+                _state.Data.Presets.Insert(last + 1, moving);
+        }
+        else
+        {
+            int global = _state.Data.Presets.IndexOf(anchor);
+            _state.Data.Presets.Insert(global < 0 ? _state.Data.Presets.Count : global, moving);
+        }
+        int viewFrom = Presets.IndexOf(moving);
+        if (viewFrom >= 0)
+        {
+            Presets.RemoveAt(viewFrom);
+            Presets.Insert(Math.Clamp(to, 0, Presets.Count), moving);
+        }
+        RefreshMiniRows();
+        // No ConfigureAwait(false): callers run on the UI thread.
+        await _state.SaveAsync();
     }
 
     public void StopAllLoops() => _loops.StopAll();

@@ -72,8 +72,6 @@ public static class Strings
     public static string AddCommand => Get(nameof(AddCommand));
     public static string AddClick => Get(nameof(AddClick));
     public static string Duplicate => Get(nameof(Duplicate));
-    public static string MoveUp => Get(nameof(MoveUp));
-    public static string MoveDown => Get(nameof(MoveDown));
     public static string DuplicatePreset => Get(nameof(DuplicatePreset));
     public static string CopySuffix => Get(nameof(CopySuffix));
     public static string Hotkey => Get(nameof(Hotkey));
@@ -113,8 +111,8 @@ public static class Strings
         string.Format(Get(nameof(PresetFired)), fired, skipped);
     public static string PresetCanceled => Get(nameof(PresetCanceled));
     public static string SkippedMark => Get(nameof(SkippedMark));
-    public static string NoActiveGroup => Get(nameof(NoActiveGroup));
     public static string Ungrouped => Get(nameof(Ungrouped));
+    public static string DragHint => Get(nameof(DragHint));
     public static string GroupCardStats => Get(nameof(GroupCardStats));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);

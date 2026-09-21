@@ -68,8 +68,6 @@
   <data name="AddCommand" xml:space="preserve"><value>Add command</value></data>
   <data name="AddClick" xml:space="preserve"><value>Add click</value></data>
   <data name="Duplicate" xml:space="preserve"><value>Duplicate row</value></data>
-  <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
-  <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
   <data name="RowWithoutAccount" xml:space="preserve"><value>Row {0} has no character.</value></data>
   <data name="DuplicatePreset" xml:space="preserve"><value>Duplicate preset</value></data>
   <data name="CopySuffix" xml:space="preserve"><value> (copy)</value></data>
@@ -104,7 +102,7 @@
   <data name="PresetFired" xml:space="preserve"><value>Fired {0}, skipped {1}</value></data>
   <data name="PresetCanceled" xml:space="preserve"><value>Canceled</value></data>
   <data name="SkippedMark" xml:space="preserve"><value>skipped</value></data>
-  <data name="NoActiveGroup" xml:space="preserve"><value>Select a group first</value></data>
   <data name="Ungrouped" xml:space="preserve"><value>Available</value></data>
+  <data name="DragHint" xml:space="preserve"><value>Drag to groups • drag back to remove</value></data>
   <data name="GroupCardStats" xml:space="preserve"><value>{0} members • {1} online • {2} presets</value></data>
 </root>

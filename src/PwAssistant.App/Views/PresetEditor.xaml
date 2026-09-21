@@ -42,19 +42,16 @@
                  PreviewMouseLeftButtonDown="OnRowPreviewMouseDown"
                  PreviewMouseMove="OnRowPreviewMouseMove"
                  DragOver="OnRowDragOver"
+                 DragLeave="OnRowDragLeave"
                  Drop="OnRowDrop">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Click="OnDuplicateRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Duplicate}"
-                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE8C8;</Button>
-                            <Button Click="OnRemoveRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Delete}"
-                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE74D;</Button>
-                            <Button Click="OnMoveRowUp" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.MoveUp}"
-                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE70E;</Button>
-                            <Button Click="OnMoveRowDown" ToolTip="{x:Static res:Strings.MoveDown}"
-                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE70C;</Button>
+                        <Button Click="OnDuplicateRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Duplicate}"
+                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE8C8;</Button>
+                        <Button Click="OnRemoveRow" ToolTip="{x:Static res:Strings.Delete}"
+                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE74D;</Button>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                         <ComboBox Width="170" Margin="0,0,8,0"

@@ -13,11 +13,16 @@
         <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}"
                    DockPanel.Dock="Bottom" Margin="0,8,0,0"/>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Presets}">
+            <ItemsControl ItemsSource="{Binding Presets}"
+                          PreviewMouseLeftButtonDown="OnPresetPreviewMouseDown"
+                          PreviewMouseMove="OnPresetPreviewMouseMove"
+                          DragOver="OnPresetDragOver"
+                          DragLeave="OnPresetDragLeave"
+                          Drop="OnPresetDrop">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6">
+                                BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6" Cursor="SizeAll">
                             <DockPanel>
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                     <Button Content="&#xE70F;"
