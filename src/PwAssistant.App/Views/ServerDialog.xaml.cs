@@ -1,6 +1,7 @@
 using System.Windows;
 using Microsoft.Win32;
 using PwAssistant.App.Resources;
+using PwAssistant.Core.Models;
 
 namespace PwAssistant.App.Views;
 
@@ -14,7 +15,13 @@ public partial class ServerDialog : Window
         InitializeComponent();
         NameLabel.Text = Strings.ServerName;
         PathLabel.Text = Strings.ClientPath;
-        SaveButton.Content = Strings.Save;
+        SaveButton.ToolTip = Strings.Save;
+    }
+
+    public void Prefill(Server server)
+    {
+        NameBox.Text = server.Name;
+        PathBox.Text = server.ElementClientPath;
     }
 
     private void OnBrowse(object sender, RoutedEventArgs e)

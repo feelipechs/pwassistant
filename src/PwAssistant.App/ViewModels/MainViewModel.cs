@@ -21,36 +21,15 @@ public sealed partial class AccountCard : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
     [NotifyPropertyChangedFor(nameof(PlayText))]
+    [NotifyPropertyChangedFor(nameof(PlayGlyph))]
     private AccountStatus status;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PasswordDisplay))]
-    [NotifyPropertyChangedFor(nameof(PasswordToggleText))]
+    [NotifyPropertyChangedFor(nameof(PasswordToggleHint))]
     private bool isPasswordRevealed;
 
     private string? _revealedPassword;
-
-    public string? RevealedPassword => _revealedPassword;
-
-    /// <summary>Masked dots, or the plaintext while revealed (auto-hides).</summary>
-    public string PasswordDisplay =>
-        IsPasswordRevealed && _revealedPassword is not null ? _revealedPassword : "••••••";
-
-    public string PasswordToggleText =>
-        IsPasswordRevealed ? AppStrings.HidePassword : AppStrings.ShowPassword;
-
-    /// <summary>Reveal in place; the plaintext never goes to log/disk.</summary>
-    public void RevealPassword(string plaintext)
-    {
-        _revealedPassword = plaintext;
-        IsPasswordRevealed = true;
-    }
-
-    public void HidePassword()
-    {
-        _revealedPassword = null;
-        IsPasswordRevealed = false;
-    }
 
     public AccountCard(Account model)
     {
@@ -64,6 +43,31 @@ public sealed partial class AccountCard : ObservableObject
     public string StatusText => Status == AccountStatus.Online ? "Online" : "Offline";
 
     public string PlayText => Status == AccountStatus.Online ? AppStrings.Stop : AppStrings.Play;
+
+    /// <summary>Segoe MDL2 play/stop glyphs (icon font applied in XAML).</summary>
+    public string PlayGlyph => Status == AccountStatus.Online ? "\uE71A" : "\uE768";
+
+    public string PasswordToggleHint =>
+        IsPasswordRevealed ? AppStrings.HidePassword : AppStrings.ShowPassword;
+
+    public string? RevealedPassword => _revealedPassword;
+
+    /// <summary>Masked dots, or the plaintext while revealed (auto-hides).</summary>
+    public string PasswordDisplay =>
+        IsPasswordRevealed && _revealedPassword is not null ? _revealedPassword : "••••••";
+
+    /// <summary>Reveal in place; the plaintext never goes to log/disk.</summary>
+    public void RevealPassword(string plaintext)
+    {
+        _revealedPassword = plaintext;
+        IsPasswordRevealed = true;
+    }
+
+    public void HidePassword()
+    {
+        _revealedPassword = null;
+        IsPasswordRevealed = false;
+    }
 
     public string? ClassImagePath => string.IsNullOrWhiteSpace(Model.Class)
         ? null
@@ -82,6 +86,54 @@ public sealed partial class AccountCard : ObservableObject
     public void Refresh() => Status = Model.Status;
 }
 
+/// <summary>Sidebar row: server name plus live account/online counts.</summary>
+public sealed partial class ServerRow : ObservableObject
+{
+    public Server Model { get; }
+
+    public ServerRow(Server model) => Model = model;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StatsText))]
+    [NotifyPropertyChangedFor(nameof(HasOnline))]
+    private int onlineCount;
+
+    public string Name => Model.Name;
+    public int Total => Model.Accounts.Count;
+    public bool HasOnline => OnlineCount > 0;
+    public string StatsText => AppStrings.ServerStats(Total, OnlineCount);
+
+    /// <summary>Recounts online (call after AppState.RefreshOnlineStatus).</summary>
+    public void Refresh() => OnlineCount = Model.Accounts.Count(a => a.Status == AccountStatus.Online);
+
+    public void NotifyRenamed() => OnPropertyChanged(nameof(Name));
+}
+
+/// <summary>One tab-strip entry. Null Tab means the implicit "All" tab.</summary>
+public sealed partial class TabItem : ObservableObject
+{
+    public AccountTab? Tab { get; }
+    public bool IsAll => Tab is null;
+
+    public TabItem(AccountTab? tab, string title)
+    {
+        Tab = tab;
+        Title = title;
+    }
+
+    [ObservableProperty]
+    private string title = string.Empty;
+
+    [ObservableProperty]
+    private bool isSelected;
+
+    public void RefreshTitle()
+    {
+        if (Tab is not null)
+            Title = Tab.Name;
+    }
+}
+
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly AppState _state;
@@ -90,12 +142,21 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly FileLogger _log;
     private readonly IServiceProvider _services;
 
-    public ObservableCollection<Server> Servers { get; } = new();
+    public ObservableCollection<ServerRow> Servers { get; } = new();
     public ObservableCollection<AccountCard> Accounts { get; } = new();
+    public ObservableCollection<AccountTab> Tabs { get; } = new();
+    public ObservableCollection<TabItem> TabItems { get; } = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AccountsHeader))]
-    private Server? selectedServer;
+    private ServerRow? selectedServer;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTabSelected))]
+    private AccountTab? selectedTab;
+
+    /// <summary>True when a named tab (not "All") filters the cards.</summary>
+    public bool IsTabSelected => SelectedTab is not null;
 
     public string AccountsHeader => SelectedServer is null
         ? AppStrings.NoServerSelected
@@ -107,6 +168,8 @@ public sealed partial class MainViewModel : ObservableObject
     public string EditText => AppStrings.Edit;
     public string DeleteText => AppStrings.Delete;
     public string CopyText => AppStrings.Copy;
+    public string CopyLoginText => AppStrings.CopyLogin;
+    public string CopyPasswordText => AppStrings.CopyPassword;
 
     public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, FileLogger log, IServiceProvider services)
     {
@@ -124,21 +187,69 @@ public sealed partial class MainViewModel : ObservableObject
         {
             Servers.Clear();
             foreach (Server server in _state.Data.Servers)
-                Servers.Add(server);
+                Servers.Add(new ServerRow(server));
             // Last used wins; nothing preselected on first run (raw by rule).
-            SelectedServer = Servers.FirstOrDefault(s => s.Id == _state.Data.LastSelectedServerId);
+            SelectedServer = Servers.FirstOrDefault(s => s.Model.Id == _state.Data.LastSelectedServerId);
+            RefreshServerRows();
         });
     }
 
-    partial void OnSelectedServerChanged(Server? value)
+    partial void OnSelectedServerChanged(ServerRow? value)
     {
-        _state.SelectedServer = value;
-        _state.Data.LastSelectedServerId = value?.Id;
-        Accounts.Clear();
-        if (value is null) return;
-        foreach (Account account in value.Accounts)
-            Accounts.Add(new AccountCard(account));
+        _state.SelectedServer = value?.Model;
+        _state.Data.LastSelectedServerId = value?.Model.Id;
+        RebuildTabs();
+        RebuildAccounts();
         _ = PersistSelectionAsync();
+    }
+
+    partial void OnSelectedTabChanged(AccountTab? value)
+    {
+        foreach (TabItem item in TabItems)
+            item.IsSelected = item.Tab == value;
+        RebuildAccounts();
+    }
+
+    [RelayCommand]
+    private void SelectTab(TabItem? item)
+    {
+        if (item is null) return;
+        SelectedTab = item.Tab;
+        foreach (TabItem entry in TabItems)
+            entry.IsSelected = entry == item;
+    }
+
+    private void RebuildTabs()
+    {
+        Tabs.Clear();
+        TabItems.Clear();
+        SelectedTab = null;
+        if (SelectedServer is null) return;
+        TabItems.Add(new TabItem(null, AppStrings.All) { IsSelected = true });
+        foreach (AccountTab tab in _state.Data.Tabs.Where(t => t.ServerId == SelectedServer.Model.Id))
+        {
+            Tabs.Add(tab);
+            TabItems.Add(new TabItem(tab, tab.Name));
+        }
+    }
+
+    private void RebuildAccounts()
+    {
+        Accounts.Clear();
+        if (SelectedServer is null) return;
+        var byId = SelectedServer.Model.Accounts.ToDictionary(a => a.Id);
+        IEnumerable<Account> scope = SelectedTab is null
+            ? SelectedServer.Model.Accounts
+            : SelectedTab.AccountIds.Where(byId.ContainsKey).Select(id => byId[id]);
+        foreach (Account account in scope)
+            Accounts.Add(new AccountCard(account));
+    }
+
+    private void RefreshServerRows()
+    {
+        _state.RefreshOnlineStatus();
+        foreach (ServerRow row in Servers)
+            row.Refresh();
     }
 
     private async Task PersistSelectionAsync()
@@ -161,10 +272,49 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var server = new Server { Name = dialog.ServerName, ElementClientPath = dialog.ClientPath };
             _state.Data.Servers.Add(server);
-            Servers.Add(server);
-            SelectedServer = server;
+            var row = new ServerRow(server);
+            Servers.Add(row);
+            SelectedServer = row;
             await _state.SaveAsync().ConfigureAwait(false);
         }
+    }
+
+    [RelayCommand]
+    private async Task EditServerAsync(ServerRow? row)
+    {
+        if (row is null) return;
+        var dialog = new ServerDialog();
+        dialog.Prefill(row.Model);
+        if (dialog.ShowDialog() != true) return;
+        row.Model.Name = dialog.ServerName;
+        row.Model.ElementClientPath = dialog.ClientPath;
+        row.NotifyRenamed();
+        await _state.SaveAsync().ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task DeleteServerAsync(ServerRow? row)
+    {
+        if (row is null) return;
+        MessageBoxResult confirm = MessageBox.Show(
+            AppStrings.DeleteServerConfirm(row.Model.Name, row.Model.Accounts.Count),
+            AppStrings.DeleteServerTitle,
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        var ids = row.Model.Accounts.Select(a => a.Id).ToHashSet();
+        _state.Data.Servers.Remove(row.Model);
+        _state.Data.Tabs.RemoveAll(t => t.ServerId == row.Model.Id);
+        foreach (Group group in _state.Data.Groups)
+            group.AccountIds.RemoveAll(ids.Contains);
+        foreach (Preset preset in _state.Data.Presets)
+            preset.Actions.RemoveAll(a => ids.Contains(a.AccountId));
+        Servers.Remove(row);
+        if (SelectedServer == row)
+            SelectedServer = Servers.FirstOrDefault();
+        RefreshServerRows();
+        await _state.SaveAsync().ConfigureAwait(false);
     }
 
     [RelayCommand]
@@ -176,17 +326,75 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var account = new Account
             {
-                ServerId = SelectedServer.Id,
+                ServerId = SelectedServer.Model.Id,
                 Login = dialog.Login,
                 Role = dialog.Role,
                 Nickname = dialog.Nickname,
                 Class = dialog.Class
             };
             _state.SetPassword(account, dialog.Password);
-            SelectedServer.Accounts.Add(account);
-            Accounts.Add(new AccountCard(account));
+            SelectedServer.Model.Accounts.Add(account);
+            SelectedTab?.AccountIds.Add(account.Id);
+            RebuildAccounts();
+            RefreshServerRows();
             await _state.SaveAsync().ConfigureAwait(false);
         }
+    }
+
+    [RelayCommand]
+    private async Task AddTabAsync()
+    {
+        if (SelectedServer is null) return;
+        var dialog = new TextPromptDialog("TabName", string.Empty);
+        if (dialog.ShowDialog() != true) return;
+        var tab = new AccountTab { ServerId = SelectedServer.Model.Id, Name = dialog.Value };
+        _state.Data.Tabs.Add(tab);
+        Tabs.Add(tab);
+        TabItems.Add(new TabItem(tab, tab.Name));
+        SelectedTab = tab;
+        await _state.SaveAsync().ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task RenameTabAsync(AccountTab? tab)
+    {
+        if (tab is null) return;
+        var dialog = new TextPromptDialog("TabName", tab.Name);
+        if (dialog.ShowDialog() != true) return;
+        tab.Name = dialog.Value;
+        // ObservableCollection holds the reference; force a re-read.
+        int index = Tabs.IndexOf(tab);
+        if (index >= 0)
+        {
+            Tabs.RemoveAt(index);
+            Tabs.Insert(index, tab);
+        }
+        foreach (TabItem item in TabItems.Where(i => i.Tab == tab))
+            item.RefreshTitle();
+        await _state.SaveAsync().ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task DeleteTabAsync(AccountTab? tab)
+    {
+        if (tab is null) return;
+        _state.Data.Tabs.Remove(tab);
+        Tabs.Remove(tab);
+        TabItem? strip = TabItems.FirstOrDefault(i => i.Tab == tab);
+        if (strip is not null)
+            TabItems.Remove(strip);
+        if (SelectedTab == tab)
+            SelectedTab = null;
+        await _state.SaveAsync().ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task RemoveFromTabAsync(AccountCard? card)
+    {
+        if (card is null || SelectedTab is null) return;
+        SelectedTab.AccountIds.Remove(card.Model.Id);
+        await _state.SaveAsync().ConfigureAwait(false);
+        RebuildAccounts();
     }
 
     [RelayCommand]
@@ -203,12 +411,16 @@ public sealed partial class MainViewModel : ObservableObject
             StatusMessage = "...";
             string password = _state.RevealPassword(card.Model);
             GameSession session = await _launcher.LaunchAsync(
-                SelectedServer, card.Model, password, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+                SelectedServer.Model, card.Model, password, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
             MarkClientWindow(card.Model);
             _log.Info($"Launched {card.Model.Login} pid={session.ProcessId}.");
             WatchSession(session, card);
             await _state.SaveAsync().ConfigureAwait(false);
-            App.Current.Dispatcher.Invoke(card.Refresh);
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                card.Refresh();
+                RefreshServerRows();
+            });
             StatusMessage = string.Empty;
         }
         catch (Exception ex)
@@ -304,7 +516,11 @@ public sealed partial class MainViewModel : ObservableObject
                 _dispatcher.CancelAll();
                 card.Model.ProcessId = null;
                 card.Model.WindowHandle = IntPtr.Zero;
-                App.Current.Dispatcher.Invoke(card.Refresh);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    card.Refresh();
+                    RefreshServerRows();
+                });
             };
         }
         catch (ArgumentException)
@@ -327,7 +543,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (!string.IsNullOrEmpty(dialog.Password))
             _state.SetPassword(card.Model, dialog.Password);
         await _state.SaveAsync().ConfigureAwait(false);
-        App.Current.Dispatcher.Invoke(() => OnSelectedServerChanged(SelectedServer));
+        App.Current.Dispatcher.Invoke(RebuildAccounts);
     }
 
     [RelayCommand]
@@ -335,13 +551,19 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (card is null || SelectedServer is null) return;
         Guid id = card.Model.Id;
-        SelectedServer.Accounts.Remove(card.Model);
+        SelectedServer.Model.Accounts.Remove(card.Model);
         foreach (Group group in _state.Data.Groups)
             group.AccountIds.Remove(id);
+        foreach (AccountTab tab in _state.Data.Tabs)
+            tab.AccountIds.Remove(id);
         foreach (Preset preset in _state.Data.Presets)
             preset.Actions.RemoveAll(a => a.AccountId == id);
         await _state.SaveAsync().ConfigureAwait(false);
-        App.Current.Dispatcher.Invoke(() => OnSelectedServerChanged(SelectedServer));
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            RebuildAccounts();
+            RefreshServerRows();
+        });
     }
 
     [RelayCommand]
@@ -411,7 +633,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void RefreshStatus()
     {
-        _state.RefreshOnlineStatus();
+        RefreshServerRows();
         foreach (AccountCard card in Accounts)
             card.Refresh();
     }

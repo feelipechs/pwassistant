@@ -29,10 +29,14 @@ public partial class MainWindow : Window
         DataContext = viewModel;
         InitializeComponent();
         ServersLabel.Text = AppStrings.Servers;
-        AddServerButton.Content = AppStrings.AddServer;
-        AddAccountButton.Content = AppStrings.AddAccount;
+        AddServerButton.ToolTip = AppStrings.AddServer;
+        AddAccountButton.ToolTip = AppStrings.AddAccount;
+        AddTabButton.ToolTip = AppStrings.NewTab;
+        RenameTabButton.ToolTip = AppStrings.Rename;
+        DeleteTabButton.ToolTip = AppStrings.Delete;
         GroupModeButton.Content = AppStrings.GroupMode;
-        SettingsButton.Content = AppStrings.Settings;
+        SettingsButton.ToolTip = AppStrings.Settings;
+        RefreshButton.ToolTip = AppStrings.Refresh;
         SourceInitialized += OnSourceInitialized;
     }
 

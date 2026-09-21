@@ -1,112 +1,219 @@
 <Window x:Class="PwAssistant.App.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PW Assistant" Height="640" Width="960" MinHeight="480" MinWidth="760"
+        xmlns:models="clr-namespace:PwAssistant.Core.Models;assembly=PwAssistant.Core"
+        Title="PW Assistant" Height="660" Width="1020" MinHeight="480" MinWidth="800"
         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="{StaticResource AppFont}">
     <DockPanel>
-        <!-- Sidebar -->
-        <Border DockPanel.Dock="Left" Width="248" Background="{StaticResource SurfaceBrush}"
+        <!-- Sidebar: servers -->
+        <Border DockPanel.Dock="Left" Width="264" Background="{StaticResource SurfaceBrush}"
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0" Padding="12">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="RefreshButton" Content="&#xE72C;" Command="{Binding RefreshStatusCommand}"
+                            Style="{StaticResource IconButton}"/>
+                    <Button x:Name="SettingsButton" Content="&#xE713;" Click="OnOpenSettings"
+                            Style="{StaticResource IconButton}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
                     <Border Width="8" Height="28" CornerRadius="4" Margin="0,0,8,0"
                             Background="{StaticResource AccentBrush}"/>
-                    <StackPanel>
-                        <TextBlock Text="PW ASSISTANT" FontWeight="Bold" FontSize="14"
-                                   Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBlock x:Name="ServersLabel" FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
-                    </StackPanel>
+                    <TextBlock x:Name="ServersLabel" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <Button x:Name="AddServerButton" Content="&#xE710;" Command="{Binding AddServerCommand}"
+                            Style="{StaticResource IconButton}" Margin="8,0,0,0"/>
                 </StackPanel>
-                <ListBox x:Name="ServerList" Margin="0,8,0,4" Height="300"
+                <ListBox x:Name="ServerList"
                          ItemsSource="{Binding Servers}"
-                         DisplayMemberPath="Name"
-                         SelectedItem="{Binding SelectedServer}"/>
-                <Button x:Name="AddServerButton" Content="+  Servidor" Command="{Binding AddServerCommand}"
-                        Style="{StaticResource PrimaryButton}" Margin="0,4,0,0"/>
-                <Button x:Name="GroupModeButton" Content="Modo Grupo" Command="{Binding OpenGroupModeCommand}"
-                        Margin="0,4,0,0"/>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <Button x:Name="SettingsButton" Content="Config" Click="OnOpenSettings"
-                            Style="{StaticResource GhostButton}" Width="110"/>
-                    <Button x:Name="RefreshButton" Content="Atualizar" Command="{Binding RefreshStatusCommand}"
-                            Style="{StaticResource GhostButton}" Width="110"/>
-                </StackPanel>
-            </StackPanel>
+                         SelectedItem="{Binding SelectedServer}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Ellipse x:Name="ServerDot" Width="8" Height="8"
+                                         Fill="{StaticResource TextMutedBrush}"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding StatsText}" FontSize="11"
+                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                    <Button Content="&#xE70F;"
+                                            Command="{Binding DataContext.EditServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                    <Button Content="&#xE74D;"
+                                            Command="{Binding DataContext.DeleteServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                </StackPanel>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding HasOnline}" Value="True">
+                                    <Setter TargetName="ServerDot" Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
         </Border>
         <!-- Main area -->
         <StackPanel Margin="16,12,16,12">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <DockPanel Margin="0,0,0,4">
                 <TextBlock x:Name="AccountsHeaderLabel" FontSize="16" FontWeight="SemiBold"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            Text="{Binding AccountsHeader}" VerticalAlignment="Center"/>
-                <Button x:Name="AddAccountButton" Content="+ Conta" Command="{Binding AddAccountCommand}"
-                        Style="{StaticResource PrimaryButton}" Margin="16,0,0,0"/>
-                <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}" Margin="16,0,0,0"/>
+                <Button x:Name="GroupModeButton" Content="Group" Command="{Binding OpenGroupModeCommand}"
+                        DockPanel.Dock="Right" Style="{StaticResource GhostButton}"/>
+                <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}"
+                           DockPanel.Dock="Right" Margin="0,0,12,0"/>
+            </DockPanel>
+            <!-- Tab strip: All + named tabs + manage + add account -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <ItemsControl x:Name="TabStrip" ItemsSource="{Binding TabItems}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <RadioButton Content="{Binding Title}" GroupName="AccountTabs"
+                                         Style="{StaticResource TabToggle}"
+                                         IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                         Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                         CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button x:Name="AddTabButton" Content="&#xE710;" Command="{Binding AddTabCommand}"
+                        Style="{StaticResource IconButton}"/>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsTabSelected}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <Button x:Name="RenameTabButton" Content="&#xE70F;"
+                            Command="{Binding RenameTabCommand}" CommandParameter="{Binding SelectedTab}"
+                            Style="{StaticResource IconButton}"/>
+                    <Button x:Name="DeleteTabButton" Content="&#xE74D;"
+                            Command="{Binding DeleteTabCommand}" CommandParameter="{Binding SelectedTab}"
+                            Style="{StaticResource IconButton}"/>
+                </StackPanel>
+                <Border Width="1" Margin="8,4" Background="{StaticResource BorderBrush}"/>
+                <Button x:Name="AddAccountButton" Content="&#xE710;" Command="{Binding AddAccountCommand}"
+                        Style="{StaticResource PrimaryButton}" Width="32" Height="28"/>
             </StackPanel>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="AccountCards" ItemsSource="{Binding Accounts}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource CardBorder}">
+                            <Border Style="{StaticResource SquareCard}">
                                 <StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image x:Name="ClassBadge" Width="32" Height="32" Margin="0,0,12,0"
-                                               Source="{Binding ClassImagePath}"
-                                               ToolTip="{Binding ClassBadgeText}">
-                                            <Image.Style>
-                                                <Style TargetType="Image">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="&#xE711;"
+                                                Command="{Binding DataContext.RemoveFromTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Width="24" Height="24" FontSize="12">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource IconButton}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ClassImagePath}" Value="{x:Null}">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <DataTrigger Binding="{Binding DataContext.IsTabSelected, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
-                                            </Image.Style>
-                                        </Image>
-                                        <StackPanel Width="240">
-                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13"
-                                                       Foreground="{StaticResource TextPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding StatusText}" FontSize="11"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"/>
-                                        </StackPanel>
-                                        <Button Content="{Binding PlayText}"
-                                                Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource PrimaryButton}" MinWidth="80"/>
-                                        <Button Content="{Binding DataContext.EditText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="&#xE70F;"
                                                 Command="{Binding DataContext.EditAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource GhostButton}"/>
-                                        <Button Content="{Binding DataContext.DeleteText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                        <Button Content="&#xE74D;"
                                                 Command="{Binding DataContext.DeleteAccountCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource DangerButton}"/>
+                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
                                     </StackPanel>
+                                    <Image x:Name="ClassBadge" Width="56" Height="56" Margin="0,2,0,6"
+                                           HorizontalAlignment="Center"
+                                           Source="{Binding ClassImagePath}"
+                                           ToolTip="{Binding ClassBadgeText}">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ClassImagePath}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="14"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,8">
+                                        <Ellipse x:Name="StatusDot" Width="8" Height="8" Margin="0,0,6,0"
+                                                 Fill="{StaticResource TextMutedBrush}"/>
+                                        <TextBlock Text="{Binding StatusText}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <Button x:Name="PlayButton" Content="{Binding PlayGlyph}"
+                                            FontFamily="{StaticResource IconFont}" FontSize="16"
+                                            ToolTip="{Binding PlayText}"
+                                            Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource PrimaryButton}"
+                                            HorizontalAlignment="Stretch" MinHeight="36"/>
                                     <Border Height="1" Margin="0,8" Background="{StaticResource BorderBrush}"/>
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Model.Login}" Width="170" VerticalAlignment="Center"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
-                                        <Button Content="{Binding DataContext.CopyText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        <TextBlock Text="{Binding Model.Login}" MaxWidth="120" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <Button Content="&#xE8C8;"
                                                 Command="{Binding DataContext.CopyLoginCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource GhostButton}"/>
-                                        <TextBlock Text="{Binding PasswordDisplay}" MinWidth="60" MaxWidth="150"
-                                                   VerticalAlignment="Center" Margin="12,0,0,0"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"
+                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding PasswordDisplay}" MaxWidth="110" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
                                                    TextTrimming="CharacterEllipsis"/>
-                                        <Button Content="{Binding PasswordToggleText}"
+                                        <Button Content="&#xE7B3;"
+                                                ToolTip="{Binding PasswordToggleHint}"
                                                 Command="{Binding DataContext.TogglePasswordVisibilityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource GhostButton}"/>
-                                        <Button Content="{Binding DataContext.CopyText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                        <Button Content="&#xE8C8;"
                                                 Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource GhostButton}"/>
+                                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="{x:Static models:AccountStatus.Online}">
+                                    <Setter TargetName="StatusDot" Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
