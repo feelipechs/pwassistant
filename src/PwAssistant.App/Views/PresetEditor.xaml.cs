@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using MouseButton = PwAssistant.Core.Models.MouseButton;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PwAssistant.App.Resources;
@@ -282,6 +284,64 @@ public partial class PresetEditor : Window
         if (from < 0 || to < 0 || to >= Rows.Count)
             return;
         Rows.Move(from, to);
+    }
+
+    private Point _dragStartPoint;
+
+    private void OnRowPreviewMouseDown(object sender, MouseButtonEventArgs e) =>
+        _dragStartPoint = e.GetPosition(null);
+
+    /// <summary>
+    /// Drag &amp; drop reorder (↑↓ buttons stay as fallback). Drag starts only
+    /// from passive surfaces (labels/borders/padding) so text selection in
+    /// TextBox and popup interaction in ComboBox/Button keep working.
+    /// </summary>
+    private void OnRowPreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed) return;
+        if (sender is not ListBox list) return;
+        Point current = e.GetPosition(null);
+        if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(current.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+        if (!IsDragHandle(e.OriginalSource)) return;
+        ListBoxItem? item = FindRowContainer(list, e.GetPosition(list));
+        if (item?.DataContext is not PresetActionRow row) return;
+        DragDrop.DoDragDrop(item, row, DragDropEffects.Move);
+    }
+
+    private void OnRowDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = e.Data.GetDataPresent(typeof(PresetActionRow))
+            ? DragDropEffects.Move
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void OnRowDrop(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(typeof(PresetActionRow))) return;
+        if (sender is not ListBox list) return;
+        if (e.Data.GetData(typeof(PresetActionRow)) is not PresetActionRow dragged) return;
+        int from = Rows.IndexOf(dragged);
+        ListBoxItem? targetItem = FindRowContainer(list, e.GetPosition(list));
+        int to = targetItem?.DataContext is PresetActionRow target
+            ? Rows.IndexOf(target)
+            : Rows.Count - 1;
+        if (from < 0 || to < 0 || from == to) return;
+        Rows.Move(from, to);
+        list.SelectedItem = dragged;
+    }
+
+    private static bool IsDragHandle(object? source) =>
+        source is ListBoxItem or ListBox or TextBlock or Border or Panel;
+
+    private static ListBoxItem? FindRowContainer(ListBox list, Point position)
+    {
+        if (list.InputHitTest(position) is not DependencyObject hit) return null;
+        while (hit is not null && hit is not ListBoxItem)
+            hit = VisualTreeHelper.GetParent(hit);
+        return hit as ListBoxItem;
     }
 
     private void Error(string message) => ErrorLabel.Text = message;
