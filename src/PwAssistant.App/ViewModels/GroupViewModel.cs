@@ -75,6 +75,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private Formation? selectedFormation;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsGroupSelected))]
     private Group? selectedGroup;
 
     [ObservableProperty]
@@ -95,6 +96,9 @@ public sealed partial class GroupViewModel : ObservableObject
     public string RenameText => AppStrings.Rename;
     public string DuplicatePresetText => AppStrings.DuplicatePreset;
     public string LoopText => AppStrings.Loop;
+
+    /// <summary>True when a group is picked (shows its manage actions).</summary>
+    public bool IsGroupSelected => SelectedGroup is not null;
 
     /// <summary>Invoked after preset mutations so hotkeys re-register live.</summary>
     public Action? HotkeysChanged { get; set; }

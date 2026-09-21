@@ -30,7 +30,7 @@
             </StackPanel>
         </Border>
         <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="AddCommandButton" Content="&#xE765;" Click="OnAddCommand" Margin="0,0,8,0"
                         Style="{StaticResource IconButton}"/>
                 <Button x:Name="AddClickButton" Content="&#xE962;" Click="OnAddClick"

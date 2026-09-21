@@ -95,10 +95,12 @@
                 <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}"
                            DockPanel.Dock="Right" Margin="0,0,12,0"/>
             </DockPanel>
-            <!-- Tab strip: All + named tabs + manage ... add account pinned right -->
+            <!-- Tab strip cluster ... account add pinned right -->
             <DockPanel Grid.Row="1" Margin="0,0,0,8">
                 <Button x:Name="AddAccountButton" Content="&#xE710;" Command="{Binding AddAccountCommand}"
                         DockPanel.Dock="Right" Style="{StaticResource PrimaryIconButton}"/>
+                <Border Width="1" Margin="8,2" Background="{StaticResource BorderBrush}"
+                        DockPanel.Dock="Right"/>
                 <StackPanel Orientation="Horizontal">
                 <ItemsControl x:Name="TabStrip" ItemsSource="{Binding TabItems}">
                     <ItemsControl.ItemsPanel>
@@ -129,6 +131,7 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
+                    <Border Width="1" Margin="4,4" Background="{StaticResource BorderBrush}"/>
                     <Button x:Name="RenameTabButton" Content="&#xE70F;"
                             Command="{Binding RenameTabCommand}" CommandParameter="{Binding SelectedTab}"
                             Style="{StaticResource IconButton}"/>

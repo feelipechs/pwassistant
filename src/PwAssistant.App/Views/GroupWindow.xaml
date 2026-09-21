@@ -13,16 +13,32 @@
                 <DockPanel>
                     <Button x:Name="MiniModeButton" Command="{Binding OpenMiniModeCommand}"
                             DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Margin="12,0,0,0"/>
+                    <Border Width="1" Margin="8,2" Background="{StaticResource BorderBrush}"
+                            DockPanel.Dock="Right"/>
+                    <StackPanel Orientation="Horizontal">
                         <ComboBox x:Name="GroupBox" Width="260" Margin="0,0,4,0"
                                   ItemsSource="{Binding Groups}"
                                   DisplayMemberPath="Name"
                                   SelectedItem="{Binding SelectedGroup}"/>
                         <Button x:Name="AddGroupButton" Content="&#xE710;" Command="{Binding AddGroupCommand}"
                                 Style="{StaticResource IconButton}"/>
-                        <Button x:Name="RenameGroupButton" Content="&#xE70F;" Command="{Binding RenameGroupCommand}"
-                                Style="{StaticResource IconButton}"/>
-                        <Button x:Name="DeleteGroupButton" Content="&#xE74D;" Command="{Binding DeleteGroupCommand}"
-                                Style="{StaticResource IconButton}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsGroupSelected}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <Border Width="1" Margin="4,4" Background="{StaticResource BorderBrush}"/>
+                            <Button x:Name="RenameGroupButton" Content="&#xE70F;" Command="{Binding RenameGroupCommand}"
+                                    Style="{StaticResource IconButton}"/>
+                            <Button x:Name="DeleteGroupButton" Content="&#xE74D;" Command="{Binding DeleteGroupCommand}"
+                                    Style="{StaticResource IconButton}"/>
+                        </StackPanel>
                         <Button x:Name="FormationsButton" Content="&#xE712;" Click="OnFormationsToggle"
                                 Style="{StaticResource IconButton}"/>
                     <Popup x:Name="FormationsPopup" Placement="Bottom"
@@ -46,6 +62,7 @@
                             </StackPanel>
                         </Border>
                     </Popup>
+                    </StackPanel>
                 </DockPanel>
             </StackPanel>
         </Border>
@@ -114,9 +131,9 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,4,0,0">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock x:Name="PresetsLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
                             <Button x:Name="NewPresetButton" Content="&#xE710;" Command="{Binding AddPresetCommand}"
-                                    Style="{StaticResource IconButton}" Margin="8,0,0,0"/>
+                                    Style="{StaticResource IconButton}" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="PresetsLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
                         </StackPanel>
                         <ItemsControl ItemsSource="{Binding Presets}">
                             <ItemsControl.ItemTemplate>
