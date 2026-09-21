@@ -102,4 +102,21 @@ public sealed class AccountStoreTests : IDisposable
         Assert.DoesNotContain("WindowHandle", raw);
         Assert.DoesNotContain("Status", raw);
     }
+
+    [Fact]
+    public async Task ConcurrentSaves_NeverThrowAndLeaveValidFile()
+    {
+        var store = new JsonFileAccountStore(new TestProtector());
+        (Server server, _) = SampleAccount();
+        var data = new AppData { Servers = { server } };
+
+        Task[] saves = Enumerable.Range(0, 8)
+            .Select(_ => store.SaveAsync(_file, data))
+            .ToArray();
+        await Task.WhenAll(saves);
+
+        AppData loaded = await store.LoadAsync(_file);
+        Assert.Single(loaded.Servers);
+        Assert.False(File.Exists(_file + ".tmp"));
+    }
 }

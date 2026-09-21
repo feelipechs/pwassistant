@@ -42,6 +42,12 @@ public sealed class JsonFileAccountStore : IAccountStore
 
     private readonly ISecretProtector _protector;
 
+    /// <summary>
+    /// Serializes saves: two overlapping saves would otherwise race on the
+    /// same temp file (IOException) — e.g. bubbled drag-drops or two windows.
+    /// </summary>
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
+
     public JsonFileAccountStore(ISecretProtector protector)
     {
         _protector = protector ?? throw new ArgumentNullException(nameof(protector));
@@ -70,16 +76,24 @@ public sealed class JsonFileAccountStore : IAccountStore
     public async Task SaveAsync(string path, AppData data, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(data);
-        string? directory = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
-
-        string tempPath = path + ".tmp";
-        await using (FileStream stream = File.Create(tempPath))
+        await _saveGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            await JsonSerializer.SerializeAsync(
-                stream, data, JsonOptions, cancellationToken).ConfigureAwait(false);
+            string? directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+
+            string tempPath = path + ".tmp";
+            await using (FileStream stream = File.Create(tempPath))
+            {
+                await JsonSerializer.SerializeAsync(
+                    stream, data, JsonOptions, cancellationToken).ConfigureAwait(false);
+            }
+            File.Move(tempPath, path, overwrite: true);
         }
-        File.Move(tempPath, path, overwrite: true);
+        finally
+        {
+            _saveGate.Release();
+        }
     }
 }
