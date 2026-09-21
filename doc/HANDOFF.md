@@ -16,15 +16,17 @@
   abaixo/teclado-mouse.
 - U5: Tag travada na criação, fix crash do ✕, seleção sem azul,
   clusters, lado a lado, status humanizados, Mini labels.
-- U6: Modo Grupo em cards (pool + DnD, ativo gold, `...` com CRUD/
-  presets em janelinha própria).
-- Roteiro Windows: arrastar pool→card; ✕ devolve ao pool; `...`;
-  presets do grupo; salvar/carregar formação por card; ativo seguido
-  pelo Mini; criar conta na PT02; DPI 100/150%; screenshots.
+- U6: Modo Grupo em cards (pool + DnD, ativo gold, `...` com CRUD,
+  presets e formações, presets em janelinha própria).
+- U7: retag por servidor, scrollbar, fantasma de arrasto, formações
+  separadas, "Disponíveis", `+` grupo à direita.
+- Roteiro Windows: renomear PT1 com 2 servidores (outro intacto);
+  arrastar com fantasma + highlight; salvar/carregar formação por card;
+  ativo seguido pelo Mini; DPI 100/150%; screenshots.
 
 ## Próximo passo
 
-- Validar U4 no Windows (roteiro acima); ícone próprio do app pendente.
+- Validar U7 no Windows (roteiro acima); ícone próprio do app pendente.
 
 ## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
 

@@ -142,6 +142,13 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   de UI (crash cross-thread); `ListBoxItem` com template próprio (seleção
   gold, sem azul/cinza do default); `MainWindow` em clusters `DockPanel`;
   status humanizados via resx;   Mini com switches e sem legenda.
+- **U7 grupo final (2026-09-21, código pendente de validação):** retag de tabs
+  por servidor (sem vazamento cross-server) + trava anti-duplicada;
+  `ScrollBar` com botões colapsados e Thumb mínimo (paging na trilha sai);
+  `...` como `Button` + `IsMenuOpen`; fantasma de arrasto (`DragAdorner`)
+  + highlight `IsDragOver` (gap posicional não se aplica a alvo-card);
+  formações separadas (Salvar via prompt, Carregar por linha);
+  `Ungrouped` = "Disponíveis"/"Available"; `+` grupo à direita.
 - **U6 cards de grupo (2026-09-21, código pendente de validação):** `GroupCard`
   (membros, contagens, `IsActive`, `IsMenuOpen`) + `Pool` (sem grupo) +
   `ActiveCard` (espelha `SelectedGroup`, preservando sync/foco/Mini/hotkeys);
