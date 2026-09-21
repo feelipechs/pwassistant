@@ -45,7 +45,6 @@ public static class Strings
     public static string Loop => Get(nameof(Loop));
     public static string CaptureClick => Get(nameof(CaptureClick));
     public static string ClickOverlayHint => Get(nameof(ClickOverlayHint));
-    public static string GroundClickLimitation => Get(nameof(GroundClickLimitation));
     public static string AccountsOfServer => Get(nameof(AccountsOfServer));
     public static string NoServerSelected => Get(nameof(NoServerSelected));
     public static string Members => Get(nameof(Members));

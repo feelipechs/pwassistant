@@ -31,9 +31,9 @@
         </Border>
         <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="AddCommandButton" Content="&#xE710;" Click="OnAddCommand" Margin="0,0,8,0"
+                <Button x:Name="AddCommandButton" Content="&#xE765;" Click="OnAddCommand" Margin="0,0,8,0"
                         Style="{StaticResource IconButton}"/>
-                <Button x:Name="AddClickButton" Content="&#xE710;" Click="OnAddClick"
+                <Button x:Name="AddClickButton" Content="&#xE962;" Click="OnAddClick"
                         Style="{StaticResource PrimaryIconButton}"/>
             </StackPanel>
             <TextBlock x:Name="ErrorLabel" Margin="0,4,0,0" FontSize="11" Foreground="{StaticResource DangerBrush}"/>
@@ -45,10 +45,21 @@
                  Drop="OnRowDrop">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Click="OnDuplicateRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Duplicate}"
+                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE8C8;</Button>
+                            <Button Click="OnRemoveRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Delete}"
+                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE74D;</Button>
+                            <Button Click="OnMoveRowUp" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.MoveUp}"
+                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE70E;</Button>
+                            <Button Click="OnMoveRowDown" ToolTip="{x:Static res:Strings.MoveDown}"
+                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE70C;</Button>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
                         <ComboBox Width="170" Margin="0,0,8,0"
                                   ItemsSource="{Binding DataContext.MemberAccounts, RelativeSource={RelativeSource AncestorType=Window}}"
-                                  DisplayMemberPath="DisplayName"
+                                  DisplayMemberPath="CharacterName"
                                   SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"/>
                         <ComboBox Width="80" Margin="0,0,8,0"
                                   ItemsSource="{Binding DataContext.ActionTypes, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -66,15 +77,8 @@
                                    Text="{Binding PositionLabel}"/>
                         <TextBox Width="70" Margin="0,0,8,0" ToolTip="{x:Static res:Strings.DelayMs}"
                                  Text="{Binding DelayBeforeMs, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
-                        <Button Click="OnDuplicateRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Duplicate}"
-                                Style="{StaticResource IconButton}">⧉</Button>
-                        <Button Click="OnRemoveRow" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.Delete}"
-                                Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12">&#xE74D;</Button>
-                        <Button Click="OnMoveRowUp" Margin="0,0,4,0" ToolTip="{x:Static res:Strings.MoveUp}"
-                                Style="{StaticResource IconButton}">↑</Button>
-                        <Button Click="OnMoveRowDown" ToolTip="{x:Static res:Strings.MoveDown}"
-                                Style="{StaticResource IconButton}">↓</Button>
-                    </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
                     <DataTemplate.Triggers>
                         <DataTrigger Binding="{Binding Type}" Value="{x:Static models:ActionType.Key}">
                             <Setter TargetName="RowCaptureButton" Property="Visibility" Value="Collapsed"/>

@@ -41,7 +41,6 @@
   <data name="Loop" xml:space="preserve"><value>Loop</value></data>
   <data name="CaptureClick" xml:space="preserve"><value>Capture click position</value></data>
   <data name="ClickOverlayHint" xml:space="preserve"><value>Click once on the game window to capture the position.</value></data>
-  <data name="GroundClickLimitation" xml:space="preserve"><value>3D-ground clicks do not replicate without focus (v1 limitation).</value></data>
   <data name="AccountsOfServer" xml:space="preserve"><value>Accounts — {0}</value></data>
   <data name="NoServerSelected" xml:space="preserve"><value>No server selected</value></data>
   <data name="Members" xml:space="preserve"><value>Members</value></data>

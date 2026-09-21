@@ -41,6 +41,11 @@ public sealed partial class MemberOption : ObservableObject
         ? Account.Login
         : $"{Account.Role} ({Account.Login})";
 
+    /// <summary>Character name only (no login), for dense pickers.</summary>
+    public string CharacterName => string.IsNullOrWhiteSpace(Account.Role)
+        ? Account.Login
+        : Account.Role;
+
     public string StatusText => Account.Status == AccountStatus.Online
         ? AppStrings.Online
         : AppStrings.Offline;
@@ -68,9 +73,6 @@ public sealed partial class GroupViewModel : ObservableObject
 
     [ObservableProperty]
     private Formation? selectedFormation;
-
-    [ObservableProperty]
-    private MemberOption? selectedAccountToAdd;
 
     [ObservableProperty]
     private Group? selectedGroup;
@@ -183,7 +185,6 @@ public sealed partial class GroupViewModel : ObservableObject
         Members.Clear();
         VisibleMembers.Clear();
         AvailableAccounts.Clear();
-        SelectedAccountToAdd = null;
         if (value is null) return;
 
         _state.RefreshOnlineStatus();
@@ -316,10 +317,10 @@ public sealed partial class GroupViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task AddMemberAsync()
+    private async Task AddMemberAsync(MemberOption? option)
     {
-        if (SelectedGroup is null || SelectedAccountToAdd is null) return;
-        SelectedGroup.AccountIds.Add(SelectedAccountToAdd.Account.Id);
+        if (SelectedGroup is null || option is null) return;
+        SelectedGroup.AccountIds.Add(option.Account.Id);
         // No ConfigureAwait(false): Rebuild touches UI-bound collections,
         // so the continuation must stay on the dispatcher thread.
         await _state.SaveAsync();
@@ -443,9 +444,10 @@ public sealed partial class GroupViewModel : ObservableObject
                 },
             }).ToList(),
         };
-        _state.Data.Presets.Add(copy);
-        Presets.Add(copy);
-        MiniRows.Add(new MiniPresetRow(copy));
+        _state.Data.Presets.Insert(_state.Data.Presets.IndexOf(preset) + 1, copy);
+        Presets.Insert(Presets.IndexOf(preset) + 1, copy);
+        MiniPresetRow? neighbor = MiniRows.FirstOrDefault(r => r.Preset == preset);
+        MiniRows.Insert(neighbor is null ? MiniRows.Count : MiniRows.IndexOf(neighbor) + 1, new MiniPresetRow(copy));
         await _state.SaveAsync();
     }
 
