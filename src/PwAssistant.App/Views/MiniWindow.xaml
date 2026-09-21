@@ -10,13 +10,10 @@
             BorderThickness="1" CornerRadius="8" Padding="10">
         <StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Border Width="6" Height="22" CornerRadius="3" Margin="0,0,8,0"
-                        Background="{StaticResource AccentBrush}"/>
-                <ComboBox x:Name="GroupBox" Width="180" Margin="0,0,8,0"
+                <ComboBox x:Name="GroupBox" Width="212" Margin="0,0,8,0"
                           ItemsSource="{Binding Groups}"
                           DisplayMemberPath="Name"
                           SelectedItem="{Binding SelectedGroup}"/>
-                <Button x:Name="CollapseButton" Click="OnCollapse" Style="{StaticResource IconButton}"/>
             </StackPanel>
             <StackPanel x:Name="ContentPanel" Margin="0,10,0,0">
                 <ListBox x:Name="MiniMembersList" Height="84" ItemsSource="{Binding Members}">
@@ -49,16 +46,19 @@
                                         Style="{StaticResource PrimaryButton}"
                                         Command="{Binding DataContext.FirePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding Preset}"/>
-                                <ToggleButton Content="{Binding DataContext.LoopText, RelativeSource={RelativeSource AncestorType=Window}}"
-                                              IsChecked="{Binding IsLooping, Mode=OneWay}" Focusable="False"
-                                              Command="{Binding DataContext.ToggleLoopCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                              CommandParameter="{Binding}"/>
+                                <CheckBox Content="{Binding DataContext.LoopText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                          IsChecked="{Binding IsLooping, Mode=OneWay}" Focusable="False"
+                                          Style="{StaticResource ToggleSwitch}"
+                                          Command="{Binding DataContext.ToggleLoopCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                          CommandParameter="{Binding}"/>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <CheckBox x:Name="SyncCheck" Margin="0,4,0,0" Focusable="False" IsChecked="{Binding SyncEnabled}"/>
-                <CheckBox x:Name="FocusCheck" Margin="0,2,0,0" Focusable="False" IsChecked="{Binding FocusEnabled}"/>
+                <CheckBox x:Name="SyncCheck" Margin="0,4,0,0" Focusable="False"
+                          Style="{StaticResource ToggleSwitch}" IsChecked="{Binding SyncEnabled}"/>
+                <CheckBox x:Name="FocusCheck" Margin="0,2,0,0" Focusable="False"
+                          Style="{StaticResource ToggleSwitch}" IsChecked="{Binding FocusEnabled}"/>
                 <TextBlock x:Name="KeysLabel" Margin="0,8,0,0" Style="{StaticResource MutedText}"
                            Text="{Binding FocusKeysLegend}"/>
                 <TextBlock Text="{Binding StatusMessage}" Margin="0,4,0,0" Style="{StaticResource StatusText}" TextWrapping="Wrap"/>

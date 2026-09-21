@@ -13,7 +13,6 @@ namespace PwAssistant.App.Views;
 /// </summary>
 public partial class MiniWindow : Window
 {
-    private bool _collapsed;
     private readonly DispatcherTimer _activeTracker;
     private readonly IWindowResolver _resolver;
 
@@ -25,7 +24,6 @@ public partial class MiniWindow : Window
         _resolver = resolver;
         DataContext = viewModel;
         InitializeComponent();
-        CollapseButton.Content = "–";
         SyncCheck.Content = Strings.SyncEnabled;
         FocusCheck.Content = Strings.FocusSwitch;
         Loaded += (_, _) => ViewModel.Initialize();
@@ -89,12 +87,5 @@ public partial class MiniWindow : Window
         foreach (MemberOption member in ViewModel.Members)
             member.IsActive = member.Account.WindowHandle != IntPtr.Zero
                 && member.Account.WindowHandle == foreground;
-    }
-
-    private void OnCollapse(object sender, RoutedEventArgs e)
-    {
-        _collapsed = !_collapsed;
-        ContentPanel.Visibility = _collapsed ? Visibility.Collapsed : Visibility.Visible;
-        CollapseButton.Content = _collapsed ? "+" : "–";
     }
 }

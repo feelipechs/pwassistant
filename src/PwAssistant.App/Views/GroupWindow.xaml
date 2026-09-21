@@ -59,6 +59,7 @@
                                 <DockPanel Margin="0,0,0,4">
                                     <TextBlock x:Name="MembersLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="OnlineOnlyCheck" DockPanel.Dock="Right"
+                                              Style="{StaticResource ToggleSwitch}"
                                               IsChecked="{Binding ShowOnlineOnly}" VerticalAlignment="Center"/>
                                 </DockPanel>
                                 <ListBox x:Name="MembersList" Height="220" ItemsSource="{Binding VisibleMembers}">

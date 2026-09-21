@@ -13,7 +13,7 @@
         <TextBox x:Name="RoleBox"/>
         <TextBlock x:Name="NicknameLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
         <TextBox x:Name="NicknameBox"/>
-        <CheckBox x:Name="SameAsRoleCheck" Margin="0,6,0,0"/>
+        <CheckBox x:Name="SameAsRoleCheck" Margin="0,6,0,0" Style="{StaticResource ToggleSwitch}"/>
         <TextBlock x:Name="ClassLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
         <ComboBox x:Name="ClassBox" DisplayMemberPath="Display"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
