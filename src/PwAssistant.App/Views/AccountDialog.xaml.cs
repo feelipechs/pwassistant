@@ -69,6 +69,16 @@ public partial class AccountDialog : Window
         TagBox.Text = account.Tag ?? string.Empty;
     }
 
+    /// <summary>
+    /// Presets the tag from the active tab and locks the field, so an
+    /// account created inside a tab always lands in it. "All" keeps it free.
+    /// </summary>
+    public void LockTag(string tag)
+    {
+        TagBox.Text = tag;
+        TagBox.IsEnabled = false;
+    }
+
     private void OnSave(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(Login))

@@ -366,6 +366,8 @@ public sealed partial class MainViewModel : ObservableObject
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(n => n)
             .ToList();
+        if (SelectedTab is not null)
+            dialog.LockTag(SelectedTab.Name);
         if (dialog.ShowDialog() == true)
         {
             var account = new Account
@@ -446,8 +448,10 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (card is null || SelectedTab is null) return;
         card.Model.Tag = null;
-        await _state.SaveAsync().ConfigureAwait(false);
+        // UI-bound collections first (UI thread), persistence after:
+        // touching them past ConfigureAwait(false) crashes cross-thread.
         RebuildAccounts();
+        await _state.SaveAsync().ConfigureAwait(false);
     }
 
     [RelayCommand]
