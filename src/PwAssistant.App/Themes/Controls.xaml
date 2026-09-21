@@ -259,7 +259,12 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="28"/>
+                        </Grid.ColumnDefinitions>
                         <ToggleButton x:Name="ToggleButton"
+                                      Grid.ColumnSpan="2"
                                       Focusable="False"
                                       IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                       ClickMode="Press"
@@ -281,6 +286,7 @@
                             </ToggleButton.Template>
                         </ToggleButton>
                         <ContentPresenter x:Name="ContentSite"
+                                          Grid.ColumnSpan="2"
                                           Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="Left" VerticalAlignment="Center"
                                           Content="{TemplateBinding SelectionBoxItem}"
@@ -288,6 +294,7 @@
                                           ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                           IsHitTestVisible="False"/>
                         <TextBox x:Name="PART_EditableTextBox"
+                                 Grid.Column="0"
                                  Margin="{TemplateBinding Padding}"
                                  HorizontalAlignment="Stretch" VerticalAlignment="Center"
                                  Background="Transparent" BorderThickness="0"
@@ -417,9 +424,12 @@
                                      Fill="{StaticResource TextMutedBrush}"
                                      HorizontalAlignment="Left" Margin="3,0,0,0"/>
                         </Grid>
-                        <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        <ContentPresenter x:Name="ContentHost" Margin="8,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="HasContent" Value="False">
+                            <Setter TargetName="ContentHost" Property="Margin" Value="0"/>
+                        </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Track" Property="Background" Value="{StaticResource AccentBrush}"/>
                             <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
@@ -610,6 +620,17 @@
         <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="12"/>
         <Setter Property="Margin" Value="0,0,10,10"/>
+    </Style>
+
+    <!-- Character mini-card (pool + group members): icon + name only. -->
+    <Style x:Key="MiniCard" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+        <Setter Property="Cursor" Value="SizeAll"/>
     </Style>
 
     <!-- Read-only credential box: looks like an input, holds text + icon buttons. -->

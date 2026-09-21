@@ -1,4 +1,7 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using PwAssistant.App.Services;
 using PwAssistant.App.ViewModels;
@@ -21,6 +24,13 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Closed ComboBoxes must not steal the wheel (it would flip the
+        // selection under the cursor); forward it to the parent scroller.
+        EventManager.RegisterClassHandler(
+            typeof(ComboBox),
+            UIElement.PreviewMouseWheelEvent,
+            new MouseWheelEventHandler(ForwardWheelToScroller));
 
         var services = new ServiceCollection();
         var log = new FileLogger(FileLogger.DefaultDirectory());
@@ -77,6 +87,30 @@ public partial class App : Application
         MainWindow = main;
         main.Show();
         _ = InitializeAndRegisterAsync(main);
+    }
+
+    /// <summary>
+    /// Wheel over a closed ComboBox scrolls the page instead of changing
+    /// the selection. An open dropdown keeps the native item navigation.
+    /// </summary>
+    private static void ForwardWheelToScroller(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is not ComboBox combo || combo.IsDropDownOpen) return;
+        e.Handled = true;
+        DependencyObject? node = combo;
+        while (node is not null)
+        {
+            node = VisualTreeHelper.GetParent(node);
+            if (node is ScrollViewer scroller)
+            {
+                scroller.RaiseEvent(new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                {
+                    RoutedEvent = UIElement.MouseWheelEvent,
+                    Source = scroller,
+                });
+                return;
+            }
+        }
     }
 
     /// <summary>
