@@ -99,4 +99,5 @@
   <data name="CopyLogin" xml:space="preserve"><value>Copy login</value></data>
   <data name="CopyPassword" xml:space="preserve"><value>Copy password</value></data>
   <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="OnlineOnly" xml:space="preserve"><value>Online only</value></data>
 </root>

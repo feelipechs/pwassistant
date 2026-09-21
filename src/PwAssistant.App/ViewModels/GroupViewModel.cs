@@ -24,11 +24,7 @@ public sealed partial class MiniPresetRow : ObservableObject
     [ObservableProperty]
     private bool isLooping;
 
-    public string DisplayFireText => IsLooping
-        ? $"{AppStrings.Stop} {Name}"
-        : $"{AppStrings.Fire} {Name}";
-
-    partial void OnIsLoopingChanged(bool value) => OnPropertyChanged(nameof(DisplayFireText));
+    public string DisplayFireText => Name;
 }
 
 /// <summary>One group member row (online or offline) for management.</summary>
@@ -65,6 +61,7 @@ public sealed partial class GroupViewModel : ObservableObject
     public ObservableCollection<Account> OnlineMembers { get; } = new();
     public ObservableCollection<Preset> Presets { get; } = new();
     public ObservableCollection<MemberOption> Members { get; } = new();
+    public ObservableCollection<MemberOption> VisibleMembers { get; } = new();
     public ObservableCollection<MemberOption> AvailableAccounts { get; } = new();
     public ObservableCollection<Formation> Formations { get; } = new();
     public ObservableCollection<MiniPresetRow> MiniRows { get; } = new();
@@ -83,6 +80,9 @@ public sealed partial class GroupViewModel : ObservableObject
 
     [ObservableProperty]
     private bool focusEnabled;
+
+    [ObservableProperty]
+    private bool showOnlineOnly;
 
     [ObservableProperty]
     private string statusMessage = string.Empty;
@@ -137,6 +137,17 @@ public sealed partial class GroupViewModel : ObservableObject
 
     partial void OnSelectedGroupChanged(Group? value) => Rebuild(value);
 
+    partial void OnShowOnlineOnlyChanged(bool value) => RebuildVisibleMembers();
+
+    /// <summary>Single management list, optionally hiding offline members.</summary>
+    private void RebuildVisibleMembers()
+    {
+        VisibleMembers.Clear();
+        foreach (MemberOption member in Members.Where(m =>
+            !ShowOnlineOnly || m.Account.Status == AccountStatus.Online))
+            VisibleMembers.Add(member);
+    }
+
     /// <summary>Recompute members/online/presets (also the Activated refresh).</summary>
     public void Refresh() => Rebuild(SelectedGroup);
 
@@ -170,6 +181,7 @@ public sealed partial class GroupViewModel : ObservableObject
         OnlineMembers.Clear();
         Presets.Clear();
         Members.Clear();
+        VisibleMembers.Clear();
         AvailableAccounts.Clear();
         SelectedAccountToAdd = null;
         if (value is null) return;
@@ -201,6 +213,7 @@ public sealed partial class GroupViewModel : ObservableObject
 
         _sync.SetSyncedAccounts(OnlineMembers.Select(a => a.Id));
         _focus.SetOrder(OnlineMembers.Select(a => a.Id));
+        RebuildVisibleMembers();
         OnPropertyChanged(nameof(FocusKeysLegend));
     }
 

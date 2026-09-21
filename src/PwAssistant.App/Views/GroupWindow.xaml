@@ -1,6 +1,7 @@
 <Window x:Class="PwAssistant.App.Views.GroupWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:PwAssistant.Core.Models;assembly=PwAssistant.Core"
         xmlns:res="clr-namespace:PwAssistant.App.Resources"
         Title="Group Mode" Height="620" Width="880"
         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextPrimaryBrush}"
@@ -20,6 +21,29 @@
                             Style="{StaticResource IconButton}"/>
                     <Button x:Name="DeleteGroupButton" Content="&#xE74D;" Command="{Binding DeleteGroupCommand}"
                             Style="{StaticResource IconButton}"/>
+                    <Button x:Name="FormationsButton" Content="&#xE712;" Click="OnFormationsToggle"
+                            Style="{StaticResource IconButton}"/>
+                    <Popup x:Name="FormationsPopup" Placement="Bottom"
+                           PlacementTarget="{Binding ElementName=FormationsButton}"
+                           StaysOpen="False">
+                        <Border Background="{StaticResource SurfaceBrush}"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8"
+                                Padding="12" Width="300">
+                            <StackPanel>
+                                <TextBlock x:Name="FormationsLabel" Style="{StaticResource SectionTitle}"/>
+                                <ComboBox x:Name="FormationBox"
+                                          ItemsSource="{Binding Formations}"
+                                          DisplayMemberPath="Name"
+                                          SelectedItem="{Binding SelectedFormation}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <Button x:Name="SaveFormationButton" Command="{Binding SaveFormationCommand}"
+                                            Style="{StaticResource GhostButton}"/>
+                                    <Button x:Name="LoadFormationButton" Command="{Binding LoadFormationCommand}"
+                                            Style="{StaticResource GhostButton}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                     <Button x:Name="MiniModeButton" Command="{Binding OpenMiniModeCommand}"
                             Style="{StaticResource GhostButton}" HorizontalAlignment="Right" Margin="12,0,0,0"/>
                 </StackPanel>
@@ -28,98 +52,95 @@
         </Border>
         <TabControl>
             <TabItem Header="{x:Static res:Strings.Members}">
-                <StackPanel Margin="0,4,0,0">
-                    <Border Style="{StaticResource CardBorder}">
-                        <StackPanel>
-                            <TextBlock x:Name="OnlineLabel" Style="{StaticResource SectionTitle}"/>
-                            <ListBox x:Name="OnlineList" Height="140" ItemsSource="{Binding OnlineMembers}" DisplayMemberPath="Role"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Style="{StaticResource CardBorder}">
-                        <StackPanel>
-                            <TextBlock x:Name="MembersLabel" Style="{StaticResource SectionTitle}"/>
-                            <ListBox x:Name="MembersList" Height="120" ItemsSource="{Binding Members}">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding DisplayName}" Width="240" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding StatusText}" Width="80" VerticalAlignment="Center"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"/>
-                                            <Button Content="&#xE74D;"
-                                                    Command="{Binding DataContext.RemoveMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                <ComboBox x:Name="AddMemberBox" Width="260" Margin="0,0,4,0"
-                                          ItemsSource="{Binding AvailableAccounts}"
-                                          DisplayMemberPath="DisplayName"
-                                          SelectedItem="{Binding SelectedAccountToAdd}"/>
-                                <Button x:Name="AddMemberButton" Content="&#xE710;" Command="{Binding AddMemberCommand}"
-                                        Style="{StaticResource IconButton}"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,4,0,0">
+                        <Border Style="{StaticResource CardBorder}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,4">
+                                    <TextBlock x:Name="MembersLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="OnlineOnlyCheck" DockPanel.Dock="Right"
+                                              IsChecked="{Binding ShowOnlineOnly}" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <ListBox x:Name="MembersList" Height="220" ItemsSource="{Binding VisibleMembers}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="8" Height="8" Margin="0,0,8,0">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse">
+                                                            <Setter Property="Fill" Value="{StaticResource TextMutedBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Account.Status}" Value="{x:Static models:AccountStatus.Online}">
+                                                                    <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <TextBlock Text="{Binding DisplayName}" Width="240" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding StatusText}" Width="80" VerticalAlignment="Center"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                <Button Content="&#xE74D;"
+                                                        Command="{Binding DataContext.RemoveMemberCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <ComboBox x:Name="AddMemberBox" Width="260" Margin="0,0,4,0"
+                                              ItemsSource="{Binding AvailableAccounts}"
+                                              DisplayMemberPath="DisplayName"
+                                              SelectedItem="{Binding SelectedAccountToAdd}"/>
+                                    <Button x:Name="AddMemberButton" Content="&#xE710;" Command="{Binding AddMemberCommand}"
+                                            Style="{StaticResource IconButton}"/>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="{x:Static res:Strings.Presets}">
-                <StackPanel Margin="0,4,0,0">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock x:Name="PresetsLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
-                        <Button x:Name="NewPresetButton" Content="&#xE710;" Command="{Binding AddPresetCommand}"
-                                Style="{StaticResource IconButton}" Margin="8,0,0,0"/>
-                    </StackPanel>
-                    <ItemsControl ItemsSource="{Binding Presets}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6">
-                                    <StackPanel Orientation="Horizontal">
-                                        <StackPanel Width="280">
-                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding Hotkey}" FontSize="11"
-                                                       Foreground="{StaticResource AccentBrush}"/>
-                                        </StackPanel>
-                                        <Button Content="&#xE70F;"
-                                                Command="{Binding DataContext.EditPresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource IconButton}"/>
-                                        <Button Content="&#xE8C8;"
-                                                Command="{Binding DataContext.DuplicatePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource IconButton}"/>
-                                        <Button Content="&#xE74D;"
-                                                Command="{Binding DataContext.DeletePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource IconButton}"/>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}" Margin="0,6,0,0"/>
-                </StackPanel>
-            </TabItem>
-            <TabItem Header="{x:Static res:Strings.Formations}">
-                <Border Style="{StaticResource CardBorder}" Margin="0,4,0,0">
-                    <StackPanel>
-                        <TextBlock x:Name="FormationsLabel" Style="{StaticResource SectionTitle}"/>
-                        <ComboBox x:Name="FormationBox"
-                                  ItemsSource="{Binding Formations}"
-                                  DisplayMemberPath="Name"
-                                  SelectedItem="{Binding SelectedFormation}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                            <Button x:Name="SaveFormationButton" Command="{Binding SaveFormationCommand}"
-                                    Style="{StaticResource GhostButton}"/>
-                            <Button x:Name="LoadFormationButton" Command="{Binding LoadFormationCommand}"
-                                    Style="{StaticResource GhostButton}"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,4,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock x:Name="PresetsLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
+                            <Button x:Name="NewPresetButton" Content="&#xE710;" Command="{Binding AddPresetCommand}"
+                                    Style="{StaticResource IconButton}" Margin="8,0,0,0"/>
                         </StackPanel>
+                        <ItemsControl ItemsSource="{Binding Presets}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                            BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6">
+                                        <StackPanel Orientation="Horizontal">
+                                            <StackPanel Width="280">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Hotkey}" FontSize="11"
+                                                           Foreground="{StaticResource AccentBrush}"/>
+                                            </StackPanel>
+                                            <Button Content="&#xE70F;"
+                                                    Command="{Binding DataContext.EditPresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconButton}"/>
+                                            <Button Content="&#xE8C8;"
+                                                    Command="{Binding DataContext.DuplicatePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconButton}"/>
+                                            <Button Content="&#xE74D;"
+                                                    Command="{Binding DataContext.DeletePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconButton}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource StatusText}" Margin="0,6,0,0"/>
                     </StackPanel>
-                </Border>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </DockPanel>

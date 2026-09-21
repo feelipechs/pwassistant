@@ -105,6 +105,7 @@ public static class Strings
     public static string CopyLogin => Get(nameof(CopyLogin));
     public static string CopyPassword => Get(nameof(CopyPassword));
     public static string Refresh => Get(nameof(Refresh));
+    public static string OnlineOnly => Get(nameof(OnlineOnly));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }

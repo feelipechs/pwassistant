@@ -38,8 +38,13 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="56"/>
                                 </Grid.ColumnDefinitions>
-                                <Ellipse x:Name="ServerDot" Width="8" Height="8"
-                                         Fill="{StaticResource TextMutedBrush}"/>
+                                <Ellipse x:Name="ServerDot" Width="8" Height="8">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="{StaticResource TextMutedBrush}"/>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
                                                Foreground="{StaticResource TextPrimaryBrush}"/>
@@ -186,8 +191,13 @@
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,8">
-                                        <Ellipse x:Name="StatusDot" Width="8" Height="8" Margin="0,0,6,0"
-                                                 Fill="{StaticResource TextMutedBrush}"/>
+                                        <Ellipse x:Name="StatusDot" Width="8" Height="8" Margin="0,0,6,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="{StaticResource TextMutedBrush}"/>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
                                         <TextBlock Text="{Binding StatusText}" FontSize="11"
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </StackPanel>

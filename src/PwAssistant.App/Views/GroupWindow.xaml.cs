@@ -16,8 +16,8 @@ public partial class GroupWindow : Window
         DataContext = viewModel;
         InitializeComponent();
         LimitationLabel.Text = Strings.GroundClickLimitation;
-        OnlineLabel.Text = Strings.OnlineMembers;
         MembersLabel.Text = Strings.Members;
+        OnlineOnlyCheck.Content = Strings.OnlineOnly;
         AddMemberButton.ToolTip = Strings.AddMember;
         MiniModeButton.Content = Strings.MiniMode;
         FormationsLabel.Text = Strings.Formations;
@@ -28,6 +28,7 @@ public partial class GroupWindow : Window
         AddGroupButton.ToolTip = Strings.NewGroup;
         RenameGroupButton.ToolTip = Strings.Rename;
         DeleteGroupButton.ToolTip = Strings.Delete;
+        FormationsButton.ToolTip = Strings.Formations;
         Loaded += (_, _) => ViewModel.Initialize();
         Activated += (_, _) => ViewModel.Refresh();
         // Event-oriented auto-refresh: picks up client deaths/starts without
@@ -40,6 +41,9 @@ public partial class GroupWindow : Window
         _onlinePoller.Start();
         Closed += (_, _) => _onlinePoller.Stop();
     }
+
+    private void OnFormationsToggle(object sender, RoutedEventArgs e) =>
+        FormationsPopup.IsOpen = !FormationsPopup.IsOpen;
 
     private static void RefreshMainHotkeys()
     {
