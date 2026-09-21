@@ -14,8 +14,8 @@ public partial class AccountDialog : Window
         : (string.IsNullOrWhiteSpace(NicknameBox.Text) ? null : NicknameBox.Text.Trim());
     public string? Class => (ClassBox.SelectedItem as ClassInfo)?.Key;
 
-    /// <summary>Tab tag: free text with the existing tabs as suggestions.</summary>
-    public string? AccountTag => string.IsNullOrWhiteSpace(TagBox.Text) ? null : TagBox.Text.Trim();
+    /// <summary>Tab tag: existing tags only (new tags come from + tab).</summary>
+    public string? AccountTag => TagBox.SelectedItem as string;
 
     public IEnumerable<string> KnownTags
     {
@@ -66,7 +66,29 @@ public partial class AccountDialog : Window
         NicknameBox.Text = account.Nickname ?? string.Empty;
         SameAsRoleCheck.IsChecked = string.IsNullOrWhiteSpace(account.Nickname);
         ClassBox.SelectedItem = ClassCatalog.TryGet(account.Class, out ClassInfo info) ? info : null;
-        TagBox.Text = account.Tag ?? string.Empty;
+        SelectTag(account.Tag);
+    }
+
+    private void SelectTag(string? tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            TagBox.SelectedItem = null;
+            return;
+        }
+        foreach (string known in TagBox.Items)
+        {
+            if (string.Equals(known, tag, StringComparison.OrdinalIgnoreCase))
+            {
+                TagBox.SelectedItem = known;
+                return;
+            }
+        }
+        // Legacy tag without a tab: keep it selectable instead of losing data.
+        var items = TagBox.Items.Cast<string>().ToList();
+        items.Add(tag);
+        TagBox.ItemsSource = items;
+        TagBox.SelectedItem = tag;
     }
 
     /// <summary>
@@ -75,7 +97,7 @@ public partial class AccountDialog : Window
     /// </summary>
     public void LockTag(string tag)
     {
-        TagBox.Text = tag;
+        SelectTag(tag);
         TagBox.IsEnabled = false;
     }
 

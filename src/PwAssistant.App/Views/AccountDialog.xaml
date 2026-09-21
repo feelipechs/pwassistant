@@ -4,6 +4,7 @@
         Title="Account" Height="440" Width="420" WindowStartupLocation="CenterOwner"
         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="{StaticResource AppFont}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Margin="16,12,16,12">
         <TextBlock x:Name="LoginLabel" Foreground="{StaticResource TextSecondaryBrush}"/>
         <TextBox x:Name="LoginBox"/>
@@ -17,10 +18,11 @@
         <TextBlock x:Name="ClassLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
         <ComboBox x:Name="ClassBox" DisplayMemberPath="Display"/>
         <TextBlock x:Name="TagLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
-        <ComboBox x:Name="TagBox" IsEditable="True"/>
+        <ComboBox x:Name="TagBox"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button x:Name="CancelButton" Click="OnCancel" Style="{StaticResource GhostButton}"/>
             <Button x:Name="SaveButton" Click="OnSave" Style="{StaticResource PrimaryButton}" MinWidth="110"/>
         </StackPanel>
     </StackPanel>
+    </ScrollViewer>
 </Window>
