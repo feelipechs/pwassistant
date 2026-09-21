@@ -21,3 +21,6 @@ coverage*.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Original user artwork (duplicates of src/PwAssistant.App/Resources/Classes)
+images/

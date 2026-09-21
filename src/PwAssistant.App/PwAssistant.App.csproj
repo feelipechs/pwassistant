@@ -8,6 +8,7 @@
          It still only RUNS on Windows. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>PwAssistant.App</RootNamespace>
+    <ApplicationIcon>Resources\Classes\guerreiro.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
