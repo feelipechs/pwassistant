@@ -65,6 +65,10 @@ normativa; em caso de conflito com código, o código deve ser corrigido
 ## Segurança e higiene
 
 - Segredos: AES em repouso; nunca em log, exceção ou clipboard.
+- Reveal em tela (2026-09-20, código pendente de validação): botão
+  Mostrar/Ocultar no card da conta, a pedido, com auto-hide em 15 s;
+  mesmo modelo de exposição do copiar (clipboard com auto-clear 30 s);
+  nunca em log, exceção ou disco.
 - Mensagens forjadas vão **só** para HWNDs de PIDs do próprio launcher
   (nunca broadcast/enumeração cega).
 - Higiene `WA_INACTIVE` após rajadas longas (receita validada em

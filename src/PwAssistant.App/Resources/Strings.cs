@@ -86,6 +86,8 @@ public static class Strings
     public static string PresetNameRequired => Get(nameof(PresetNameRequired));
     public static string InvalidHotkey => Get(nameof(InvalidHotkey));
     public static string ExecutionMode => Get(nameof(ExecutionMode));
+    public static string ShowPassword => Get(nameof(ShowPassword));
+    public static string HidePassword => Get(nameof(HidePassword));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }

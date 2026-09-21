@@ -83,4 +83,6 @@
   <data name="PresetNameRequired" xml:space="preserve"><value>Preset needs a name.</value></data>
   <data name="InvalidHotkey" xml:space="preserve"><value>Hotkey needs modifiers + key, e.g. CTRL+SHIFT+F9.</value></data>
   <data name="ExecutionMode" xml:space="preserve"><value>Mode</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>Show</value></data>
+  <data name="HidePassword" xml:space="preserve"><value>Hide</value></data>
 </root>

@@ -23,6 +23,35 @@ public sealed partial class AccountCard : ObservableObject
     [NotifyPropertyChangedFor(nameof(PlayText))]
     private AccountStatus status;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PasswordDisplay))]
+    [NotifyPropertyChangedFor(nameof(PasswordToggleText))]
+    private bool isPasswordRevealed;
+
+    private string? _revealedPassword;
+
+    public string? RevealedPassword => _revealedPassword;
+
+    /// <summary>Masked dots, or the plaintext while revealed (auto-hides).</summary>
+    public string PasswordDisplay =>
+        IsPasswordRevealed && _revealedPassword is not null ? _revealedPassword : "••••••";
+
+    public string PasswordToggleText =>
+        IsPasswordRevealed ? AppStrings.HidePassword : AppStrings.ShowPassword;
+
+    /// <summary>Reveal in place; the plaintext never goes to log/disk.</summary>
+    public void RevealPassword(string plaintext)
+    {
+        _revealedPassword = plaintext;
+        IsPasswordRevealed = true;
+    }
+
+    public void HidePassword()
+    {
+        _revealedPassword = null;
+        IsPasswordRevealed = false;
+    }
+
     public AccountCard(Account model)
     {
         Model = model;
@@ -334,6 +363,26 @@ public sealed partial class MainViewModel : ObservableObject
         string password = _state.RevealPassword(card.Model);
         Clipboard.SetText(password);
         ClearClipboardAfter(TimeSpan.FromSeconds(30), password);
+    }
+
+    [RelayCommand]
+    private void TogglePasswordVisibility(AccountCard? card)
+    {
+        if (card is null) return;
+        if (card.IsPasswordRevealed)
+        {
+            card.HidePassword();
+            return;
+        }
+        // Same exposure class as copy-at-dispatch: user-initiated, in-memory
+        // only, never logged. Auto-hides so it does not linger on screen.
+        card.RevealPassword(_state.RevealPassword(card.Model));
+        string? shown = card.RevealedPassword;
+        Task.Delay(TimeSpan.FromSeconds(15)).ContinueWith(_ =>
+        {
+            if (card.IsPasswordRevealed && card.RevealedPassword == shown)
+                card.HidePassword();
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     private static void ClearClipboardAfter(TimeSpan delay, string expected)
