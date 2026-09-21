@@ -88,6 +88,23 @@ public static class Strings
     public static string ExecutionMode => Get(nameof(ExecutionMode));
     public static string ShowPassword => Get(nameof(ShowPassword));
     public static string HidePassword => Get(nameof(HidePassword));
+    public static string All => Get(nameof(All));
+    public static string NewTab => Get(nameof(NewTab));
+    public static string Rename => Get(nameof(Rename));
+    public static string RemoveFromTab => Get(nameof(RemoveFromTab));
+    public static string TabName => Get(nameof(TabName));
+    public static string NewGroup => Get(nameof(NewGroup));
+    public static string DeleteGroupTitle => Get(nameof(DeleteGroupTitle));
+    public static string ServerStats(int total, int online) =>
+        string.Format(Get(nameof(ServerStats)), total, online);
+    public static string DeleteServerTitle => Get(nameof(DeleteServerTitle));
+    public static string DeleteServerConfirm(string server, int accounts) =>
+        string.Format(Get(nameof(DeleteServerConfirm)), server, accounts);
+    public static string DeleteGroupConfirm(string group) =>
+        string.Format(Get(nameof(DeleteGroupConfirm)), group);
+    public static string CopyLogin => Get(nameof(CopyLogin));
+    public static string CopyPassword => Get(nameof(CopyPassword));
+    public static string Refresh => Get(nameof(Refresh));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
 }

@@ -85,4 +85,18 @@
   <data name="ExecutionMode" xml:space="preserve"><value>Modo</value></data>
   <data name="ShowPassword" xml:space="preserve"><value>Mostrar</value></data>
   <data name="HidePassword" xml:space="preserve"><value>Ocultar</value></data>
+  <data name="All" xml:space="preserve"><value>Todas</value></data>
+  <data name="NewTab" xml:space="preserve"><value>Nova tab</value></data>
+  <data name="Rename" xml:space="preserve"><value>Renomear</value></data>
+  <data name="RemoveFromTab" xml:space="preserve"><value>Remover da tab</value></data>
+  <data name="TabName" xml:space="preserve"><value>Nome da tab</value></data>
+  <data name="ServerStats" xml:space="preserve"><value>{0} contas • {1} online</value></data>
+  <data name="DeleteServerTitle" xml:space="preserve"><value>Excluir servidor</value></data>
+  <data name="DeleteServerConfirm" xml:space="preserve"><value>Excluir {0} e suas {1} conta(s)? Grupos e presets que as citam serão limpos.</value></data>
+  <data name="NewGroup" xml:space="preserve"><value>Novo grupo</value></data>
+  <data name="DeleteGroupTitle" xml:space="preserve"><value>Excluir grupo</value></data>
+  <data name="DeleteGroupConfirm" xml:space="preserve"><value>Excluir o grupo {0}? Os presets dele serão excluídos junto.</value></data>
+  <data name="CopyLogin" xml:space="preserve"><value>Copiar login</value></data>
+  <data name="CopyPassword" xml:space="preserve"><value>Copiar senha</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Atualizar</value></data>
 </root>

@@ -45,4 +45,6 @@
     <Thickness x:Key="SpaceMd">12</Thickness>
     <Thickness x:Key="SpaceLg">16</Thickness>
     <FontFamily x:Key="AppFont">Segoe UI</FontFamily>
+    <!-- Segoe MDL2 Assets ships with Windows 10+: crisp glyphs, no emoji risk. -->
+    <FontFamily x:Key="IconFont">Segoe MDL2 Assets</FontFamily>
 </ResourceDictionary>
