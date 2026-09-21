@@ -123,6 +123,14 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   credenciais com botões-ícone). `GroupWindow` em abas gerenciais
   (Membros | Presets | Formações) com `+` de novo grupo no topo e
   lápis/lixeira de grupo (cascata com confirmação).
+- **U3 responsividade (2026-09-21, código pendente de validação):** coluna
+  direita da `MainWindow` em `Grid` (header/strip/`*` — `ScrollViewer` em
+  `StackPanel` nunca scrolla); ações de servidor só no hover/seleção;
+  credenciais em caixas `InputBox`; dots de status via `Style` (valor local
+  vence trigger — nunca fixar `Fill` direto). `GroupWindow`: lista única
+  de membros com dot + filtro "só online" (`VisibleMembers`; `OnlineMembers`
+  segue alimentando sync/foco, fora da UI); formações via botão `...`
+  (`Popup`, sem aba); Mini mostra só o nome do preset (loop no toggle).
 - **U1 Redesign (2026-09-20, código pendente de validação no Windows):**
   cláusula acima acionada — redesign completo mantido em XAML próprio, sem
   novo pacote: `Themes/Tokens.xaml` (paleta dark + gold, radius, espaçamentos,
