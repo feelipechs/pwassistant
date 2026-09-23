@@ -1,6 +1,8 @@
-using System.Windows;
+﻿using System.Windows;
 using PwAssistant.App.Resources;
 using PwAssistant.Core.Models;
+
+using PwAssistant.App.Services;
 
 namespace PwAssistant.App.Views;
 
@@ -28,6 +30,7 @@ public partial class AccountDialog : Window
     public AccountDialog()
     {
         InitializeComponent();
+        DialogOwner.Own(this);
         LoginLabel.Text = Strings.Login;
         PasswordLabel.Text = Strings.Password;
         RoleLabel.Text = Strings.Role;
@@ -62,11 +65,14 @@ public partial class AccountDialog : Window
     public void Prefill(Account account)
     {
         LoginBox.Text = account.Login;
-        RoleBox.Text = account.Role;
         NicknameBox.Text = account.Nickname ?? string.Empty;
         SameAsRoleCheck.IsChecked = string.IsNullOrWhiteSpace(account.Nickname);
+        RoleBox.Text = account.Role;
         ClassBox.SelectedItem = ClassCatalog.TryGet(account.Class, out ClassInfo info) ? info : null;
         SelectTag(account.Tag);
+        // RoleBox.TextChanged already mirrored, but an unchecked-then-checked
+        // sequence or event order must never leave a blank nickname behind.
+        MirrorRole();
     }
 
     private void SelectTag(string? tag)

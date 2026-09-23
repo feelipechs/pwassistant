@@ -1,28 +1,38 @@
-<Window x:Class="PwAssistant.App.Views.AccountDialog"
+﻿<Window x:Class="PwAssistant.App.Views.AccountDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Account" Height="440" Width="420" WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BgBrush}" Foreground="{StaticResource TextPrimaryBrush}"
-        FontFamily="{StaticResource AppFont}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        xmlns:views="clr-namespace:PwAssistant.App.Views"
+        Title="Account" Width="420" SizeToContent="Height" WindowStartupLocation="CenterOwner"
+        UseLayoutRounding="True"
+        Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Foreground}"
+        FontFamily="{StaticResource Font.Family}"
+        Style="{StaticResource ThemedWindow}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <views:TitleBar/>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
     <StackPanel Margin="16,12,16,12">
-        <TextBlock x:Name="LoginLabel" Foreground="{StaticResource TextSecondaryBrush}"/>
+        <TextBlock x:Name="LoginLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,0,0,2"/>
         <TextBox x:Name="LoginBox"/>
-        <TextBlock x:Name="PasswordLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+        <TextBlock x:Name="PasswordLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2"/>
         <PasswordBox x:Name="PasswordBox"/>
-        <TextBlock x:Name="RoleLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+        <TextBlock x:Name="RoleLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2"/>
         <TextBox x:Name="RoleBox"/>
-        <TextBlock x:Name="NicknameLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+        <TextBlock x:Name="NicknameLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2"/>
         <TextBox x:Name="NicknameBox"/>
-        <CheckBox x:Name="SameAsRoleCheck" Margin="0,6,0,0" Style="{StaticResource ToggleSwitch}"/>
-        <TextBlock x:Name="ClassLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+        <CheckBox x:Name="SameAsRoleCheck" Margin="0,8,0,0" Style="{StaticResource ToggleSwitch}"/>
+        <TextBlock x:Name="ClassLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2"/>
         <ComboBox x:Name="ClassBox" DisplayMemberPath="Display"/>
-        <TextBlock x:Name="TagLabel" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+        <TextBlock x:Name="TagLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2"/>
         <ComboBox x:Name="TagBox"/>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
             <Button x:Name="CancelButton" Click="OnCancel" Style="{StaticResource GhostButton}"/>
             <Button x:Name="SaveButton" Click="OnSave" Style="{StaticResource PrimaryButton}" MinWidth="110"/>
         </StackPanel>
     </StackPanel>
     </ScrollViewer>
+    </Grid>
 </Window>

@@ -1,7 +1,6 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using PwAssistant.App.Resources;
@@ -13,20 +12,25 @@ namespace PwAssistant.App.Views;
 
 /// <summary>Per-group preset manager. The group is activated on open, so the
 /// shared preset commands (and Mini rows) operate on it. Rows reorder by
-/// drag and drop with a live insertion preview.</summary>
+/// drag and drop with a live Trello-style preview (group parity).</summary>
 public partial class GroupPresetsWindow : Window
 {
     public GroupViewModel ViewModel { get; }
 
     private Point _dragStartPoint;
-    private InsertionAdorner? _insertionAdorner;
-    private UIElement? _insertionHost;
+    private Border? _ghost;
+    private bool _dropHandled;
+    private readonly DragDirectionTracker _direction = new();
+
+    /// <summary>LiveMove flips the slot ~10% into a row (on touch).</summary>
+    private const double LiveSwapFraction = 0.1;
 
     public GroupPresetsWindow(GroupViewModel viewModel)
     {
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
+        DialogOwner.Own(this);
         Title = $"{Strings.Presets} — {viewModel.SelectedGroup?.Name}";
         PresetsLabel.Text = Strings.Presets;
         NewPresetButton.ToolTip = Strings.NewPreset;
@@ -47,36 +51,87 @@ public partial class GroupPresetsWindow : Window
         if (e.OriginalSource is ButtonBase) return;
         Preset? preset = FindDataContext<Preset>(list.InputHitTest(e.GetPosition(list)) as DependencyObject);
         if (preset is null) return;
-        DragDrop.DoDragDrop(list, preset, DragDropEffects.Move);
+        BeginPresetDrag(list, preset);
+    }
+
+    private void BeginPresetDrag(FrameworkElement source, Preset preset)
+    {
+        _ghost = DragGhost.ForText(this, preset.Name);
+        GhostLayer.Children.Add(_ghost);
+        PositionGhost();
+        source.GiveFeedback += OnDragFeedback;
+        _dropHandled = false;
+        _direction.Reset();
+        try
+        {
+            DragDrop.DoDragDrop(source, preset, DragDropEffects.Move);
+        }
+        finally
+        {
+            source.GiveFeedback -= OnDragFeedback;
+            GhostLayer.Children.Remove(_ghost);
+            _ghost = null;
+            // Cancel/ESC/release outside: LiveMove only touched the UI —
+            // restore the view order from the model.
+            if (!_dropHandled)
+                ViewModel.RevertPresetOrder();
+            _dropHandled = false;
+        }
+    }
+
+    private void OnDragFeedback(object? sender, GiveFeedbackEventArgs e)
+    {
+        PositionGhost();
+        e.UseDefaultCursors = true;
+        e.Handled = true;
+    }
+
+    private void PositionGhost(Point? anchor = null)
+    {
+        if (_ghost is null) return;
+        Point p = anchor ?? Mouse.GetPosition(GhostLayer);
+        Canvas.SetLeft(_ghost, p.X + 14);
+        Canvas.SetTop(_ghost, p.Y + 14);
     }
 
     private void OnPresetDragOver(object sender, DragEventArgs e)
     {
-        if (sender is not ItemsControl list || e.Data.GetData(typeof(Preset)) is not Preset)
+        PositionGhost(e.GetPosition(GhostLayer));
+        if (sender is not ItemsControl list || e.Data.GetData(typeof(Preset)) is not Preset preset)
         {
             e.Effects = DragDropEffects.None;
             e.Handled = true;
             return;
         }
-        int index = InsertionPreview.IndexAt(list, e.GetPosition(list), out double y);
-        ShowInsertion(list, y);
+        LiveMove(list, preset, e);
         e.Effects = DragDropEffects.Move;
         e.Handled = true;
     }
 
-    private void OnPresetDragLeave(object sender, DragEventArgs e) => ClearInsertion();
+    /// <summary>Trello-style: the row moves in the UI while hovering.</summary>
+    private void LiveMove(ItemsControl list, Preset preset, DragEventArgs e)
+    {
+        int from = ViewModel.Presets.IndexOf(preset);
+        if (from < 0) return;
+        int to = InsertionPreview.IndexAt(list, e.GetPosition(list), out _, LiveSwapFraction, _direction.Track(e, this));
+        if (to > from) to--;
+        to = Math.Clamp(to, 0, ViewModel.Presets.Count - 1);
+        if (to != from)
+            ViewModel.Presets.Move(from, to);
+    }
 
     private async void OnPresetDrop(object sender, DragEventArgs e)
     {
         if (sender is not ItemsControl list) return;
-        int index = InsertionPreview.IndexAt(list, e.GetPosition(list), out _);
-        ClearInsertion();
-        e.Handled = true;
         if (e.Data.GetData(typeof(Preset)) is not Preset preset) return;
+        _dropHandled = true;
         Guid? groupId = ViewModel.SelectedGroup?.Id;
         if (groupId is null) return;
         try
         {
+            // Drop where released; the hover preview already placed it nearby.
+            LiveMove(list, preset, e);
+            int index = ViewModel.Presets.IndexOf(preset);
             await ViewModel.MovePresetAsync(groupId.Value, preset.Id, index);
         }
         catch (Exception ex)
@@ -94,27 +149,5 @@ public partial class GroupPresetsWindow : Window
             node = VisualTreeHelper.GetParent(node);
         }
         return null;
-    }
-
-    private void ShowInsertion(UIElement host, double y)
-    {
-        if (_insertionHost != host || _insertionAdorner is null)
-        {
-            ClearInsertion();
-            AdornerLayer? layer = AdornerLayer.GetAdornerLayer(host);
-            if (layer is null) return;
-            _insertionAdorner = new InsertionAdorner(host);
-            layer.Add(_insertionAdorner);
-            _insertionHost = host;
-        }
-        _insertionAdorner.SetY(y);
-    }
-
-    private void ClearInsertion()
-    {
-        if (_insertionHost is not null && _insertionAdorner is not null)
-            AdornerLayer.GetAdornerLayer(_insertionHost)?.Remove(_insertionAdorner);
-        _insertionAdorner = null;
-        _insertionHost = null;
     }
 }

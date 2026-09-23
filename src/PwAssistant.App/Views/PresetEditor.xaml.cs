@@ -1,7 +1,7 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using MouseButton = PwAssistant.Core.Models.MouseButton;
@@ -37,7 +37,7 @@ public sealed partial class PresetActionRow : ObservableObject
     private MouseButton button = MouseButton.Left;
 
     [ObservableProperty]
-    private int delayBeforeMs;
+    private int delayBeforeMs = 100;
 
     partial void OnSelectedAccountChanged(MemberOption? value)
     {
@@ -48,11 +48,30 @@ public sealed partial class PresetActionRow : ObservableObject
     public Guid AccountId { get; private set; } = Guid.Empty;
     public string AccountName { get; private set; } = string.Empty;
 
+    /// <summary>One-line label for the drag ghost.</summary>
+    public string GhostText
+    {
+        get
+        {
+            string what = Type == ActionType.Key ? (Key ?? "?") : PositionLabel;
+            return string.IsNullOrWhiteSpace(AccountName) ? what : $"{AccountName} · {what}";
+        }
+    }
+
     public string PositionLabel => Position is null
         ? Strings.NoPositionCaptured
         : string.Format(Strings.PositionCaptured, Position.X, Position.Y);
 
-    partial void OnPositionChanged(RelativePosition? value) => OnPropertyChanged(nameof(PositionLabel));
+    /// <summary>Short coords for the capture button tooltip.</summary>
+    public string PositionTooltip => Position is null
+        ? Strings.NoPositionCaptured
+        : $"({Position.X:F2}, {Position.Y:F2})";
+
+    partial void OnPositionChanged(RelativePosition? value)
+    {
+        OnPropertyChanged(nameof(PositionLabel));
+        OnPropertyChanged(nameof(PositionTooltip));
+    }
 
     public int RepeatTimes { get; set; } = 1;
     public int RepeatIntervalMs { get; set; }
@@ -74,21 +93,25 @@ public partial class PresetEditor : Window
 {
     private readonly AppState _state;
     private readonly IWindowResolver _resolver;
+    private readonly KeyboardHook _hook;
+    private readonly SyncController _sync;
     private readonly Preset _preset;
 
     public ObservableCollection<PresetActionRow> Rows { get; } = new();
     public ObservableCollection<MemberOption> MemberAccounts { get; } = new();
-    public Array ActionTypes { get; } = Enum.GetValues<ActionType>();
     public Array MouseButtons { get; } = Enum.GetValues<MouseButton>();
     public IReadOnlyList<string> AvailableKeys { get; } = KeyCodes.PresetKeys;
 
-    public PresetEditor(AppState state, IWindowResolver resolver, Preset preset)
+    public PresetEditor(AppState state, IWindowResolver resolver, Preset preset, KeyboardHook hook, SyncController sync)
     {
         _state = state;
         _resolver = resolver;
+        _hook = hook;
+        _sync = sync;
         _preset = preset;
         DataContext = this;
         InitializeComponent();
+        DialogOwner.Own(this);
 
         var accountsById = state.Data.Servers
             .SelectMany(s => s.Accounts)
@@ -127,13 +150,20 @@ public partial class PresetEditor : Window
         NameCaption.Text = Strings.PresetName;
         NameBox.Text = preset.Name;
         ModeCaption.Text = Strings.ExecutionMode;
-        ModeBox.ItemsSource = Enum.GetValues<ExecutionMode>();
-        ModeBox.SelectedItem = preset.ExecutionMode;
+        ModeBox.DisplayMemberPath = "Label";
+        ModeBox.SelectedValuePath = "Value";
+        ModeBox.ItemsSource = new[]
+        {
+            new { Value = ExecutionMode.Sequential, Label = Strings.Sequential },
+            new { Value = ExecutionMode.Simultaneous, Label = Strings.Simultaneous },
+        };
+        ModeBox.SelectedValue = preset.ExecutionMode;
         HotkeyCaption.Text = Strings.Hotkey;
         _recordedHotkey = preset.Hotkey ?? string.Empty;
         UpdateHotkeyLabel();
         RecordHotkeyButton.Content = Strings.RecordHotkey;
         HotkeyHintLabel.Text = Strings.HotkeyHint;
+        _initial = TakeSnapshot();
     }
 
     private string _recordedHotkey = string.Empty;
@@ -149,6 +179,7 @@ public partial class PresetEditor : Window
         }
         _recordingHotkey = true;
         RecordHotkeyButton.Content = Strings.PressKeys;
+        HotkeyBox.BorderBrush = (System.Windows.Media.Brush)FindResource("Brush.Ring");
         PreviewKeyDown += OnHotkeyRecordKey;
         RecordHotkeyButton.Focus();
     }
@@ -157,6 +188,7 @@ public partial class PresetEditor : Window
     {
         _recordingHotkey = false;
         PreviewKeyDown -= OnHotkeyRecordKey;
+        HotkeyBox.BorderBrush = (System.Windows.Media.Brush)FindResource("Brush.Input");
         RecordHotkeyButton.Content = Strings.RecordHotkey;
         RecordHotkeyButton.Focus();
     }
@@ -223,9 +255,13 @@ public partial class PresetEditor : Window
         IWindowTarget? target = _state.ResolveTarget(accountId);
         if (target is null) return Task.FromResult<RelativePosition?>(null);
 
-        var overlay = new ClickCaptureOverlay();
+        var overlay = new ClickCaptureOverlay(_hook);
         WindowFocus.BringToFront(target.WindowHandle);
-        overlay.ShowDialog();
+        // The pick must never leak clicks: overlay swallows, Sync suspends.
+        using (_sync.Suspend())
+        {
+            overlay.ShowDialog();
+        }
         Activate();
         if (overlay.CapturedScreenPoint is null) return Task.FromResult<RelativePosition?>(null);
 
@@ -261,22 +297,61 @@ public partial class PresetEditor : Window
     private void OnDuplicateRow(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.DataContext is PresetActionRow row)
-            Rows.Insert(Rows.IndexOf(row) + 1, row.Duplicate());
+            DuplicateRowCore(row);
     }
+
+    private void DuplicateRowCore(PresetActionRow row) =>
+        Rows.Insert(Rows.IndexOf(row) + 1, row.Duplicate());
 
     private void OnRemoveRow(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.DataContext is PresetActionRow row)
-            Rows.Remove(row);
+            RemoveRowCore(row);
+    }
+
+    private void RemoveRowCore(PresetActionRow row) => Rows.Remove(row);
+
+    private void OnDuplicateSelected(object sender, RoutedEventArgs e)
+    {
+        // Group semantics: copies land as a block after the last selected
+        // row, in list order (1,2 → 1,2,1c,2c) — not interleaved.
+        List<PresetActionRow> targets = ActionList.SelectedItems
+            .OfType<PresetActionRow>()
+            .OrderBy(r => Rows.IndexOf(r))
+            .ToList();
+        if (targets.Count == 0) return;
+        int anchor = Rows.IndexOf(targets[^1]) + 1;
+        foreach (PresetActionRow row in targets)
+            Rows.Insert(anchor++, row.Duplicate());
+    }
+
+    private void OnRemoveSelected(object sender, RoutedEventArgs e)
+    {
+        List<PresetActionRow> targets = ActionList.SelectedItems.OfType<PresetActionRow>().ToList();
+        if (targets.Count == 0) return;
+        if (!ConfirmDialog.Ask(
+            Strings.BulkDeleteRowsTitle,
+            Strings.BulkDeleteRowsMessage(targets.Count),
+            Strings.Delete))
+            return;
+        foreach (PresetActionRow row in targets)
+            RemoveRowCore(row);
     }
 
     private Point _dragStartPoint;
-    private InsertionAdorner? _insertionAdorner;
-    private UIElement? _insertionHost;
-    private int _pendingIndex;
+    private Border? _ghost;
+    private bool _dropHandled;
+    private List<PresetActionRow>? _dragSnapshot;
+    private readonly DragDirectionTracker _direction = new();
 
-    private void OnRowPreviewMouseDown(object sender, MouseButtonEventArgs e) =>
+    /// <summary>LiveMove flips the slot ~10% into a row (on touch).</summary>
+    private const double LiveSwapFraction = 0.1;
+
+    private void OnRowPreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (IsScrollbarChrome(e.OriginalSource)) return;
         _dragStartPoint = e.GetPosition(null);
+    }
 
     /// <summary>
     /// Drag &amp; drop reorder (sole ordering gesture). Drag starts only
@@ -286,6 +361,7 @@ public partial class PresetEditor : Window
     private void OnRowPreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
         if (e.LeftButton != MouseButtonState.Pressed) return;
+        if (IsScrollbarChrome(e.OriginalSource)) return;
         if (sender is not ListBox list) return;
         Point current = e.GetPosition(null);
         if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
@@ -294,65 +370,110 @@ public partial class PresetEditor : Window
         if (!IsDragHandle(e.OriginalSource)) return;
         ListBoxItem? item = FindRowContainer(list, e.GetPosition(list));
         if (item?.DataContext is not PresetActionRow row) return;
-        DragDrop.DoDragDrop(item, row, DragDropEffects.Move);
+        BeginRowDrag(item, row);
+    }
+
+    private void BeginRowDrag(FrameworkElement source, PresetActionRow row)
+    {
+        _dragSnapshot = Rows.ToList();
+        _ghost = DragGhost.ForText(this, row.GhostText);
+        GhostLayer.Children.Add(_ghost);
+        PositionGhost();
+        source.GiveFeedback += OnDragFeedback;
+        _dropHandled = false;
+        _direction.Reset();
+        try
+        {
+            DragDrop.DoDragDrop(source, row, DragDropEffects.Move);
+        }
+        finally
+        {
+            source.GiveFeedback -= OnDragFeedback;
+            GhostLayer.Children.Remove(_ghost);
+            _ghost = null;
+            // Cancel/ESC/release outside: LiveMove touched Rows only —
+            // restore the snapshot taken at drag start.
+            if (!_dropHandled && _dragSnapshot is not null)
+            {
+                Rows.Clear();
+                foreach (PresetActionRow r in _dragSnapshot)
+                    Rows.Add(r);
+            }
+            _dragSnapshot = null;
+            _dropHandled = false;
+        }
+    }
+
+    private void OnDragFeedback(object? sender, GiveFeedbackEventArgs e)
+    {
+        PositionGhost();
+        e.UseDefaultCursors = true;
+        e.Handled = true;
+    }
+
+    private void PositionGhost(Point? anchor = null)
+    {
+        if (_ghost is null) return;
+        Point p = anchor ?? Mouse.GetPosition(GhostLayer);
+        Canvas.SetLeft(_ghost, p.X + 14);
+        Canvas.SetTop(_ghost, p.Y + 14);
     }
 
     private void OnRowDragOver(object sender, DragEventArgs e)
     {
-        if (sender is not ListBox list || !e.Data.GetDataPresent(typeof(PresetActionRow)))
+        PositionGhost(e.GetPosition(GhostLayer));
+        if (sender is not ListBox list || e.Data.GetData(typeof(PresetActionRow)) is not PresetActionRow dragged)
         {
             e.Effects = DragDropEffects.None;
             e.Handled = true;
             return;
         }
-        _pendingIndex = InsertionPreview.IndexAt(list, e.GetPosition(list), out double y);
-        ShowInsertion(list, y);
+        LiveMove(list, dragged, e);
         e.Effects = DragDropEffects.Move;
         e.Handled = true;
     }
 
-    private void OnRowDragLeave(object sender, DragEventArgs e) => ClearInsertion();
+    /// <summary>Trello-style: the row moves while hovering (group parity).</summary>
+    private void LiveMove(ListBox list, PresetActionRow dragged, DragEventArgs e)
+    {
+        int from = Rows.IndexOf(dragged);
+        if (from < 0) return;
+        int to = InsertionPreview.IndexAt(list, e.GetPosition(list), out _, LiveSwapFraction, _direction.Track(e, this));
+        if (to > from) to--;
+        to = Math.Clamp(to, 0, Rows.Count - 1);
+        if (to != from)
+            Rows.Move(from, to);
+    }
 
     private void OnRowDrop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent(typeof(PresetActionRow))) return;
         if (sender is not ListBox list) return;
         if (e.Data.GetData(typeof(PresetActionRow)) is not PresetActionRow dragged) return;
-        int from = Rows.IndexOf(dragged);
-        int to = InsertionPreview.IndexAt(list, e.GetPosition(list), out _);
-        ClearInsertion();
-        if (from < 0) return;
-        if (to > from) to--;
-        to = Math.Clamp(to, 0, Rows.Count - 1);
-        if (from == to) return;
-        Rows.Move(from, to);
+        _dropHandled = true;
+        // Drop where released; the hover preview already placed it nearby.
+        LiveMove(list, dragged, e);
         list.SelectedItem = dragged;
-    }
-
-    private void ShowInsertion(UIElement host, double y)
-    {
-        if (_insertionHost != host || _insertionAdorner is null)
-        {
-            ClearInsertion();
-            AdornerLayer? layer = AdornerLayer.GetAdornerLayer(host);
-            if (layer is null) return;
-            _insertionAdorner = new InsertionAdorner(host);
-            layer.Add(_insertionAdorner);
-            _insertionHost = host;
-        }
-        _insertionAdorner.SetY(y);
-    }
-
-    private void ClearInsertion()
-    {
-        if (_insertionHost is not null && _insertionAdorner is not null)
-            AdornerLayer.GetAdornerLayer(_insertionHost)?.Remove(_insertionAdorner);
-        _insertionAdorner = null;
-        _insertionHost = null;
     }
 
     private static bool IsDragHandle(object? source) =>
         source is ListBoxItem or ListBox or TextBlock or Border or Panel;
+
+    /// <summary>Scrollbar chrome is never a drag handle: pressing the thumb
+    /// or track must scroll, never start a row drag (which would freeze).</summary>
+    private static bool IsScrollbarChrome(object? source)
+    {
+        DependencyObject? node = source as DependencyObject;
+        while (node is not null)
+        {
+            if (node is System.Windows.Controls.Primitives.ScrollBar
+                || node is System.Windows.Controls.Primitives.Thumb
+                || node is System.Windows.Controls.Primitives.Track
+                || node is System.Windows.Controls.Primitives.RepeatButton)
+                return true;
+            node = VisualTreeHelper.GetParent(node);
+        }
+        return false;
+    }
 
     private static ListBoxItem? FindRowContainer(ListBox list, Point position)
     {
@@ -366,8 +487,57 @@ public partial class PresetEditor : Window
 
     private void OnCancel(object sender, RoutedEventArgs e)
     {
+        if (!ConfirmDiscard()) return;
+        _skipDirtyCheck = true;
         DialogResult = false;
         Close();
+    }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        if (DialogResult != true && !_skipDirtyCheck && !ConfirmDiscard())
+            e.Cancel = true;
+        base.OnClosing(e);
+    }
+
+    private bool _skipDirtyCheck;
+
+    /// <summary>True when the user confirmed (or had nothing to lose).</summary>
+    private bool ConfirmDiscard() =>
+        !IsDirty() || ConfirmDialog.Ask(
+            Strings.DiscardChangesTitle,
+            Strings.DiscardChangesMessage,
+            Strings.DiscardChangesConfirm);
+
+    private sealed record RowData(
+        Guid AccountId, ActionType Type, string? Key,
+        double? PosX, double? PosY, MouseButton Button,
+        int DelayBeforeMs, int RepeatTimes, int RepeatIntervalMs);
+
+    private sealed record EditorSnapshot(
+        string Name, ExecutionMode Mode, string Hotkey, List<RowData> Rows);
+
+    private EditorSnapshot TakeSnapshot() => new(
+        NameBox.Text.Trim(),
+        ModeBox.SelectedValue is ExecutionMode mode ? mode : ExecutionMode.Simultaneous,
+        _recordedHotkey.Trim(),
+        Rows.Select(r => new RowData(
+            r.SelectedAccount?.Account.Id ?? Guid.Empty,
+            r.Type, r.Key,
+            r.Position?.X, r.Position?.Y,
+            r.Button, r.DelayBeforeMs, r.RepeatTimes, r.RepeatIntervalMs)).ToList());
+
+    private EditorSnapshot? _initial;
+
+    /// <summary>Row order counts: a drag-reorder is a change.</summary>
+    private bool IsDirty()
+    {
+        if (_initial is null) return false;
+        EditorSnapshot now = TakeSnapshot();
+        return _initial.Name != now.Name
+            || _initial.Mode != now.Mode
+            || _initial.Hotkey != now.Hotkey
+            || !_initial.Rows.SequenceEqual(now.Rows);
     }
 
     private void OnSave(object sender, RoutedEventArgs e)
@@ -435,7 +605,7 @@ public partial class PresetEditor : Window
 
         _preset.Name = name;
         _preset.Hotkey = string.IsNullOrEmpty(hotkey) ? null : hotkey;
-        _preset.ExecutionMode = ModeBox.SelectedItem is ExecutionMode mode
+        _preset.ExecutionMode = ModeBox.SelectedValue is ExecutionMode mode
             ? mode
             : ExecutionMode.Simultaneous;
         _preset.Actions.Clear();

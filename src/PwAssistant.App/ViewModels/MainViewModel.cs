@@ -46,10 +46,14 @@ public sealed partial class AccountCard : ObservableObject
         : Model.Nickname;
     public string StatusText => Status == AccountStatus.Online ? "Online" : "Offline";
 
+    public Views.StatusKind DisplayStatus =>
+        Status == AccountStatus.Online ? Views.StatusKind.Online : Views.StatusKind.Offline;
+
     public string PlayText => Status == AccountStatus.Online ? AppStrings.Stop : AppStrings.Play;
 
-    /// <summary>Segoe MDL2 play/stop glyphs (icon font applied in XAML).</summary>
-    public string PlayGlyph => IsLaunching ? "..." : Status == AccountStatus.Online ? "\uE71A" : "\uE768";
+    /// <summary>Segoe MDL2 play/stop glyphs (icon font applied in XAML);
+    /// launching shows a refresh glyph spun by a storyboard trigger.</summary>
+    public string PlayGlyph => IsLaunching ? "\uE72C" : Status == AccountStatus.Online ? "\uE71A" : "\uE768";
 
     public string PasswordToggleHint =>
         IsPasswordRevealed ? AppStrings.HidePassword : AppStrings.ShowPassword;
@@ -107,6 +111,9 @@ public sealed partial class ServerRow : ObservableObject
     public bool HasOnline => OnlineCount > 0;
     public string StatsText => AppStrings.ServerStats(Total, OnlineCount);
 
+    public Views.StatusKind DisplayStatus =>
+        HasOnline ? Views.StatusKind.Online : Views.StatusKind.Offline;
+
     /// <summary>Recounts online (call after AppState.RefreshOnlineStatus).</summary>
     public void Refresh() => OnlineCount = Model.Accounts.Count(a => a.Status == AccountStatus.Online);
 
@@ -145,6 +152,10 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly PresetDispatcher _dispatcher;
     private readonly FileLogger _log;
     private readonly IServiceProvider _services;
+    private readonly FocusController _focus;
+
+    /// <summary>Watched client processes, rooted so Exited always fires.</summary>
+    private readonly Dictionary<int, Process> _watched = new();
 
     public ObservableCollection<ServerRow> Servers { get; } = new();
     public ObservableCollection<AccountCard> Accounts { get; } = new();
@@ -175,13 +186,14 @@ public sealed partial class MainViewModel : ObservableObject
     public string CopyLoginText => AppStrings.CopyLogin;
     public string CopyPasswordText => AppStrings.CopyPassword;
 
-    public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, FileLogger log, IServiceProvider services)
+    public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, FileLogger log, IServiceProvider services, FocusController focus)
     {
         _state = state;
         _launcher = launcher;
         _dispatcher = dispatcher;
         _log = log;
         _services = services;
+        _focus = focus;
     }
 
     public async Task InitializeAsync()
@@ -338,12 +350,11 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteServerAsync(ServerRow? row)
     {
         if (row is null) return;
-        MessageBoxResult confirm = MessageBox.Show(
-            AppStrings.DeleteServerConfirm(row.Model.Name, row.Model.Accounts.Count),
+        if (!ConfirmDialog.Ask(
             AppStrings.DeleteServerTitle,
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-        if (confirm != MessageBoxResult.Yes) return;
+            AppStrings.DeleteServerConfirm(row.Model.Name, row.Model.Accounts.Count),
+            AppStrings.Delete))
+            return;
 
         var ids = row.Model.Accounts.Select(a => a.Id).ToHashSet();
         _state.Data.Servers.Remove(row.Model);
@@ -443,6 +454,11 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteTabAsync(AccountTab? tab)
     {
         if (tab is null) return;
+        if (!ConfirmDialog.Ask(
+            AppStrings.DeleteTabTitle,
+            AppStrings.DeleteTabConfirm(tab.Name),
+            AppStrings.Delete))
+            return;
         _state.Data.Tabs.Remove(tab);
         Tabs.Remove(tab);
         foreach (Account account in _state.Data.Servers
@@ -561,21 +577,40 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task StopClientAsync(AccountCard card)
     {
         if (card.Model.ProcessId is not int pid) return;
+        // Rooted: an unrooted Process may never raise Exited (GC collects it).
+        Process? owned = null;
+        bool exited = false;
         try
         {
-            using Process process = Process.GetProcessById(pid);
-            process.CloseMainWindow();
-            for (int i = 0; i < 20 && !process.HasExited; i++)
+            owned = Process.GetProcessById(pid);
+            lock (_watched) _watched[pid] = owned;
+            owned.CloseMainWindow();
+            for (int i = 0; i < 20 && !owned.HasExited; i++)
                 await Task.Delay(250).ConfigureAwait(false);
-            if (!process.HasExited)
-                process.Kill();
+            if (!owned.HasExited)
+                owned.Kill();
+            exited = true;
             _log.Info($"Stopped {card.Model.Login} pid={pid}.");
+        }
+        catch (ArgumentException)
+        {
+            // Already gone: treat as exited so the card resets below.
+            exited = true;
         }
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
             _log.Error($"Stop {card.Model.Login} failed: {ex.Message}");
         }
+        if (!exited) return;
+        // Explicit fallback: never rely solely on Exited to restore icons.
+        card.Model.ProcessId = null;
+        card.Model.WindowHandle = IntPtr.Zero;
+        App.Current.Dispatcher.Invoke(() =>
+        {
+            card.Refresh();
+            RefreshServerRows();
+        });
     }
 
     /// <summary>
@@ -587,11 +622,14 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             Process process = Process.GetProcessById(session.ProcessId);
+            lock (_watched) _watched[session.ProcessId] = process;
             process.EnableRaisingEvents = true;
             process.Exited += (_, _) =>
             {
+                lock (_watched) _watched.Remove(session.ProcessId);
                 _log.Info($"Client pid={session.ProcessId} exited.");
                 _dispatcher.CancelAll();
+                _focus.RemoveAccount(card.Model.Id);
                 card.Model.ProcessId = null;
                 card.Model.WindowHandle = IntPtr.Zero;
                 App.Current.Dispatcher.Invoke(() =>
@@ -635,6 +673,11 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteAccountAsync(AccountCard? card)
     {
         if (card is null || SelectedServer is null) return;
+        if (!ConfirmDialog.Ask(
+            AppStrings.DeleteAccountTitle,
+            AppStrings.DeleteAccountConfirm(card.DisplayName),
+            AppStrings.Delete))
+            return;
         Guid id = card.Model.Id;
         SelectedServer.Model.Accounts.Remove(card.Model);
         foreach (Group group in _state.Data.Groups)

@@ -4,7 +4,10 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="AppTitle" xml:space="preserve"><value>PW Launcher</value></data>
+  <data name="TrayShow" xml:space="preserve"><value>Open</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
+  <data name="TrayTip" xml:space="preserve"><value>PW Assistant</value></data>
+  <data name="Minimize" xml:space="preserve"><value>Minimize</value></data>
   <data name="Servers" xml:space="preserve"><value>Servers</value></data>
   <data name="AddServer" xml:space="preserve"><value>Add server</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Add account</value></data>
@@ -13,22 +16,16 @@
   <data name="Offline" xml:space="preserve"><value>Offline</value></data>
   <data name="GroupMode" xml:space="preserve"><value>Group mode</value></data>
   <data name="Presets" xml:space="preserve"><value>Presets</value></data>
-  <data name="Fire" xml:space="preserve"><value>Fire</value></data>
   <data name="Stop" xml:space="preserve"><value>Stop</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Cancel running shots</value></data>
-  <data name="CancelHint" xml:space="preserve"><value>Cancels preset executions currently in flight.</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="Login" xml:space="preserve"><value>Login</value></data>
   <data name="Password" xml:space="preserve"><value>Password</value></data>
   <data name="Role" xml:space="preserve"><value>Character (role)</value></data>
   <data name="ServerName" xml:space="preserve"><value>Server name</value></data>
   <data name="ClientPath" xml:space="preserve"><value>Client path (elementclient.exe)</value></data>
-  <data name="GroupName" xml:space="preserve"><value>Group name</value></data>
   <data name="PresetName" xml:space="preserve"><value>Preset name</value></data>
-  <data name="SyncEnabled" xml:space="preserve"><value>Sync click</value></data>
-  <data name="FocusSwitch" xml:space="preserve"><value>Window switching</value></data>
-  <data name="MiniMode" xml:space="preserve"><value>Mini-mode</value></data>
-  <data name="FocusKeysHint" xml:space="preserve"><value>` cycles, Shift-tap toggles, numpad 1-9,0 selects (switching on).</value></data>
+  <data name="SyncEnabled" xml:space="preserve"><value>Sync clicks</value></data>
+  <data name="FocusSwitch" xml:space="preserve"><value>Switch windows</value></data>
   <data name="FocusConfig" xml:space="preserve"><value>Window switching keys</value></data>
   <data name="CycleKey" xml:space="preserve"><value>Cycle key</value></data>
   <data name="NumpadSelect" xml:space="preserve"><value>Numpad selection</value></data>
@@ -36,23 +33,16 @@
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="Close" xml:space="preserve"><value>Close</value></data>
   <data name="ArmingHint" xml:space="preserve"><value>Switching itself is armed in the mini-mode window.</value></data>
-  <data name="GameSkillWarning" xml:space="preserve"><value>This key is used by the game for skills. Pick it only if you rebind skills in-game.</value></data>
   <data name="Loop" xml:space="preserve"><value>Loop</value></data>
-  <data name="CaptureClick" xml:space="preserve"><value>Capture click position</value></data>
   <data name="ClickOverlayHint" xml:space="preserve"><value>Click once on the game window to capture the position.</value></data>
   <data name="AccountsOfServer" xml:space="preserve"><value>Accounts — {0}</value></data>
   <data name="NoServerSelected" xml:space="preserve"><value>No server selected</value></data>
-  <data name="Members" xml:space="preserve"><value>Members</value></data>
-  <data name="OnlineMembers" xml:space="preserve"><value>Online members</value></data>
-  <data name="AddMember" xml:space="preserve"><value>Add member</value></data>
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="Formations" xml:space="preserve"><value>Formations</value></data>
-  <data name="FormationName" xml:space="preserve"><value>Formation name</value></data>
   <data name="SaveFormation" xml:space="preserve"><value>Save formation</value></data>
   <data name="LoadFormation" xml:space="preserve"><value>Load formation</value></data>
   <data name="NewPreset" xml:space="preserve"><value>New preset</value></data>
   <data name="PresetNameNumber" xml:space="preserve"><value>Preset {0}</value></data>
-  <data name="Add" xml:space="preserve"><value>Add</value></data>
   <data name="KeyRequired" xml:space="preserve"><value>Type a key name first.</value></data>
   <data name="ClickPositionRequired" xml:space="preserve"><value>Capture a click position first.</value></data>
   <data name="NoPositionCaptured" xml:space="preserve"><value>No click position captured.</value></data>
@@ -84,8 +74,6 @@
   <data name="All" xml:space="preserve"><value>All</value></data>
   <data name="NewTab" xml:space="preserve"><value>New tab</value></data>
   <data name="Rename" xml:space="preserve"><value>Rename</value></data>
-  <data name="RemoveFromTab" xml:space="preserve"><value>Remove from tab</value></data>
-  <data name="TabName" xml:space="preserve"><value>Tab name</value></data>
   <data name="ServerStats" xml:space="preserve"><value>{0} accounts • {1} online</value></data>
   <data name="DeleteServerTitle" xml:space="preserve"><value>Delete server</value></data>
   <data name="DeleteServerConfirm" xml:space="preserve"><value>Delete {0} and its {1} account(s)? Groups and presets pointing at them are cleaned up.</value></data>
@@ -105,4 +93,17 @@
   <data name="Ungrouped" xml:space="preserve"><value>Available</value></data>
   <data name="DragHint" xml:space="preserve"><value>Drag to groups • drag back to remove</value></data>
   <data name="GroupCardStats" xml:space="preserve"><value>{0} members • {1} online • {2} presets</value></data>
+  <data name="Sequential" xml:space="preserve"><value>Sequential</value></data>
+  <data name="Simultaneous" xml:space="preserve"><value>Simultaneous</value></data>
+  <data name="DeleteAccountTitle" xml:space="preserve"><value>Delete account</value></data>
+  <data name="DeleteAccountConfirm" xml:space="preserve"><value>Delete {0}? Groups, tabs and presets pointing at it are cleaned up.</value></data>
+  <data name="DeletePresetTitle" xml:space="preserve"><value>Delete preset</value></data>
+  <data name="DeletePresetConfirm" xml:space="preserve"><value>Delete preset {0}?</value></data>
+  <data name="BulkDeleteRowsTitle" xml:space="preserve"><value>Delete commands</value></data>
+  <data name="BulkDeleteRowsMessage" xml:space="preserve"><value>Delete {0} commands?</value></data>
+  <data name="DiscardChangesTitle" xml:space="preserve"><value>Discard changes</value></data>
+  <data name="DiscardChangesMessage" xml:space="preserve"><value>Discard unsaved changes?</value></data>
+  <data name="DiscardChangesConfirm" xml:space="preserve"><value>Discard</value></data>
+  <data name="DeleteTabTitle" xml:space="preserve"><value>Delete tab</value></data>
+  <data name="DeleteTabConfirm" xml:space="preserve"><value>Delete tab {0}? Its accounts stay in All.</value></data>
 </root>

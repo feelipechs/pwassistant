@@ -40,11 +40,39 @@ public sealed class SyncController : IDisposable
     public void Start() => _hook.Start();
     public void Stop() => _hook.Stop();
 
+    private int _suspendCount;
+
+    /// <summary>
+    /// Suppresses click replication without touching <see cref="Enabled"/>
+    /// (the user's toggle): used around click capture so the pick never
+    /// leaks gameplay clicks onto synced replicas. Nesting-safe.
+    /// </summary>
+    public IDisposable Suspend()
+    {
+        Interlocked.Increment(ref _suspendCount);
+        return new SuspendScope(this);
+    }
+
+    private sealed class SuspendScope : IDisposable
+    {
+        private readonly SyncController _owner;
+        private bool _done;
+
+        public SuspendScope(SyncController owner) => _owner = owner;
+
+        public void Dispose()
+        {
+            if (_done) return;
+            _done = true;
+            Interlocked.Decrement(ref _owner._suspendCount);
+        }
+    }
+
     public void SetSyncedAccounts(IEnumerable<Guid> accountIds) => _sync.SetSyncedAccounts(accountIds);
 
     private void OnLeftButtonDown(MasterClick click)
     {
-        if (!_sync.Enabled) return;
+        if (!_sync.Enabled || Volatile.Read(ref _suspendCount) > 0) return;
 
         List<Account> online = AllOnlineAccounts().ToList();
         Account? master = FindTopmostAccount(online, click.ScreenX, click.ScreenY)

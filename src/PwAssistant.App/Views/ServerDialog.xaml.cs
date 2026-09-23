@@ -1,7 +1,9 @@
-using System.Windows;
+﻿using System.Windows;
 using Microsoft.Win32;
 using PwAssistant.App.Resources;
 using PwAssistant.Core.Models;
+
+using PwAssistant.App.Services;
 
 namespace PwAssistant.App.Views;
 
@@ -13,6 +15,7 @@ public partial class ServerDialog : Window
     public ServerDialog()
     {
         InitializeComponent();
+        DialogOwner.Own(this);
         NameLabel.Text = Strings.ServerName;
         PathLabel.Text = Strings.ClientPath;
         SaveButton.Content = Strings.Save;

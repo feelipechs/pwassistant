@@ -1,7 +1,9 @@
-using System.Windows;
+﻿using System.Windows;
 using PwAssistant.App.Resources;
 using PwAssistant.App.ViewModels;
 using PwAssistant.Core.Models;
+
+using PwAssistant.App.Services;
 
 namespace PwAssistant.App.Views;
 
@@ -18,6 +20,7 @@ public partial class GroupFormationsWindow : Window
         _card = card;
         DataContext = viewModel;
         InitializeComponent();
+        DialogOwner.Own(this);
         Title = $"{Strings.LoadFormation} — {card.Group.Name}";
         FormationsLabel.Text = Strings.Formations;
     }

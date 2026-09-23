@@ -48,6 +48,14 @@ public sealed class FocusController : IDisposable
 
     public void SetOrder(IEnumerable<Guid> accountIds) => _focus.SetOrder(accountIds);
 
+    /// <summary>Drop a dead account; re-focus the fallback when armed.</summary>
+    public void RemoveAccount(Guid accountId)
+    {
+        Guid? fallback = _focus.Remove(accountId);
+        if (fallback is null || !Enabled) return;
+        Focus(fallback);
+    }
+
     private void OnKeyTransition(KeyTransition transition)
     {
         if (!Enabled) return;
@@ -81,7 +89,9 @@ public sealed class FocusController : IDisposable
             Focus(_focus.SelectIndex(NumpadIndex(transition.VirtualKey)));
     }
 
-    private static bool IsShift(int vk) => vk is VK_SHIFT or VK_LSHIFT or VK_RSHIFT;
+    /// <summary>Left Shift only: right/generic Shift never arms a tap
+    /// (any other key down still taints via the caller below).</summary>
+    private static bool IsShift(int vk) => vk == VK_LSHIFT;
 
     /// <summary>Numpad 1-9 = positions 0-8, numpad 0 = position 9.</summary>
     private static int NumpadIndex(int vk) => vk == VK_NUMPAD0 ? 9 : vk - VK_NUMPAD0 - 1;

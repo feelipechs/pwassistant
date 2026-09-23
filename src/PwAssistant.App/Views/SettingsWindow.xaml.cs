@@ -67,6 +67,7 @@ public partial class SettingsWindow : Window
         }
         _recordingCycleKey = true;
         RecordCycleButton.Content = Strings.PressKeys;
+        CycleKeyBox.BorderBrush = (System.Windows.Media.Brush)FindResource("Brush.Ring");
         PreviewKeyDown += OnCycleRecordKey;
         RecordCycleButton.Focus();
     }
@@ -75,6 +76,7 @@ public partial class SettingsWindow : Window
     {
         _recordingCycleKey = false;
         PreviewKeyDown -= OnCycleRecordKey;
+        CycleKeyBox.BorderBrush = (System.Windows.Media.Brush)FindResource("Brush.Input");
         RecordCycleButton.Content = Strings.RecordHotkey;
         RecordCycleButton.Focus();
     }

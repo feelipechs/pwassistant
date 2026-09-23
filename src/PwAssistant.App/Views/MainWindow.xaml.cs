@@ -18,6 +18,8 @@ public partial class MainWindow : Window
     private readonly PresetDispatcher _dispatcher;
     private GlobalHotKeyManager? _hotkeys;
     private bool _hotkeysRegistered;
+    private readonly TrayManager _tray = new();
+    private bool _allowClose;
 
     public MainViewModel ViewModel { get; }
 
@@ -38,6 +40,30 @@ public partial class MainWindow : Window
         SettingsButton.ToolTip = AppStrings.Settings;
         RefreshButton.ToolTip = AppStrings.Refresh;
         SourceInitialized += OnSourceInitialized;
+        _tray.OpenRequested += (_, _) => RestoreFromBackground();
+        _tray.ExitRequested += (_, _) =>
+        {
+            _allowClose = true;
+            Application.Current.Shutdown();
+        };
+    }
+
+    /// <summary>Background: leave the taskbar, live in the tray instead.</summary>
+    public void SendToBackground()
+    {
+        if (!IsVisible) return;
+        Hide();
+        _tray.Show();
+    }
+
+    /// <summary>Returns from the tray to a normal visible window.</summary>
+    public void RestoreFromBackground()
+    {
+        _tray.Hide();
+        if (!IsVisible)
+            Show();
+        WindowState = WindowState.Normal;
+        Activate();
     }
 
     private void OnOpenSettings(object sender, RoutedEventArgs e)
@@ -133,9 +159,22 @@ public partial class MainWindow : Window
         return (modifiers, (uint)KeyMapper.Resolve(parts[^1]));
     }
 
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        // The X button backgrounds to the tray; only the tray menu exits.
+        if (!_allowClose)
+        {
+            e.Cancel = true;
+            SendToBackground();
+            return;
+        }
+        base.OnClosing(e);
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         _hotkeys?.Dispose();
+        _tray.Dispose();
         base.OnClosed(e);
     }
 }

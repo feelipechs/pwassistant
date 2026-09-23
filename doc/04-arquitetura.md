@@ -142,28 +142,74 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   de UI (crash cross-thread); `ListBoxItem` com template próprio (seleção
   gold, sem azul/cinza do default); `MainWindow` em clusters `DockPanel`;
   status humanizados via resx;   Mini com switches e sem legenda.
+  `...` fecha nas ações; janelas centralizadas via `DialogOwner.Own()`;
+  `ConfirmDialog` temático em todas as deleções; Primary inverte no
+  hover; Mini com header em grid; sem borda amarela; captura vira pin
+  vetorial com tooltip de coordenada.
+- **U9 shadcn (2026-09-21, código pendente de validação):** `Themes/` vira
+  `Colors.Dark` + `Brushes` + `Sizing` + `Typography`; `Styles/` por
+  controle (`DynamicResource` em `Brush.*`, foco anel `Ring`, seleção
+  `RaisedHover` + barra `Primary`, lixeira cinza, `StatusIndicator`,
+  `Spacing`, `ToolTip`/`Menu`); telas migradas (Mini→Main→dialogs→
+  editores→Grupo-tokens); `Tokens`/`Controls` legados deletados; Primary
+  agora é branco `#FAFAFA`. Teste de contraste em `ThemeContrastTests`
+  (hex espelhado — ver comentário no arquivo).
   Formações em `GroupFormationsWindow` (clique aplica + fecha); DnD nas
-  linhas do preset (sem setas, com linha de inserção) e na ordem dos
+  linhas do preset (sem setas, `LiveMove`) e na ordem dos
   presets (`MovePresetAsync`, helper `InsertionPreview` compartilhado).
 - **U7 grupo final (2026-09-21, código pendente de validação):** retag de tabs
   por servidor (sem vazamento cross-server) + trava anti-duplicada;
   `ScrollBar` com botões colapsados e Thumb mínimo (paging na trilha sai);
-  `...` como `Button` + `IsMenuOpen`; fantasma de arrasto (`DragAdorner`)
-  + highlight `IsDragOver` (gap posicional não se aplica a alvo-card);
-  formações separadas (Salvar via prompt, Carregar por linha);
+  `...` como `Button` + `IsMenuOpen`; fantasma de arrasto em `Canvas`
+  sobre o conteúdo (`GhostLayer`, `IsHitTestVisible=False` — `AdornerLayer`
+  não repinta de forma confiável no loop modal do `DoDragDrop`; visual =
+  mini-card + sombra, estilo Trello; posição por coordenadas do evento
+  `DragOver` (`Mouse.GetPosition` congela no loop modal; `GiveFeedback`
+  nem traz posição — fallback `Mouse`); sem png o ghost fica só-texto,
+  nunca aborta o drag) + highlight `IsDragOver` pelo remetente
+  (`CardOf(sender)` — hit-test congelava no card de origem após o churn
+  do `LiveMove`; hit-test fica só no `GiveFeedback`/vãos; sem pares
+  Enter/Leave; só `BorderBrush`, sem mexer em `BorderThickness` —
+  reflow piscava o card); só ativo enquanto o cursor está sobre o card
+  durante o drag — fora disso, normal; formações separadas (Salvar via
+  prompt, Carregar por linha);
   `Ungrouped` = "Disponíveis"/"Available"; `+` grupo à direita.
+  DnD ao vivo estilo Trello (`LiveMove` nas coleções de UI com troca
+  ao encostar (~10% da linha, limiar espelhado pela direção — subir
+  troca ao tocar como descer) — membros, presets e linhas do editor;
+  header do card faz highlight e append só no drop; drops usam o índice
+  da posição de soltura; modelo intocado até o drop, `PersistGroupOrderAsync` escreve a
+  ordem visível; `SuppressAutoRefresh` blinda o poll; `ActiveCard`
+  re-apontado no rebuild; pool aceita qualquer `MemberDrag` (preview
+  `LiveRemove` devolve o item à pool — desagrupado = "em nenhum card");
+   cancel/ESC/soltar-fora reverte via `RebuildAll` no `finally` do
+   drag (flag `_dropHandled`). Roda durante o drag via
+  `PreviewMouseWheel` na janela (capture do `DoDragDrop` segura a roda;
+  hit-test do scroller sob o cursor, extent cede ao pai) + auto-scroll
+  de borda.
+  `+` in-flow via `CompositeCollection` + sentinela `NewGroupSlot`
+  (templates por `DataType`); cards 300×360 fixos com scroll interno;
+  mini-cards compactos (ícone 16, padding 4).
   Play/Fire concorrentes (`AllowConcurrentExecutions`), countdown 0 nos
   3 pontos, `IsLaunching` por card (`…` + anti-duplo-launch); Mini com
-  mini-cards nome+ícone (sem login, sem DnD).
+  mini-cards nome+ícone (sem login, sem DnD) em layout 320×420 inicial
+  redimensionável: 10 personagens à esquerda (+ scroll), presets miúdos em pilha à direita, Grupo à esquerda +
+  toggles à direita no header; Alternar-janelas ligado por default ao
+  abrir o Mini (VM compartilhado: afeta o Grupo); Mini transparente
+  (`AllowsTransparency`, card flutuante sem preto nos cantos) com grip
+  próprio (`WindowResize.SC_SIZE` via `SendMessageW`, lei nº 2 —
+  `NCHITTEST` do `WindowChrome` não atravessa a transparência).
   `+` grupo na barra superior; popup com `PlacementTarget` + transparência;
-  cards 300px em `WrapPanel`; reorder de membros com linha de inserção
-  (`InsertionAdorner`, payload `MemberDrag`); ordem do grupo dirige
-  numpad/foco; membership 100% DnD (pool vira alvo de drop p/ desagrupar),
-  mini-cards só ícone+nome (`MiniCard`).
+  cards 300px em `WrapPanel`; reorder sem linha de inserção em nenhum
+  DnD (só `LiveMove` + ghost; `InsertionAdorner` deletado, payload
+  `MemberDrag`); ordem do grupo dirige
+  numpad/foco; membership 100% DnD (pool vira alvo de drop p/
+  desagrupar — `AllowDrop` na coluna inteira, não só na lista; borda
+  da pool acende como alvo), mini-cards só ícone+nome (`MiniCard`).
 - **U8 validação UX (2026-09-21, código pendente de validação):** `ComboBox`
   editável com zona de seta clicável (`*` + 28px); `ScrollViewer` no
-  `AccountDialog`; cards em `WrapPanel` 300px; `IsDragging` global acende
-  todos os cards + contador Enter/Leave contra flicker; `App.ico`
+  `AccountDialog`; cards em `WrapPanel` 300px; highlight por hit-test
+  (sem contador Enter/Leave — flicker); `App.ico`
   multi-tamanho (16/32/48/256) gerado do PNG 1920.
 - **U6 cards de grupo (2026-09-21, código pendente de validação):** `GroupCard`
   (membros, contagens, `IsActive`, `IsMenuOpen`) + `Pool` (sem grupo) +
@@ -184,10 +230,54 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   SectionTitle/Muted/Status). `App.xaml` só mescla os dicionários (aliases
   `BackgroundBrush/SurfaceBrush/AccentBrush` preservados). `MiniWindow`
   mantém `WS_EX_NOACTIVATE` + `Focusable=False` (1-clique sem roubar foco).
-  `<ApplicationIcon>` = `Resources\Classes\guerreiro.ico` (placeholder; ícone
-  próprio do app pendente). `images/` raiz é duplicata dos originais do
-  usuário (verificado por hash) e está no `.gitignore`; canônico é
-  `Resources/Classes`.
+  `<ApplicationIcon>` = `Resources\App.ico` (ícone próprio do usuário,
+  2026-09-22; `AppIcon.png` espelha na `TitleBar`/`Window.Icon`). `images/`
+  raiz é duplicata dos originais do usuário (verificado por hash) e está
+  no `.gitignore`; canônico é `Resources/Classes`.
+- **U10 moldura custom (2026-09-22, código pendente de validação):**  `ThemedWindow` (`WindowStyle=None` + `WindowChrome`: caption 32 nativo
+  arrasta/duplo-clique, resize + Aero Snap + sombra DWM preservados,
+  padding anti-taskbar quando maximizada) + `TitleBar` (ícone, título da
+  `Window.Title`, botões MDL2 min/max/fechar no tema; max some se
+  `NoResize`; botões `Focusable=False`). Subtítulos com ellipsis (não
+  invadem os botões). Opt-in por janela (11; overlay de captura fora). `Alt+Espaço` não existe mais (sem menu de sistema).
+  Inputs compactos (`Size.Control` 20, margem 2, padding 6,3 — botões
+  junto; fonte mantida; `ToggleSwitch` 24×13 + `Font.Size.Xs` 9).
+  Dialogs pequenos com altura sob medida (`SizeToContent`; presets/
+  formações/editor seguem fixos por causa das listas).
+- **U11 mini-mode no card + bandeja (2026-09-22, código pendente de
+  validação):** `E740` no header do card → Mini único retargeta
+  (`ActiveCard` por grupo), `Group.Hide()` (inacessível), sem botão
+  MiniMode no topo (removido com `OpenMiniModeCommand`). Main X vai
+  pra bandeja (`TrayManager`, `NotifyIcon` WinForms — `UseWindowsForms`
+  sem usings implícitos pra não ambiguar WPF; sair só pelo menu);
+  fechar o Mini reabre o Grupo. Mini sem select (nome do grupo,
+  ~300).
+- **U12 semântica do loop (2026-09-22, código pendente de validação):**
+  toggle = armado, clique = dispara/para sem desmarcar,
+  pílula pisca (`IsFiring`, texto intacto); iteração reporta
+  `Disparados X, ignorados Y` no status; `Rebuild` preserva armado;
+  delete desarma (`Forget`); erro no loop loga e mantém armado.
+- **U14 lote 2 da varredura (2026-09-22, código pendente de validação):**
+  foco-hierarquia (`FocusService.Remove` + `BringToFront` do anterior
+  no `Exited` e no delta do poll); perf (guarda `IsActive`, reuso de
+  `MemberOption` no rebuild; `EnumWindows` por conta mantido — lei
+  nº 3); descarte no editor (snapshot + `ConfirmDialog` no Cancel/X);
+  bulk nas linhas do editor (`Extended` + checkbox no `IsSelected` +
+  duplicar em lote (bloco após o último selecionado) / excluir em lote
+  com 1 confirm); presets voltaram single (bulk era nas linhas); captura
+  sempre `BringToFront` (só conta com DOWN novo; UP de abertura cai no
+  vazio).
+- **U13 lote 1 da varredura (2026-09-22, código pendente de validação):**
+  roda sobre dropdown cobre `ScrollableHeight==0` + template amarra
+  visibilidade; só Shift esquerdo arma tap; highlight do Mini pinta
+  card (`RaisedHover`+`Ring`); delay default 100; ícone da classe no
+  ComboBox do editor; captura com ESC (`PreviewKeyDown`+foco+hook),
+  Sync suspenso + overlay multi-monitor sem clique no jogo (captura no
+   UP; jogo sempre à frente; overlay `NOACTIVATE` + foco cravado no
+   editor); play com spinner (`E72C` girando) e browse com pasta
+   (`E838`); Stop limpa modelo + refresh
+  (processos enraizados); `PresetKeys` =
+  F1–F12/0–9/A–Z/Tab/Space; gate do drag ignora chrome do scrollbar.
 - **Idioma**: código/XAML-names em inglês; todo texto visível em pt-BR via
   `.resx` (`Resources.pt-BR`), nunca hardcoded em inglês na tela.
 - ViewModels nunca referenciam HWND/PID (falam com `Core` por Ids); `App`

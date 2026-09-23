@@ -1,5 +1,7 @@
-using System.Windows;
+﻿using System.Windows;
 using PwAssistant.App.Resources;
+
+using PwAssistant.App.Services;
 
 namespace PwAssistant.App.Views;
 
@@ -10,6 +12,7 @@ public partial class TextPromptDialog : Window
     public TextPromptDialog(string labelKey, string initial)
     {
         InitializeComponent();
+        DialogOwner.Own(this);
         PromptLabel.Text = Strings.Get(labelKey);
         ValueBox.Text = initial;
         SaveButton.Content = Strings.Save;

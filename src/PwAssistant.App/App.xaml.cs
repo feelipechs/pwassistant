@@ -31,6 +31,12 @@ public partial class App : Application
             typeof(ComboBox),
             UIElement.PreviewMouseWheelEvent,
             new MouseWheelEventHandler(ForwardWheelToScroller));
+        // Nested scrollers (card lists, mini lists) keep the wheel only
+        // while they can move; at either extent it bubbles to the parent.
+        EventManager.RegisterClassHandler(
+            typeof(ScrollViewer),
+            UIElement.PreviewMouseWheelEvent,
+            new MouseWheelEventHandler(ForwardWheelAtExtent));
 
         var services = new ServiceCollection();
         var log = new FileLogger(FileLogger.DefaultDirectory());
@@ -64,7 +70,9 @@ public partial class App : Application
         services.AddSingleton<PresetDispatcher>();
         services.AddSingleton<SyncController>();
         services.AddSingleton<FocusController>();
-        services.AddSingleton<LoopController>();
+        services.AddSingleton(sp => new LoopController(
+            sp.GetRequiredService<PresetDispatcher>(),
+            sp.GetRequiredService<FileLogger>()));
         services.AddTransient<MainViewModel>();
         services.AddTransient<GroupViewModel>();
         services.AddTransient<MainWindow>();
@@ -74,7 +82,9 @@ public partial class App : Application
         services.AddTransient<Func<Preset, PresetEditor>>(sp => preset => new PresetEditor(
             sp.GetRequiredService<AppState>(),
             sp.GetRequiredService<IWindowResolver>(),
-            preset));
+            preset,
+            sp.GetRequiredService<KeyboardHook>(),
+            sp.GetRequiredService<SyncController>()));
 
         _provider = services.BuildServiceProvider();
 
@@ -97,16 +107,52 @@ public partial class App : Application
     {
         if (sender is not ComboBox combo || combo.IsDropDownOpen) return;
         e.Handled = true;
-        DependencyObject? node = combo;
+        ForwardToParentScroller(combo, e);
+    }
+
+    /// <summary>
+    /// A scroller that cannot move further in the wheel direction yields to
+    /// its parent instead of swallowing the gesture (nested card/mini lists).
+    /// </summary>
+    private static void ForwardWheelAtExtent(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is not ScrollViewer scroller) return;
+        // A scroller with no extent must never swallow the gesture (e.g. a
+        // SizeToContent dialog behind an open ComboBox dropdown in a Popup).
+        if (scroller.ScrollableHeight <= 0) return;
+        // Tunnel order reaches the outer scroller first: yield when a nested
+        // scroller under the cursor will decide for itself.
+        if (HasNestedScroller(scroller, e)) return;
+        bool canUp = scroller.VerticalOffset > 0;
+        bool canDown = scroller.VerticalOffset < scroller.ScrollableHeight;
+        if ((e.Delta > 0 && canUp) || (e.Delta <= 0 && canDown)) return;
+        e.Handled = true;
+        ForwardToParentScroller(scroller, e);
+    }
+
+    private static bool HasNestedScroller(ScrollViewer outer, MouseEventArgs e)
+    {
+        DependencyObject? node = outer.InputHitTest(e.GetPosition(outer)) as DependencyObject;
+        while (node is not null && !ReferenceEquals(node, outer))
+        {
+            if (node is ScrollViewer) return true;
+            node = VisualTreeHelper.GetParent(node);
+        }
+        return false;
+    }
+
+    private static void ForwardToParentScroller(DependencyObject source, MouseWheelEventArgs e)
+    {
+        DependencyObject? node = source;
         while (node is not null)
         {
             node = VisualTreeHelper.GetParent(node);
-            if (node is ScrollViewer scroller)
+            if (node is ScrollViewer parent)
             {
-                scroller.RaiseEvent(new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                parent.RaiseEvent(new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
                 {
                     RoutedEvent = UIElement.MouseWheelEvent,
-                    Source = scroller,
+                    Source = parent,
                 });
                 return;
             }

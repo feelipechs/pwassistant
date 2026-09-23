@@ -1,6 +1,10 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using PwAssistant.App.Resources;
+using PwAssistant.WinApi;
+
+using PwAssistant.App.Services;
 
 namespace PwAssistant.App.Views;
 
@@ -11,22 +15,76 @@ namespace PwAssistant.App.Views;
 /// </summary>
 public partial class ClickCaptureOverlay : Window
 {
+    private const int VK_ESCAPE = 0x1B;
+
+    private readonly KeyboardHook _hook;
+
+    /// <summary>True once a fresh press landed inside the overlay.</summary>
+    private bool _pressSeen;
+
     public Point? CapturedScreenPoint { get; private set; }
 
-    public ClickCaptureOverlay()
+    public ClickCaptureOverlay(KeyboardHook hook)
     {
+        _hook = hook;
         InitializeComponent();
+        DialogOwner.Own(this);
         HintLabel.Text = Strings.ClickOverlayHint;
-        MouseLeftButtonDown += OnClick;
-        KeyDown += (_, e) =>
+        // Swallow the press; capture on release so the matching button-up
+        // can never leak through to the game after Close().
+        PreviewMouseLeftButtonDown += (_, e) =>
+        {
+            _pressSeen = true;
+            e.Handled = true;
+        };
+        PreviewMouseLeftButtonUp += OnCaptureUp;
+        // Tunneling (not bubbling): survives unfocused content. The global
+        // hook below is the only path that survives the game owning focus.
+        PreviewKeyDown += (_, e) =>
         {
             if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
                 Close();
+            }
         };
+        Loaded += (_, _) =>
+        {
+            // Cover every monitor: Maximized alone only covers the primary.
+            WindowState = WindowState.Normal;            Left = SystemParameters.VirtualScreenLeft;
+            Top = SystemParameters.VirtualScreenTop;
+            Width = SystemParameters.VirtualScreenWidth;
+            Height = SystemParameters.VirtualScreenHeight;
+            Activate();
+            Focus();
+            Keyboard.Focus(this);
+            _hook.KeyTransition += OnHookKey;
+        };
+        Closed += (_, _) => _hook.KeyTransition -= OnHookKey;
     }
 
-    private void OnClick(object sender, MouseButtonEventArgs e)
+    /// <summary>Never steal activation (Mini pattern): clicks land here
+    /// while the editor keeps the keyboard the whole time.</summary>
+    protected override void OnSourceInitialized(EventArgs e)
     {
+        base.OnSourceInitialized(e);
+        IntPtr handle = new WindowInteropHelper(this).Handle;
+        if (handle != IntPtr.Zero)
+            WindowFocus.PreventActivation(handle);
+    }
+
+    private void OnHookKey(KeyTransition transition)
+    {
+        if (transition.VirtualKey == VK_ESCAPE && transition.IsKeyDown)
+            Dispatcher.Invoke(Close);
+    }
+
+    private void OnCaptureUp(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        // The press that opened the capture ended here: only a fresh
+        // press-then-release inside the overlay counts as the pick.
+        if (!_pressSeen) return;
         CapturedScreenPoint = PointToScreen(e.GetPosition(this));
         Close();
     }
