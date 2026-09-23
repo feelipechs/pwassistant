@@ -27,11 +27,16 @@ public static class KeyCodes
         ["F12"] = 0x7B
     };
 
-    /// <summary>Curated key names offered by the preset editor (no free text).</summary>
+    /// <summary>Curated key names offered by the preset editor (no free text).
+    /// Required set: F1–F12, 0–9, A–Z, TAB, SPACE. ENTER/ESC still resolve
+    /// (grandfathered saved data) but are no longer offered.</summary>
     public static IReadOnlyList<string> PresetKeys { get; } =
     [
         "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-        "SPACE", "ENTER", "ESC", "TAB",
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        "TAB", "SPACE",
     ];
 
     public static int Resolve(string name)

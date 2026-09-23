@@ -50,6 +50,23 @@ public sealed class FocusService
         return MoveTo(_order[index]);
     }
 
+    /// <summary>
+    /// Forgets a closed account; if it was current, falls back to the
+    /// previous one (callers re-focus the fallback when armed).
+    /// Returns the id to focus, or null when nothing sensible remains.
+    /// </summary>
+    public Guid? Remove(Guid accountId)
+    {
+        _order.Remove(accountId);
+        if (_previous == accountId)
+            _previous = null;
+        if (_current != accountId)
+            return null;
+        _current = _previous;
+        _previous = null;
+        return _current;
+    }
+
     private Guid MoveTo(Guid id)
     {
         if (_current != id)
