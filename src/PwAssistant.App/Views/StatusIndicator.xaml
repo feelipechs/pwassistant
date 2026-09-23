@@ -1,0 +1,10 @@
+<UserControl x:Class="PwAssistant.App.Views.StatusIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Orientation="Horizontal">
+        <Ellipse x:Name="Dot" Width="8" Height="8" Margin="0,0,8,0"/>
+        <TextBlock x:Name="LabelText" VerticalAlignment="Center"
+                   FontFamily="{StaticResource Font.Family}"
+                   FontSize="{StaticResource Font.Size.Sm}"/>
+    </StackPanel>
+</UserControl>

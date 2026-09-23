@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <!-- Single typeface for the whole app. Cascadia Code where present,
+         Consolas fallback (ships with every Windows). Icon glyphs keep
+         using IconFont explicitly and are unaffected. -->
+    <FontFamily x:Key="Font.Family">Cascadia Code, Consolas</FontFamily>
+
+    <!-- Segoe MDL2 Assets ships with Windows 10+: crisp glyphs, no emoji risk. -->
+    <FontFamily x:Key="IconFont">Segoe MDL2 Assets</FontFamily>
+
+    <!-- Type scale -->
+    <sys:Double x:Key="Font.Size.Xs">9</sys:Double>
+    <sys:Double x:Key="Font.Size.Sm">12</sys:Double>
+    <sys:Double x:Key="Font.Size.Md">14</sys:Double>
+    <sys:Double x:Key="Font.Size.Lg">16</sys:Double>
+    <sys:Double x:Key="Font.Size.Xl">20</sys:Double>
+    <sys:Double x:Key="Font.Size.2Xl">24</sys:Double>
+
+    <!-- Weights: Regular body, Medium/SemiBold section titles and buttons -->
+    <FontWeight x:Key="Font.Weight.Regular">Regular</FontWeight>
+    <FontWeight x:Key="Font.Weight.Medium">Medium</FontWeight>
+    <FontWeight x:Key="Font.Weight.SemiBold">SemiBold</FontWeight>
+</ResourceDictionary>
