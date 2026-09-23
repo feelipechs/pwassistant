@@ -122,6 +122,11 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   overlay `captured=(0.98,0.40)` estável, `README` revisado. AV/Defender:
   sem alertas observados nos binários Debug usados na sessão; publish
   Release self-contained segue pendente de teste dedicado.
+- **Publish Release (2026-09-22, Windows):** ✅ `dotnet publish
+  src/PwAssistant.App -c Release -r win-x64 --self-contained
+  /p:PublishSingleFile=true -o ./publish` → `PwAssistant.App.exe`
+  (~147 MB) + `Resources/Classes/*.ico` ao lado; `publish/` no
+  `.gitignore`. AV/Defender do bundle segue pendente.
 
 ## Convenções de marco
 
