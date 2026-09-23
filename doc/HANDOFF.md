@@ -1,4 +1,4 @@
-# HANDOFF — estado em 2026-09-22, base e4f8524 + trabalho não commitado
+# HANDOFF — estado em 2026-09-22, base c535231 (limpo, 5 commits do batch)
 
 ## Pronto (validado)
 
