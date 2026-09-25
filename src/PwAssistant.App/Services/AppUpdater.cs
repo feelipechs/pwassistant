@@ -26,6 +26,22 @@ public sealed class AppUpdater
         _dialogs = dialogs;
     }
 
+    /// <summary>Installed app version for display (support/diagnostics).
+    /// Null on dev builds or any failure — the UI hides the label.</summary>
+    public static string? TryGetInstalledVersion()
+    {
+        try
+        {
+            var mgr = new UpdateManager(new GithubSource(FeedUrl, null, false));
+            return mgr.IsInstalled ? mgr.CurrentVersion?.ToString() : null;
+        }
+        catch
+        {
+            // Best-effort garnish: version display never breaks startup.
+            return null;
+        }
+    }
+
     public async Task CheckAndPromptAsync()
     {
         UpdateInfo? update;

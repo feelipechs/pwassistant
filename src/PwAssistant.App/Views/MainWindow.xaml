@@ -16,12 +16,21 @@
             <DockPanel>
                 <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Brush.Border}"
                         BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button x:Name="RefreshButton" Content="&#xE72C;" Command="{Binding RefreshStatusCommand}"
-                                Style="{StaticResource IconButton}"/>
-                        <Button x:Name="SettingsButton" Content="&#xE713;" Click="OnOpenSettings"
-                                Style="{StaticResource IconButton}"/>
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="VersionLabel" Grid.Column="0" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource Brush.MutedForeground}"
+                                   FontSize="{StaticResource Font.Size.Sm}" Visibility="Collapsed"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button x:Name="RefreshButton" Content="&#xE72C;" Command="{Binding RefreshStatusCommand}"
+                                    Style="{StaticResource IconButton}"/>
+                            <Button x:Name="SettingsButton" Content="&#xE713;" Click="OnOpenSettings"
+                                    Style="{StaticResource IconButton}"/>
+                        </StackPanel>
+                    </Grid>
                 </Border>
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                     <Button x:Name="AddServerButton" Content="&#xE710;" Command="{Binding AddServerCommand}"

@@ -42,6 +42,13 @@ public partial class MainWindow : Window
         GroupModeButton.Content = AppStrings.GroupMode;
         SettingsButton.ToolTip = AppStrings.Settings;
         RefreshButton.ToolTip = AppStrings.Refresh;
+        // Installed version in the corner (support/diagnostics); hidden on
+        // dev builds where there is no installed version to show.
+        if (AppUpdater.TryGetInstalledVersion() is string version)
+        {
+            VersionLabel.Text = "v" + version;
+            VersionLabel.Visibility = Visibility.Visible;
+        }
         SourceInitialized += OnSourceInitialized;
         _tray.OpenRequested += (_, _) => RestoreFromBackground();
         _tray.ExitRequested += (_, _) =>
