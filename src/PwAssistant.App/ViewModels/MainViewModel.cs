@@ -223,6 +223,18 @@ public sealed partial class MainViewModel : ObservableObject
             // Last used wins; nothing preselected on first run (raw by rule).
             SelectedServer = Servers.FirstOrDefault(s => s.Model.Id == _state.Data.LastSelectedServerId);
             RefreshServerRows();
+            // STA thread: scrubs launch-credential residue from .lnk files
+            // (an interrupted Play may have left secrets on disk).
+            try
+            {
+                int cleansed = _launcher.CleanseAllShortcuts(_state.Data.Servers);
+                if (cleansed > 0)
+                    _log.Info($"Cleansed {cleansed} client shortcuts.");
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"Shortcut cleanse failed: {ex.Message}");
+            }
         });
     }
 

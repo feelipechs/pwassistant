@@ -69,14 +69,40 @@ public sealed class GameLauncher
         string clientsDirectory, string iconDirectory)
     {
         ProcessStartInfo direct = BuildStartInfo(server, account, plaintextPassword);
+        return WithIcon(server, account, clientsDirectory, iconDirectory,
+            direct.Arguments, direct.WorkingDirectory);
+    }
+
+    /// <summary>
+    /// Identity-only shortcut: same path/target/workdir/icon, but NO
+    /// arguments — hence no secret on disk. This is the resting state of
+    /// every .lnk file. Credentials exist on disk only in the brief window
+    /// between materializing the full shortcut and scrubbing it right
+    /// after Process.Start (see LaunchAsync), plus crash residue cleaned
+    /// by CleanseShortcuts at startup.
+    /// </summary>
+    public static ShortcutDefinition BuildIdentityShortcutDefinition(
+        Server server, Account account, string clientsDirectory, string iconDirectory)
+    {
+        string workingDirectory = string.IsNullOrWhiteSpace(server.ElementClientPath)
+            ? string.Empty
+            : Path.GetDirectoryName(server.ElementClientPath) ?? string.Empty;
+        return WithIcon(server, account, clientsDirectory, iconDirectory,
+            arguments: string.Empty, workingDirectory);
+    }
+
+    private static ShortcutDefinition WithIcon(
+        Server server, Account account, string clientsDirectory, string iconDirectory,
+        string arguments, string workingDirectory)
+    {
         string icon = ClassCatalog.TryGet(account.Class, out ClassInfo info)
             ? Path.Combine(iconDirectory, info.Key + ".ico")
             : server.ElementClientPath;
         return new ShortcutDefinition(
             ShortcutPath: Path.Combine(clientsDirectory, $"{account.Id:N}.lnk"),
             TargetPath: server.ElementClientPath,
-            Arguments: direct.Arguments,
-            WorkingDirectory: direct.WorkingDirectory,
+            Arguments: arguments,
+            WorkingDirectory: workingDirectory,
             IconLocation: icon);
     }
 
@@ -97,35 +123,121 @@ public sealed class GameLauncher
         CancellationToken cancellationToken = default)
     {
         ProcessStartInfo startInfo;
+        ShortcutDefinition? fullDefinition = null;
         if (_ensureShortcut is null)
         {
             startInfo = BuildStartInfo(server, account, plaintextPassword);
         }
         else
         {
-            ShortcutDefinition definition = BuildShortcutDefinition(
+            // The shell resolves the .lnk at Process.Start time, so the
+            // credentials only need to be on disk for that instant: write
+            // the full shortcut, start, then scrub it back to identity.
+            fullDefinition = BuildShortcutDefinition(
                 server, account, plaintextPassword, DefaultClientsDirectory(), IconDirectory());
-            _ensureShortcut(definition);
-            startInfo = BuildShortcutStartInfo(definition);
+            _ensureShortcut(fullDefinition);
+            startInfo = BuildShortcutStartInfo(fullDefinition);
         }
-        Process? process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Failed to start the game client.");
-
         try
         {
-            IntPtr hwnd = await WaitForWindowAsync(
-                process.Id, windowTimeout, cancellationToken).ConfigureAwait(false);
+            Process? process = Process.Start(startInfo)
+                ?? throw new InvalidOperationException("Failed to start the game client.");
+            try
+            {
+                IntPtr hwnd = await WaitForWindowAsync(
+                    process.Id, windowTimeout, cancellationToken).ConfigureAwait(false);
 
-            account.ProcessId = process.Id;
-            account.WindowHandle = hwnd;
-            return new GameSession(account.Id, process.Id, DateTimeOffset.UtcNow);
+                account.ProcessId = process.Id;
+                account.WindowHandle = hwnd;
+                return new GameSession(account.Id, process.Id, DateTimeOffset.UtcNow);
+            }
+            catch
+            {
+                account.ProcessId = null;
+                account.WindowHandle = IntPtr.Zero;
+                throw;
+            }
+        }
+        finally
+        {
+            // Scrub even when the launch fails: no secret rests on disk.
+            if (fullDefinition is not null)
+                _ensureShortcut!(BuildIdentityShortcutDefinition(
+                    server, account, DefaultClientsDirectory(), IconDirectory()));
+        }
+    }
+
+    /// <summary>
+    /// Startup hygiene: rewrites the identity (secret-free) shortcut for
+    /// every known account — cleansing crash residue from an interrupted
+    /// launch — and deletes orphan .lnk files with no matching account.
+    /// Best effort per file; returns the number of files fixed. Never
+    /// touches files outside the {guid:N}.lnk naming pattern.
+    /// </summary>
+    public int CleanseAllShortcuts(IEnumerable<Server> servers)
+    {
+        if (_ensureShortcut is null)
+            return 0;
+        return CleanseShortcuts(servers, _ensureShortcut,
+            DefaultClientsDirectory(), IconDirectory());
+    }
+
+    public static int CleanseShortcuts(
+        IEnumerable<Server> servers,
+        Action<ShortcutDefinition> ensure,
+        string clientsDirectory,
+        string iconDirectory)
+    {
+        ArgumentNullException.ThrowIfNull(ensure);
+        int fixed_ = 0;
+        var known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (Server server in servers)
+        {
+            foreach (Account account in server.Accounts)
+            {
+                known.Add($"{account.Id:N}.lnk");
+                try
+                {
+                    ensure(BuildIdentityShortcutDefinition(
+                        server, account, clientsDirectory, iconDirectory));
+                    fixed_++;
+                }
+                catch
+                {
+                    // Best effort: one bad shortcut never blocks the rest.
+                }
+            }
+        }
+        string[] orphans;
+        try
+        {
+            if (!Directory.Exists(clientsDirectory))
+                return fixed_;
+            orphans = Directory.GetFiles(clientsDirectory, "*.lnk");
         }
         catch
         {
-            account.ProcessId = null;
-            account.WindowHandle = IntPtr.Zero;
-            throw;
+            return fixed_;
         }
+        foreach (string orphan in orphans)
+        {
+            if (known.Contains(Path.GetFileName(orphan)))
+                continue;
+            // Only our own naming pattern — never delete foreign files.
+            string name = Path.GetFileNameWithoutExtension(orphan);
+            if (name.Length != 32 || !Guid.TryParseExact(name, "N", out _))
+                continue;
+            try
+            {
+                File.Delete(orphan);
+                fixed_++;
+            }
+            catch
+            {
+                // Best effort.
+            }
+        }
+        return fixed_;
     }
 
     public async Task<IntPtr> WaitForWindowAsync(

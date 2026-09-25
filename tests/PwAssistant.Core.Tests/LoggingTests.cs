@@ -5,12 +5,24 @@ namespace PwAssistant.Core.Tests;
 public sealed class LogRedactorTests
 {
     [Fact]
-    public void PasswordArgument_IsMasked()
+    public void CredentialArguments_AreMasked()
     {
         string line = "startbypatcher user:hero pwd:s3cret role:HeroNick";
-        Assert.DoesNotContain("s3cret", LogRedactor.Redact(line));
-        Assert.Contains("pwd:***", LogRedactor.Redact(line));
-        Assert.Contains("user:hero", LogRedactor.Redact(line));
+        string redacted = LogRedactor.Redact(line);
+        Assert.DoesNotContain("s3cret", redacted);
+        Assert.DoesNotContain("hero", redacted);
+        Assert.DoesNotContain("HeroNick", redacted);
+        Assert.Contains("pwd:***", redacted);
+        Assert.Contains("user:***", redacted);
+        Assert.Contains("role:***", redacted);
+    }
+
+    [Fact]
+    public void CredentialArguments_AreMaskedCaseInsensitively()
+    {
+        string redacted = LogRedactor.Redact("startbypatcher USER:hero PWD:s3cret");
+        Assert.DoesNotContain("hero", redacted);
+        Assert.DoesNotContain("s3cret", redacted);
     }
 
     [Fact]

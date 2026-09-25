@@ -58,9 +58,10 @@ Action
 ```
 
 Notas:
-- Senha fica sempre criptografada em disco (`EncryptedPassword`, AES, chave
-  derivada de senha mestra ou de segredo local da máquina — decidir na
-  implementação).
+- Senha fica sempre criptografada em disco (`EncryptedPassword`, DPAPI
+  `CurrentUser` via `ProtectedData`, sem entropia — decisão da
+  implementação; protege contra roubo de disco e outros usuários do SO,
+  não contra processos do mesmo usuário).
 - `RelativePosition` é fração da client area da janela (via
   `ScreenToClient`), não pixel de tela. Mesmo com todas as janelas no mesmo
   tamanho/posição, isso deixa o dado correto por definição, não por
