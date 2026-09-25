@@ -626,6 +626,16 @@ public sealed partial class MainViewModel : ObservableObject
             StatusMessage = ex.Message;
             _log.Error($"Stop {card.Model.Login} failed: {ex.Message}");
         }
+        finally
+        {
+            // Watched handles are rooted to keep Exited alive: release ours.
+            lock (_watched)
+            {
+                if (_watched.TryGetValue(pid, out Process? watched) && ReferenceEquals(watched, owned))
+                    _watched.Remove(pid);
+            }
+            owned?.Dispose();
+        }
         if (!exited) return;
         // Explicit fallback: never rely solely on Exited to restore icons.
         card.Model.ProcessId = null;
@@ -651,6 +661,8 @@ public sealed partial class MainViewModel : ObservableObject
             process.Exited += (_, _) =>
             {
                 lock (_watched) _watched.Remove(session.ProcessId);
+                // Paired with the rooted handle above: release it here.
+                process.Dispose();
                 _log.Info($"Client pid={session.ProcessId} exited.");
                 _dispatcher.CancelAll();
                 _focus.RemoveAccount(card.Model.Id);
@@ -746,7 +758,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void TogglePasswordVisibility(AccountCard? card)
+    private async Task TogglePasswordVisibility(AccountCard? card)
     {
         if (card is null) return;
         if (card.IsPasswordRevealed)
@@ -758,27 +770,23 @@ public sealed partial class MainViewModel : ObservableObject
         // only, never logged. Auto-hides so it does not linger on screen.
         card.RevealPassword(_state.RevealPassword(card.Model));
         string? shown = card.RevealedPassword;
-        Task.Delay(TimeSpan.FromSeconds(15)).ContinueWith(_ =>
-        {
-            if (card.IsPasswordRevealed && card.RevealedPassword == shown)
-                card.HidePassword();
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+        await Task.Delay(TimeSpan.FromSeconds(15));
+        if (card.IsPasswordRevealed && card.RevealedPassword == shown)
+            card.HidePassword();
     }
 
-    private static void ClearClipboardAfter(TimeSpan delay, string expected)
+    private static async void ClearClipboardAfter(TimeSpan delay, string expected)
     {
-        Task.Delay(delay).ContinueWith(_ =>
+        try
         {
-            try
-            {
-                if (Clipboard.GetText() == expected)
-                    Clipboard.Clear();
-            }
-            catch (Exception)
-            {
-                // Clipboard busy: leave the value; the next copy overwrites it.
-            }
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+            await Task.Delay(delay);
+            if (Clipboard.GetText() == expected)
+                Clipboard.Clear();
+        }
+        catch
+        {
+            // Clipboard busy: leave the value; the next copy overwrites it.
+        }
     }
 
     [RelayCommand]

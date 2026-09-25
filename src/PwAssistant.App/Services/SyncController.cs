@@ -3,6 +3,7 @@ using System.Windows.Interop;
 using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Sync;
+using PwAssistant.Core.Ux;
 using PwAssistant.WinApi;
 
 namespace PwAssistant.App.Services;
@@ -19,17 +20,19 @@ public sealed class SyncController : IDisposable
     private readonly AppState _state;
     private readonly IInputStrategy _strategy;
     private readonly IWindowResolver _resolver;
+    private readonly FileLogger _log;
     private bool _disposed;
 
     public SyncController(
         MouseHook hook, SyncService sync, AppState state,
-        IInputStrategy strategy, IWindowResolver resolver)
+        IInputStrategy strategy, IWindowResolver resolver, FileLogger log)
     {
         _hook = hook;
         _sync = sync;
         _state = state;
         _strategy = strategy;
         _resolver = resolver;
+        _log = log;
         _hook.LeftButtonDown += OnLeftButtonDown;
     }
 
@@ -96,6 +99,20 @@ public sealed class SyncController : IDisposable
     }
 
     private void OnLeftButtonDown(MasterClick click)
+    {
+        // Global hook callback: any throw would propagate into the hook,
+        // so every failure path below ends in log + return.
+        try
+        {
+            HandleLeftButtonDown(click);
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"Sync click handling failed: {ex.Message}");
+        }
+    }
+
+    private void HandleLeftButtonDown(MasterClick click)
     {
         if (!_sync.Enabled || Volatile.Read(ref _suspendCount) > 0) return;
         if (DateTimeOffset.UtcNow.UtcTicks < Interlocked.Read(ref _suppressUntilTicks)) return;

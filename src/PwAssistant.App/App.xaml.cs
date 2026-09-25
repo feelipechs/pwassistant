@@ -190,11 +190,19 @@ public partial class App : Application
     /// <summary>
     /// Loads persisted data, then registers global preset hotkeys (which
     /// need the loaded preset list — registering earlier sees nothing).
+    /// Observed fire-and-forget: startup failures are logged, never lost.
     /// </summary>
-    private static async Task InitializeAndRegisterAsync(MainWindow main)
+    private async Task InitializeAndRegisterAsync(MainWindow main)
     {
-        await main.ViewModel.InitializeAsync().ConfigureAwait(false);
-        await main.Dispatcher.InvokeAsync(main.RegisterPresetHotkeys).Task.ConfigureAwait(false);
+        try
+        {
+            await main.ViewModel.InitializeAsync().ConfigureAwait(false);
+            await main.Dispatcher.InvokeAsync(main.RegisterPresetHotkeys).Task.ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _provider?.GetService<FileLogger>()?.Error($"Startup init failed: {ex.Message}");
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)

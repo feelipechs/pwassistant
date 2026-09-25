@@ -3,6 +3,7 @@ using System.Windows.Interop;
 using PwAssistant.App.Services;
 using PwAssistant.App.ViewModels;
 using PwAssistant.Core.Models;
+using PwAssistant.Core.Ux;
 using PwAssistant.WinApi;
 using AppStrings = PwAssistant.App.Resources.Strings;
 
@@ -16,6 +17,7 @@ public partial class MainWindow : Window
 {
     private readonly AppState _state;
     private readonly PresetDispatcher _dispatcher;
+    private readonly FileLogger _log;
     private GlobalHotKeyManager? _hotkeys;
     private bool _hotkeysRegistered;
     private readonly TrayManager _tray = new();
@@ -23,10 +25,11 @@ public partial class MainWindow : Window
 
     public MainViewModel ViewModel { get; }
 
-    public MainWindow(MainViewModel viewModel, AppState state, PresetDispatcher dispatcher)
+    public MainWindow(MainViewModel viewModel, AppState state, PresetDispatcher dispatcher, FileLogger log)
     {
         _state = state;
         _dispatcher = dispatcher;
+        _log = log;
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
@@ -130,14 +133,29 @@ public partial class MainWindow : Window
             {
                 (uint modifiers, uint vk) = ParseHotkey(preset.Hotkey!);
                 Preset captured = preset;
-                _hotkeys.Register(modifiers, vk, () => _ = _dispatcher.FireAsync(captured));
+                _hotkeys.Register(modifiers, vk, () => FireFromHotkey(captured));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // One bad hotkey string never breaks the app startup.
+                _log.Warn($"Skipping hotkey '{preset.Hotkey}' for preset {preset.Name}: {ex.Message}");
             }
         }
         _hotkeysRegistered = true;
+    }
+
+    /// <summary>Observed fire-and-forget: hotkey failures are logged,
+    /// never lost to an unobserved task.</summary>
+    private async void FireFromHotkey(Preset preset)
+    {
+        try
+        {
+            await _dispatcher.FireAsync(preset);
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"Hotkey fire {preset.Name} failed: {ex.Message}");
+        }
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)

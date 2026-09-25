@@ -13,6 +13,7 @@ using PwAssistant.App.ViewModels;
 using PwAssistant.Core.Execution;
 using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
+using PwAssistant.Core.Ux;
 using PwAssistant.WinApi;
 using MouseButton = PwAssistant.Core.Models.MouseButton;
 
@@ -100,6 +101,7 @@ public partial class PresetEditorControl : UserControl
     private readonly IWindowResolver _resolver;
     private readonly KeyboardHook _hook;
     private readonly SyncController _sync;
+    private readonly FileLogger _log;
 
     private Preset? _editing;
     private bool _isNew;
@@ -123,12 +125,13 @@ public partial class PresetEditorControl : UserControl
     /// <summary>Raised after cancel with a clean state (host navigates).</summary>
     public event Action? Cancelled;
 
-    public PresetEditorControl(AppState state, IWindowResolver resolver, KeyboardHook hook, SyncController sync)
+    public PresetEditorControl(AppState state, IWindowResolver resolver, KeyboardHook hook, SyncController sync, FileLogger log)
     {
         _state = state;
         _resolver = resolver;
         _hook = hook;
         _sync = sync;
+        _log = log;
         DataContext = this;
         InitializeComponent();
         ActionList.ItemsSource = Rows;
@@ -413,8 +416,10 @@ public partial class PresetEditorControl : UserControl
             imported = JsonSerializer.Deserialize<Preset>(
                 File.ReadAllText(dialog.FileName), PresetJsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Keep the friendly message on screen, keep the cause in the log.
+            _log.Warn($"Preset import {dialog.FileName} failed: {ex.Message}");
             imported = null;
         }
         if (imported is null || string.IsNullOrWhiteSpace(imported.Name))

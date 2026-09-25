@@ -131,26 +131,29 @@ public partial class SettingsSheet : UserControl
 
     private void UpdateCycleLabel() => CycleKeyValueLabel.Text = CycleKeyLabel(_draftCycleKey);
 
-    private void OnSave(object sender, RoutedEventArgs e)
+    private async void OnSave(object sender, RoutedEventArgs e)
     {
         if (_state?.Data.FocusSettings is null) return;
         _state.Data.FocusSettings.CycleKey = _draftCycleKey;
         _state.Data.FocusSettings.NumpadEnabled = NumpadCheck.IsChecked == true;
         _state.Data.FocusSettings.ShiftTapEnabled = ShiftTapCheck.IsChecked == true;
-        SaveAsync();
-        Finish(true);
+        // Report saved only after the disk write confirms.
+        if (await SaveAsync())
+            Finish(true);
     }
 
-    private async void SaveAsync()
+    private async Task<bool> SaveAsync()
     {
-        if (_state is null) return;
+        if (_state is null) return false;
         try
         {
             await _state.SaveAsync().ConfigureAwait(false);
+            return true;
         }
         catch (Exception ex)
         {
             MessageBox.Show(Window.GetWindow(this), ex.Message, Strings.Settings);
+            return false;
         }
     }
 
