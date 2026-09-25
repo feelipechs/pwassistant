@@ -14,12 +14,27 @@ using PwAssistant.Core.Storage;
 using PwAssistant.Core.Sync;
 using PwAssistant.Core.Ux;
 using PwAssistant.WinApi;
+using Velopack;
 
 namespace PwAssistant.App;
 
 public partial class App : Application
 {
     private ServiceProvider? _provider;
+
+    /// <summary>
+    /// Custom entry point so Velopack hooks run before any WPF overhead
+    /// (install/update/uninstall fast-exits never build the app).
+    /// Normal startup is unchanged: Run() raises OnStartup as usual.
+    /// </summary>
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        VelopackApp.Build().Run();
+        var app = new App();
+        app.InitializeComponent();
+        app.Run();
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -72,6 +87,7 @@ public partial class App : Application
         services.AddSingleton<FocusController>();
         services.AddSingleton<ClientWindowMarker>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<AppUpdater>();
         services.AddSingleton(sp => new LoopController(
             sp.GetRequiredService<PresetDispatcher>(),
             sp.GetRequiredService<FileLogger>()));
@@ -200,6 +216,8 @@ public partial class App : Application
         {
             await main.ViewModel.InitializeAsync().ConfigureAwait(false);
             await main.Dispatcher.InvokeAsync(main.RegisterPresetHotkeys).Task.ConfigureAwait(false);
+            // Observed fire-and-forget: the updater logs and never throws.
+            _ = _provider?.GetService<AppUpdater>()?.CheckAndPromptAsync();
         }
         catch (Exception ex)
         {

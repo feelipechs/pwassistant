@@ -121,6 +121,10 @@ public static class Strings
     public static string DeleteServerTitle => Get(nameof(DeleteServerTitle));
     public static string DeleteServerConfirm(string server, int accounts) =>
         string.Format(Get(nameof(DeleteServerConfirm)), server, accounts);
+    public static string UpdateAvailableTitle => Get(nameof(UpdateAvailableTitle));
+    public static string UpdateAvailableConfirm(string version) =>
+        string.Format(Get(nameof(UpdateAvailableConfirm)), version);
+    public static string UpdateApply => Get(nameof(UpdateApply));
     public static string DeleteGroupConfirm(string group) =>
         string.Format(Get(nameof(DeleteGroupConfirm)), group);
     public static string CopyLogin => Get(nameof(CopyLogin));

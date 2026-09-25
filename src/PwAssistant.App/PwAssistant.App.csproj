@@ -10,11 +10,20 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>PwAssistant.App</RootNamespace>
     <ApplicationIcon>Resources\App.ico</ApplicationIcon>
+    <!-- Custom Main (Velopack hooks before any WPF overhead): App.xaml is
+         a plain Page, startup runs through Main below. -->
+    <StartupObject>PwAssistant.App.App</StartupObject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Velopack" Version="1.0.1" />
   </ItemGroup>
 
   <!-- WinForms is referenced for NotifyIcon only: drop its implicit

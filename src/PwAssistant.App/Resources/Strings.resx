@@ -89,6 +89,9 @@
   <data name="ServerStats" xml:space="preserve"><value>{0} ACCOUNTS • {1} ONLINE</value></data>
   <data name="DeleteServerTitle" xml:space="preserve"><value>DELETE SERVER</value></data>
   <data name="DeleteServerConfirm" xml:space="preserve"><value>DELETE {0} AND ITS {1} ACCOUNT(S)? GROUPS AND PRESETS POINTING AT THEM ARE CLEANED UP.</value></data>
+  <data name="UpdateAvailableTitle" xml:space="preserve"><value>UPDATE AVAILABLE</value></data>
+  <data name="UpdateAvailableConfirm" xml:space="preserve"><value>VERSION {0} IS AVAILABLE. DOWNLOAD, APPLY AND RESTART NOW?</value></data>
+  <data name="UpdateApply" xml:space="preserve"><value>UPDATE AND RESTART</value></data>
   <data name="NewGroup" xml:space="preserve"><value>NEW GROUP</value></data>
   <data name="DeleteGroupTitle" xml:space="preserve"><value>DELETE GROUP</value></data>
   <data name="DuplicateGroup" xml:space="preserve"><value>DUPLICATE GROUP</value></data>
