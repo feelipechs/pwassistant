@@ -127,6 +127,17 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
   /p:PublishSingleFile=true -o ./publish` → `PwAssistant.App.exe`
   (~147 MB) + `Resources/Classes/*.ico` ao lado; `publish/` no
   `.gitignore`. AV/Defender do bundle segue pendente.
+- **Finalização código (2026-09-25, sem jogo):** U15–U20 em código
+  (sheets, fusão presets, in-game round, UI round, segredos no launch,
+  desacoplamento VM, updater Velopack) — build 0/0, testes 78/78.
+  Validação in-game pendente.
+- **Instalador 1.0.0 (2026-09-25, Windows):** ✅ `vpk pack`
+  (`packId Ditto.PwAssistant`) → `Setup.exe` instala per-user sem
+  perguntas e abre pelo Menu Iniciar. Sem assinatura (SmartScreen
+  esperado). Instalação local de teste; distribuição ainda não feita.
+- **Rename (2026-09-25):** repo `ditto` → `pwassistant`, `packId` →
+  `PwAssistant`, `FeedUrl` + remote atualizados. Instalação 1.0.0
+  antiga desinstalada antes; repack pendente.
 
 ## Convenções de marco
 
