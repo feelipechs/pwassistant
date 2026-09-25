@@ -314,6 +314,26 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   NRE com árvore incompleta) + guarda `IsLoaded`. Enter salva
   no prompt; formações viraram painel do Grupo (aplica no `ActiveCard`); modal nunca
   chama `Close()` após `DialogResult` (crash `VerifyNotClosing`).
+- **U19 segredos no launch (2026-09-25, código pendente de validação):**
+  `.lnk` em repouso é só identidade (sem args, sem segredo); credenciais
+  vão ao disco só no instante do `Process.Start` e o `finally` do launch
+  reescreve a identidade em seguida; `CleanseAllShortcuts` no startup
+  remove resíduo de crash e órfãos `{guid:N}.lnk`. `LogRedactor` mascara
+  `pwd:`/`user:`/`role:` (case-insensitive); logins isolados seguem nos
+  logs por diagnóstico. **Risco aceito:** a senha segue visível na linha
+  de comando do processo durante o launch (Task Manager) — inerente ao
+  protocolo `startbypatcher`, sem outro canal.
+- **U20 desacoplamento VM (2026-09-25, código pendente de validação):**
+  `IDialogService`/`DialogService` (App) atrás de todas as perguntas
+  modais e navegação Grupo↔Mini; `ClientWindowMarker` com o acesso
+  HWND/WinApi do Play. VMs não referenciam Window/WinApi (só resets de
+  estado `ProcessId`/`WindowHandle`, como o Core já faz). Exceção
+  documentada: `OpenGroupMode` virou `ShowGroupWindow()` no serviço.
+- **U20 updater (2026-09-25, código pendente de validação):** Velopack
+  1.0.1, `Main()` customizado (hooks antes do WPF), `AppUpdater` com
+  feed GitHub Releases (`feelipechs/ditto`, público, só stable),
+  prompt pt-BR, `packId Ditto.PwAssistant` (estável). `vpk pack`
+  verificado localmente (`Setup.exe` + delta gerados, sem assinatura).
 - **Idioma**: código/XAML-names em inglês; todo texto visível em pt-BR via
   `.resx` (`Resources.pt-BR`), nunca hardcoded em inglês na tela.
 - ViewModels nunca referenciam HWND/PID (falam com `Core` por Ids); `App`
