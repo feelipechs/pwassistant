@@ -26,14 +26,9 @@ sem driver, sem injeção, sem `SendInput` como padrão.
 
 ## Segurança
 
-- Senhas: criptografadas com DPAPI (`CurrentUser`) em
-  `%AppData%\PwAssistant\accounts.json`. Nunca em texto puro.
-- Atalhos por conta (`.lnk`): guardam só identidade + login (sem senha).
-  A senha existe no disco apenas no instante do Play.
-- Logs em `%AppData%\PwAssistant\logs\`: sem segredos, com retenção
-  (30 dias + teto de 50 MB).
-- Residual conhecido: a senha aparece na linha de comando do processo
-  durante o Play (Task Manager) — inerente ao protocolo do client.
+- Suas senhas ficam criptografadas no próprio PC — o app nunca as
+  salva em texto puro, em logs ou em atalhos.
+- Logs locais não contêm dados sensíveis.
 
 ## Atualizações
 
