@@ -1,7 +1,6 @@
 # Arquitetura — PwAssistant
 
-Decisões travadas por prova real (ver `03-pesquisa-e-validacoes.md` item 1 e
-`HANDOFF.md`): input sem foco via `PostMessage` com priming de ativação.
+Decisões travadas por prova real (receita T1 abaixo e `HANDOFF.md`): input sem foco via `PostMessage` com priming de ativação.
 Sem driver, sem injeção, sem foco real, sem flicker.
 
 ## Solução e projetos (.NET 8, C#)
@@ -57,7 +56,8 @@ Eficiência (requisito do projeto):
   Cobertura: teclas de movimento (se o jogo tiver) ou funcionalidade
   "Seguir" do próprio jogo (iniciada por click de UI, que funciona).
 - `PostThreadMessage`, `DOWN+CHAR+UP`, hold/repeat: testados, não funcionam
-  sem foco — não reimplementar sem nova prova (ver `tools/provas-winapi/`).
+  sem foco — não reimplementar sem nova prova (receita em `IInputStrategy`;
+  scripts de prova originais aposentados — histórico no git).
 
 Fallback documentado (não implementar até haver prova de necessidade):
 `ForegroundSwapSendInputStrategy` (`AttachThreadInput` + `SendInput` + restaura

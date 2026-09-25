@@ -7,7 +7,8 @@ description: Receita validada de input sem foco no elementclient do PW via PostM
 
 Usar sempre que a tarefa envolver enviar input ao jogo, P/Invoke de WinAPI,
 `IInputStrategy`, `MacroExecutor` ou depurar "não funcionou sem foco".
-Contrato completo: `doc/04-arquitetura.md`. Provas: `tools/provas-winapi/`.
+Contrato completo: `doc/architecture.md`. Provas originais aposentadas
+(histórico no git); revalidar via `dotnet run --project src/PwAssistant.Probe`.
 
 ## Receita de tecla (T1 — validada 3/3, 2 PIDs, sem foco)
 

@@ -74,7 +74,7 @@ Notas:
 
 - Arquivo local (JSON) por enquanto, criptografado.
 - Backup/restauração automática fica fora do escopo v1 (ver
-  `00-visao-geral.md`), mas a estrutura de arquivo único facilita
+  `overview.md`), mas a estrutura de arquivo único facilita
   adicionar depois.
 
 ## Telas
@@ -93,8 +93,9 @@ Notas:
   para um card adiciona (sai do pool; ✕ devolve).
 - Direita: um card por grupo (clicar ativa — borda gold; sync, troca de
   janelas, Mini e hotkeys seguem o ativo). Cada card tem `...` com
-  Renomear/Excluir, Presets (janelinha própria com Novo/Editar/Duplicar/
-  Excluir) e Salvar/Carregar Formação (snapshot dos membros do card).
+  Renomear/Excluir/Duplicar, Presets em drill-in na própria janela
+  (lista + editor lado a lado) e formações em painel (snapshot dos
+  membros do card).
 - Offline edita preset normalmente; no disparo é pulado com log.
 
 ## Fora do escopo do modelo v1

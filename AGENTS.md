@@ -2,14 +2,16 @@
 
 Instruções permanentes para qualquer agente/sessão neste repo. Ler antes de
 qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
-`doc/00-visao-geral.md` → `doc/07-backlog.md` conforme necessário.
+`doc/overview.md` → `doc/backlog.md` conforme necessário.
 
 ## Docs: congelados vs. vivos
 
-- **Congelados (guias, não reescrever):** `doc/00`–`doc/05`. Só mexer na
+- **Congelados (guias, não reescrever):** `doc/overview.md`,
+  `doc/data-model.md`, `doc/macro-engine.md`, `doc/architecture.md`,
+  `doc/business-rules.md`. Só mexer na
   exceção da lei nº 5 (descoberta que contradiz o guia — doc primeiro).
-- **Vivos (atualizar no mesmo passo):** `doc/06-marcos.md` (só carimbo de
-  status: data + resultado + commit), `doc/07-backlog.md` (move item para
+- **Vivos (atualizar no mesmo passo):** `doc/milestones.md` (só carimbo de
+  status: data + resultado + commit), `doc/backlog.md` (move item para
   feito + commit), `doc/HANDOFF.md` (reescrito ao fim da sessão, template
   abaixo).
 
@@ -18,7 +20,9 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
 - C# / .NET 8 + WPF. Testes: xUnit. SO de execução/validade: **Windows**
   (WinAPI + jogo não rodam no Linux).
 - Comandos: `dotnet build pwassistant.sln`, `dotnet test`, `dotnet publish` (detalhes
-  por marco). PowerShell 5.1 nos scripts de prova (`tools/provas-winapi/`).
+  por marco). Validação contra o jogo via Probe
+  (`dotnet run --project src/PwAssistant.Probe`); scripts de prova originais
+  aposentados (histórico no git).
 
 ## Idioma e estilo (convenção do repo)
 
@@ -37,7 +41,7 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
 
 1. **Sem driver kernel, sem injeção/DLL no jogo, sem `SendInput` como padrão.**
    Caminho único do v1: `PostMessage` com priming (receita exata no
-   `doc/04-arquitetura.md` + skill `pw-winapi`).
+   `doc/architecture.md` + skill `pw-winapi`).
 2. **Todo P/Invoke em `src/PwAssistant.WinApi`.** Nenhum `DllImport` fora dele.
    `Core` não conhece WinAPI (fala por `IInputStrategy`/`IWindowTarget`).
 3. **Alvo sempre PID → HWND via `EnumWindows`.** Nunca `MainWindowHandle`
@@ -45,7 +49,7 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
    do próprio launcher).
 4. **Segredos nunca em texto puro** (disco, log, exceção). Runtime nunca persiste.
 5. **Docs antes/depois do código:** descoberta que muda comportamento atualiza
-   `doc/` no mesmo passo; `doc/06-marcos.md` marca aceite com data.
+   `doc/` no mesmo passo; `doc/milestones.md` marca aceite com data.
 
 ## Armadilhas conhecidas (custo já pago — não repetir)
 
@@ -70,13 +74,13 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
 - Só com pedido explícito. **Um commit por etapa/bloco concluído** — cada
   unidade de trabalho fechada (ex.: bootstrap da solution, WinApi + Probe,
   Core + testes, App WPF) gera um commit próprio, independente de
-  corresponder ou não a um marco inteiro do `doc/06-marcos.md`.
+   corresponder ou não a um marco inteiro do `doc/milestones.md`.
 - Commits atômicos (padrão de mercado): cada commit compila e mantém os
   testes verdes; uma mudança lógica por commit. Se um arquivo mistura dois
   blocos, separar por hunk (`git add -p` ou equivalente) em vez de agrupar
   por arquivo.
-- Docs junto do código que os afeta no mesmo commit (ex.: descoberta `03`
-  com o fix); bookkeeping de processo (carimbos do `06`, `HANDOFF`
+- Docs junto do código que os afeta no mesmo commit (ex.: descoberta `architecture`
+  com o fix); bookkeeping de processo (carimbos do `milestones`, `HANDOFF`
   reescrito, `README` revisado) em `docs:` separado(s).
 - Padrão: Conventional Commits, tudo em inglês, imperativo, curto:
   `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:` + escopo opcional
@@ -95,6 +99,6 @@ qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias
 ## Pronto (validado)
 ## Pronto (código, pendente de jogo/Windows)
 ## Próximo passo
-## Backlog pós-validação (ponteiro p/ `doc/07-backlog.md`)
+## Backlog pós-validação (ponteiro p/ `doc/backlog.md`)
 ## Perguntas abertas
 ```

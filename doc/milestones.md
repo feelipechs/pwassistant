@@ -6,7 +6,8 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 
 ## M0 — Provas WinAPI (CONCLUÍDO 2026-09-10)
 
-- Bateria PowerShell em `tools/provas-winapi/` (T0–T5, C0/C4, higiene).
+- Bateria PowerShell (T0–T5, C0/C4, higiene) — scripts originais aposentados
+  em 2026-09-25 (histórico no git).
 - Resultado: teclas e UI-clicks sem foco via priming (T1/C4); chão 3D fora.
 - Aceite: F1 toggle 3/3 sem foco em 2 PIDs + UI-click (Sim/Não) sem foco. ✅
 
@@ -14,8 +15,8 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 
 - Escopo: solução `pwassistant.sln`; `PwAssistant.WinApi` com `EnumWindows→HWND`,
   `MapVirtualKey`, `PostMessageBackgroundStrategy` (receita exata do
-  `04-arquitetura.md`: prime T1 / prime C4 / higiene `WA_INACTIVE`); console
-  `tools`-like que replica T1 (tecla) e C4 (UI-click) contra 2 PIDs reais.
+  `architecture.md`: prime T1 / prime C4 / higiene `WA_INACTIVE`); console
+  `PwAssistant.Probe` que replica T1 (tecla) e C4 (UI-click) contra 2 PIDs reais.
 - Aceite: console monta/desmonta (F1) 3/3 sem foco + click de UI sem foco,
   observados no jogo; nenhum `DllImport` fora do `WinApi` (`grep` comprova).
 - Pré-requisito: SDK .NET 8 instalado no Windows.
@@ -30,8 +31,8 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 
 ## M2 — `PwAssistant.Core` (models + storage)
 
-- Escopo: models verbatim do `01-modelo-dados-e-telas.md` + `05-regras`;
-  storage JSON único com segredos AES (decidir: senha mestra vs DPAPI —
+- Escopo: models verbatim do `data-model.md` + `business-rules.md`;
+  storage JSON único com segredos (decidir: senha mestra vs DPAPI —
   registrar decisão aqui); testes xUnit de regras puras (sem WinAPI/jogo).
 - Aceite: `dotnet test` verde; senha nunca em texto puro (inspeção de arquivo);
   runtime nunca persiste (teste dedicado).

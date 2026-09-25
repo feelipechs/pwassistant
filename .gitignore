@@ -10,6 +10,9 @@ Releases/
 *.suo
 .vs/
 
+# Local agent tooling (not part of the repo)
+.opencode/node_modules/
+
 # NuGet
 *.nupkg
 *.snupkg

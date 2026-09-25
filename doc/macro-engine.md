@@ -30,11 +30,11 @@ contida nessa interface, sem reescrever o resto do app.
      lento e mais sensível a travar se uma janela não responde a tempo.
 
 Decisão de qual usar (ou uma combinação, por tipo de ação) depende dos
-testes práticos no Windows — ver `03-pesquisa-e-validacoes.md`.
+testes práticos no Windows.
 
 > **Status (2026-09-16):** decidido — `PostMessageBackgroundStrategy`
 > (priming) como implementação padrão e única do v1; `SendInput` virou
-> fallback documentado. Detalhe em `04-arquitetura.md`.
+> fallback documentado. Detalhe em `architecture.md`.
 
 ## Captura de posição de click
 

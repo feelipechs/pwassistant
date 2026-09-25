@@ -46,11 +46,9 @@ limitada para o CRUD/Modo Grupo e stacks com distribuição inferior a um
   limita a estruturar código, documentação e lógica que não dependa de
   WinAPI/execução real do jogo.
 - Por isso, antes de fechar a arquitetura completa, o próximo passo é
-  validar no Windows as premissas técnicas de mais risco — ver
-  `03-pesquisa-e-validacoes.md`.
-- **Status (2026-09-16):** arquitetura fechada em `04-arquitetura.md`
-  (premissas do item 1 do `03` validadas); código M1–M6 implementado,
-  aceite contra o jogo pendente no Windows (`06-marcos.md`).
+  validar no Windows as premissas técnicas de mais risco.
+- **Status:** arquitetura fechada em `architecture.md`; M1–M6 e backlog
+  aceitos (`milestones.md`); instalador + updater a partir da v1.0.0.
 
 ## Camadas do projeto (proposta)
 

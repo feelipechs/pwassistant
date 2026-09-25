@@ -1,7 +1,7 @@
 # Regras de Negócio — PwAssistant
 
-Fonte: `01-modelo-dados-e-telas.md` (modelo) + provas da Fase 1
-(`03-pesquisa-e-validacoes.md`, `HANDOFF.md`). Este arquivo é a referência
+Fonte: `data-model.md` (modelo) + receita T1 em `architecture.md`
+(`HANDOFF.md`). Este arquivo é a referência
 normativa; em caso de conflito com código, o código deve ser corrigido
 (ou a regra atualizada explicitamente com data e motivo).
 
@@ -40,7 +40,7 @@ normativa; em caso de conflito com código, o código deve ser corrigido
    `Repeat` (vezes × intervalo) esgota antes da próxima conta.
 3. `Simultaneous`: uma task por conta; cada uma respeita seu `DelayBeforeMs`.
 4. Toda ação usa a receita da estratégia ativa (v1: priming + send + higiene
-   opcional, ver `04-arquitetura.md`). Retorno da API (`PostMessage != 0`)
+   opcional, ver `architecture.md`). Retorno da API (`PostMessage != 0`)
    NÃO significa efeito no jogo — logar, mas não tratar como sucesso.
 5. Cancelamento por `jobId`: para o lote entre ações (nunca no meio de um
    par DOWN/UP — par é atômico).
@@ -58,7 +58,7 @@ normativa; em caso de conflito com código, o código deve ser corrigido
 
 - Play no card = spawn `elementclient.exe startbypatcher user:LOGIN pwd:SENHA
   role:NICK` (processo filho independente por conta; PIDs distintos).
-- Mapear delay entre spawn e janela visível (risco conhecido do item 3 do `03`):
+- Mapear delay entre spawn e janela visível:
   polling de HWND com timeout, não `Sleep` fixo.
 - Título da janela pode variar com `role` — exibição, nunca chave de busca
   (chave é sempre PID → HWND).
@@ -72,12 +72,11 @@ normativa; em caso de conflito com código, o código deve ser corrigido
 
 ## Segurança e higiene
 
-- Segredos: AES em repouso; nunca em log, exceção ou clipboard.
+- Segredos: DPAPI em repouso; nunca em log, exceção ou clipboard.
 - Reveal em tela (2026-09-20, código pendente de validação): botão
   Mostrar/Ocultar no card da conta, a pedido, com auto-hide em 15 s;
   mesmo modelo de exposição do copiar (clipboard com auto-clear 30 s);
   nunca em log, exceção ou disco.
 - Mensagens forjadas vão **só** para HWNDs de PIDs do próprio launcher
   (nunca broadcast/enumeração cega).
-- Higiene `WA_INACTIVE` após rajadas longas (receita validada em
-  `tools/provas-winapi/teste-higiene.ps1`).
+- Higiene `WA_INACTIVE` após rajadas longas (receita em `architecture.md`).
