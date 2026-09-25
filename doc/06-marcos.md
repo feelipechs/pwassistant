@@ -1,4 +1,4 @@
-# Marcos — ditto (tasks executáveis por IA)
+# Marcos — PwAssistant (tasks executáveis por IA)
 
 Ordem estrita: cada marco só começa com o anterior aceito. Critério de aceite
 é binário (passou/não passou); sem "quase pronto". Ao concluir um marco,

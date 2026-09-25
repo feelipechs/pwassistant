@@ -1,4 +1,4 @@
-# Arquitetura — ditto (PW Assistant próprio)
+# Arquitetura — PwAssistant
 
 Decisões travadas por prova real (ver `03-pesquisa-e-validacoes.md` item 1 e
 `HANDOFF.md`): input sem foco via `PostMessage` com priming de ativação.
@@ -335,8 +335,9 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   documentada: `OpenGroupMode` virou `ShowGroupWindow()` no serviço.
 - **U20 updater (2026-09-25, código pendente de validação):** Velopack
   1.0.1, `Main()` customizado (hooks antes do WPF), `AppUpdater` com
-  feed GitHub Releases (`feelipechs/ditto`, público, só stable),
-  prompt pt-BR, `packId Ditto.PwAssistant` (estável). `vpk pack`
+  feed GitHub Releases (`feelipechs/pwassistant`, público, só stable),
+  prompt pt-BR, `packId PwAssistant` (estável desde o rename; a 1.0.0 com
+  `Ditto.PwAssistant` nunca foi distribuída). `vpk pack`
   verificado localmente (`Setup.exe` + delta gerados, sem assinatura).
 - **Idioma**: código/XAML-names em inglês; todo texto visível em pt-BR via
   `.resx` (`Resources.pt-BR`), nunca hardcoded em inglês na tela.

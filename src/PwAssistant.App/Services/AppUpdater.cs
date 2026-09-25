@@ -15,7 +15,7 @@ namespace PwAssistant.App.Services;
 public sealed class AppUpdater
 {
     /// <summary>Stable feed: releases of this repo.</summary>
-    public const string FeedUrl = "https://github.com/feelipechs/ditto";
+    public const string FeedUrl = "https://github.com/feelipechs/pwassistant";
 
     private readonly FileLogger _log;
     private readonly IDialogService _dialogs;

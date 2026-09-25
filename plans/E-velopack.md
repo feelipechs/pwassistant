@@ -47,7 +47,7 @@ Integração no código (já aplicada):
   como **primeira linha do `Main()` customizado** (`App.xaml` virou
   `Page` + `StartupObject PwAssistant.App.App` no csproj — o `vpk`
   exige e verifica: `Verified VelopackApp.Run() in '...App::Main'`).
-- `Services/AppUpdater.cs`: `GithubSource("https://github.com/feelipechs/ditto", null, false)`
+- `Services/AppUpdater.cs`: `GithubSource("https://github.com/feelipechs/pwassistant", null, false)`
   (repositório público, sem token, só stable); pula quando
   `!IsInstalled` (builds de dev); prompt via `IDialogService`
   (`UpdateAvailableTitle/Confirm/Apply` em EN+PT); download → 
@@ -59,14 +59,15 @@ Release (na hora de publicar, tag `vX.Y.Z`):
 ```powershell
 dotnet publish src/PwAssistant.App -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ./publish
 Remove-Item "publish\*.pdb"
-dnx vpk@1.0.1 pack --packId Ditto.PwAssistant --packVersion X.Y.Z --packDir ./publish --mainExe PwAssistant.App.exe
-# subir Releases/Ditto.PwAssistant-*-full.nupkg + releases.win.json
+dnx vpk@1.0.1 pack --packId PwAssistant --packVersion X.Y.Z --packDir ./publish --mainExe PwAssistant.App.exe
+# subir Releases/PwAssistant-*-full.nupkg + releases.win.json
 # como assets do GitHub Release vX.Y.Z (vpk upload github faz isso)
 ```
 
 Notas:
 
-- `packId Ditto.PwAssistant` é estável e definitivo (mudar quebra updates).
+- `packId PwAssistant` é estável e definitivo (mudar quebra updates;
+  o `Ditto.PwAssistant` da 1.0.0 local nunca foi distribuído).
 - Sem certificado: `Setup.exe` sem assinatura → SmartScreen até ganhar
   reputação. Avisar no texto do release.
 - `vpk` avisa que existe CLI 1.2.x; lib fixada em 1.0.1 (testada).

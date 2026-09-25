@@ -175,7 +175,7 @@ public sealed class GameLauncherTests
     [Fact]
     public void CleanseShortcuts_RewritesKnown_AndDeletesOrphans()
     {
-        string dir = Path.Combine(Path.GetTempPath(), $"ditto-clients-{Guid.NewGuid():N}");
+        string dir = Path.Combine(Path.GetTempPath(), $"pwassistant-clients-{Guid.NewGuid():N}");
         Directory.CreateDirectory(dir);
         try
         {

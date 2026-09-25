@@ -19,7 +19,7 @@ internal sealed class TestProtector : ISecretProtector
 
 public sealed class AccountStoreTests : IDisposable
 {
-    private readonly string _file = Path.Combine(Path.GetTempPath(), $"ditto-test-{Guid.NewGuid():N}.json");
+    private readonly string _file = Path.Combine(Path.GetTempPath(), $"pwassistant-test-{Guid.NewGuid():N}.json");
 
     public void Dispose()
     {

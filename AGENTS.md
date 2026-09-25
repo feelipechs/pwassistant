@@ -1,4 +1,4 @@
-# AGENTS.md — ditto
+# AGENTS.md — pwassistant
 
 Instruções permanentes para qualquer agente/sessão neste repo. Ler antes de
 qualquer tarefa. Contexto em 30 segundos: `doc/HANDOFF.md` → guias

@@ -1,4 +1,4 @@
-# Regras de Negócio — ditto
+# Regras de Negócio — PwAssistant
 
 Fonte: `01-modelo-dados-e-telas.md` (modelo) + provas da Fase 1
 (`03-pesquisa-e-validacoes.md`, `HANDOFF.md`). Este arquivo é a referência

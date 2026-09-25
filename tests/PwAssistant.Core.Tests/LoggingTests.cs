@@ -34,7 +34,7 @@ public sealed class LogRedactorTests
 
 public sealed class FileLoggerTests : IDisposable
 {
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), $"ditto-log-{Guid.NewGuid():N}");
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), $"pwassistant-log-{Guid.NewGuid():N}");
 
     public void Dispose()
     {
