@@ -4,106 +4,122 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="TrayShow" xml:space="preserve"><value>Abrir</value></data>
-  <data name="TrayExit" xml:space="preserve"><value>Sair</value></data>
-  <data name="TrayTip" xml:space="preserve"><value>PW Assistant</value></data>
-  <data name="Minimize" xml:space="preserve"><value>Minimizar</value></data>
-  <data name="Servers" xml:space="preserve"><value>Servidores</value></data>
-  <data name="AddServer" xml:space="preserve"><value>Adicionar servidor</value></data>
-  <data name="AddAccount" xml:space="preserve"><value>Adicionar conta</value></data>
-  <data name="Play" xml:space="preserve"><value>Jogar</value></data>
-  <data name="Online" xml:space="preserve"><value>Online</value></data>
-  <data name="Offline" xml:space="preserve"><value>Offline</value></data>
-  <data name="GroupMode" xml:space="preserve"><value>Modo grupo</value></data>
-  <data name="Presets" xml:space="preserve"><value>Presets</value></data>
-  <data name="Stop" xml:space="preserve"><value>Parar</value></data>
-  <data name="Save" xml:space="preserve"><value>Salvar</value></data>
-  <data name="Login" xml:space="preserve"><value>Login</value></data>
-  <data name="Password" xml:space="preserve"><value>Senha</value></data>
-  <data name="Role" xml:space="preserve"><value>Personagem (role)</value></data>
-  <data name="ServerName" xml:space="preserve"><value>Nome do servidor</value></data>
-  <data name="ClientPath" xml:space="preserve"><value>Caminho do client (elementclient.exe)</value></data>
-  <data name="PresetName" xml:space="preserve"><value>Nome do preset</value></data>
-  <data name="SyncEnabled" xml:space="preserve"><value>Sincronizar cliques</value></data>
-  <data name="FocusSwitch" xml:space="preserve"><value>Alternar janelas</value></data>
-  <data name="FocusConfig" xml:space="preserve"><value>Teclas de troca de janela</value></data>
-  <data name="CycleKey" xml:space="preserve"><value>Tecla de ciclo</value></data>
-  <data name="NumpadSelect" xml:space="preserve"><value>Seleção pelo numpad</value></data>
-  <data name="ShiftTapToggle" xml:space="preserve"><value>Alternar com Shift</value></data>
-  <data name="Settings" xml:space="preserve"><value>Configurações</value></data>
-  <data name="Close" xml:space="preserve"><value>Fechar</value></data>
-  <data name="ArmingHint" xml:space="preserve"><value>A troca em si é ligada na janela mini-mode.</value></data>
-  <data name="Loop" xml:space="preserve"><value>Loop</value></data>
-  <data name="ClickOverlayHint" xml:space="preserve"><value>Clique uma vez na janela do jogo para capturar a posição.</value></data>
-  <data name="AccountsOfServer" xml:space="preserve"><value>Contas — {0}</value></data>
-  <data name="NoServerSelected" xml:space="preserve"><value>Nenhum servidor selecionado</value></data>
-  <data name="Remove" xml:space="preserve"><value>Remover</value></data>
-  <data name="Formations" xml:space="preserve"><value>Formações</value></data>
-  <data name="SaveFormation" xml:space="preserve"><value>Salvar formação</value></data>
-  <data name="LoadFormation" xml:space="preserve"><value>Carregar formação</value></data>
-  <data name="NewPreset" xml:space="preserve"><value>Novo preset</value></data>
-  <data name="PresetNameNumber" xml:space="preserve"><value>Preset {0}</value></data>
-  <data name="KeyRequired" xml:space="preserve"><value>Digite o nome da tecla primeiro.</value></data>
-  <data name="ClickPositionRequired" xml:space="preserve"><value>Capture a posição do click primeiro.</value></data>
-  <data name="NoPositionCaptured" xml:space="preserve"><value>Nenhuma posição de click capturada.</value></data>
-  <data name="PositionCaptured" xml:space="preserve"><value>Click capturado em ({0:F2}, {1:F2}).</value></data>
-  <data name="DelayMs" xml:space="preserve"><value>Espera antes desta ação (ms).</value></data>
-  <data name="InvalidDelay" xml:space="preserve"><value>Delay deve ser 0 ms ou mais.</value></data>
-  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
-  <data name="Delete" xml:space="preserve"><value>Excluir</value></data>
-  <data name="Copy" xml:space="preserve"><value>Copiar</value></data>
-  <data name="Nickname" xml:space="preserve"><value>Apelido</value></data>
-  <data name="SameAsRole" xml:space="preserve"><value>Mesmo do personagem</value></data>
-  <data name="Class" xml:space="preserve"><value>Classe</value></data>
-  <data name="AddCommand" xml:space="preserve"><value>Adicionar comando</value></data>
-  <data name="AddClick" xml:space="preserve"><value>Adicionar clique</value></data>
-  <data name="Duplicate" xml:space="preserve"><value>Duplicar linha</value></data>
-  <data name="RowWithoutAccount" xml:space="preserve"><value>Linha {0} sem personagem.</value></data>
-  <data name="DuplicatePreset" xml:space="preserve"><value>Duplicar preset</value></data>
+  <data name="TrayShow" xml:space="preserve"><value>ABRIR</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>SAIR</value></data>
+  <data name="TrayTip" xml:space="preserve"><value>PW ASSISTANT</value></data>
+  <data name="Minimize" xml:space="preserve"><value>MINIMIZAR</value></data>
+  <data name="Servers" xml:space="preserve"><value>SERVIDORES</value></data>
+  <data name="AddServer" xml:space="preserve"><value>ADICIONAR SERVIDOR</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>ADICIONAR CONTA</value></data>
+  <data name="Play" xml:space="preserve"><value>JOGAR</value></data>
+  <data name="Online" xml:space="preserve"><value>ONLINE</value></data>
+  <data name="Offline" xml:space="preserve"><value>OFFLINE</value></data>
+  <data name="GroupMode" xml:space="preserve"><value>MODO GRUPO</value></data>
+  <data name="Presets" xml:space="preserve"><value>PRESETS</value></data>
+  <data name="SelectPresetHint" xml:space="preserve"><value>SELECIONE UM PRESET PARA EDITAR OS COMANDOS.</value></data>
+  <data name="Stop" xml:space="preserve"><value>PARAR</value></data>
+  <data name="Save" xml:space="preserve"><value>SALVAR</value></data>
+  <data name="Login" xml:space="preserve"><value>LOGIN</value></data>
+  <data name="Password" xml:space="preserve"><value>SENHA</value></data>
+  <data name="Role" xml:space="preserve"><value>PERSONAGEM (ROLE)</value></data>
+  <data name="ServerName" xml:space="preserve"><value>NOME DO SERVIDOR</value></data>
+  <data name="ClientPath" xml:space="preserve"><value>CAMINHO DO CLIENT (ELEMENTCLIENT.EXE)</value></data>
+  <data name="GroupName" xml:space="preserve"><value>NOME DO GRUPO</value></data>
+  <data name="PresetName" xml:space="preserve"><value>NOME DO PRESET</value></data>
+  <data name="SyncEnabled" xml:space="preserve"><value>SINCRONIZAR CLIQUES</value></data>
+  <data name="FocusSwitch" xml:space="preserve"><value>ALTERNAR JANELAS</value></data>
+  <data name="FocusConfig" xml:space="preserve"><value>TECLAS DE TROCA DE JANELA</value></data>
+  <data name="CycleKey" xml:space="preserve"><value>TECLA DE CICLO</value></data>
+  <data name="NumpadSelect" xml:space="preserve"><value>SELEÇÃO PELO NUMPAD</value></data>
+  <data name="ShiftTapToggle" xml:space="preserve"><value>ALTERNAR COM SHIFT</value></data>
+  <data name="Settings" xml:space="preserve"><value>CONFIGURAÇÕES</value></data>
+  <data name="Close" xml:space="preserve"><value>FECHAR</value></data>
+  <data name="ArmingHint" xml:space="preserve"><value>A TROCA EM SI É LIGADA NA JANELA MINI-MODE.</value></data>
+  <data name="Loop" xml:space="preserve"><value>LOOP</value></data>
+  <data name="ClickOverlayHint" xml:space="preserve"><value>CLIQUE UMA VEZ NA JANELA DO JOGO PARA CAPTURAR A POSIÇÃO.</value></data>
+  <data name="AccountsOfServer" xml:space="preserve"><value>CONTAS — {0}</value></data>
+  <data name="NoServerSelected" xml:space="preserve"><value>NENHUM SERVIDOR SELECIONADO</value></data>
+  <data name="NoGroupSelected" xml:space="preserve"><value>SELECIONE UM GRUPO PRIMEIRO</value></data>
+  <data name="LeftButton" xml:space="preserve"><value>ESQUERDO</value></data>
+  <data name="RightButton" xml:space="preserve"><value>DIREITO</value></data>
+  <data name="ImportPreset" xml:space="preserve"><value>IMPORTAR PRESET</value></data>
+  <data name="ExportPreset" xml:space="preserve"><value>EXPORTAR PRESET</value></data>
+  <data name="SelectedCount" xml:space="preserve"><value>{0} SELECIONADOS</value></data>
+  <data name="ImportFailed" xml:space="preserve"><value>NÃO FOI POSSÍVEL LER ESSE ARQUIVO DE PRESET.</value></data>
+  <data name="SaveBeforeExport" xml:space="preserve"><value>SALVE O PRESET ANTES DE EXPORTAR.</value></data>
+  <data name="Remove" xml:space="preserve"><value>REMOVER</value></data>
+  <data name="Formations" xml:space="preserve"><value>FORMAÇÕES</value></data>
+  <data name="FormationName" xml:space="preserve"><value>NOME DA FORMAÇÃO</value></data>
+  <data name="SaveFormation" xml:space="preserve"><value>SALVAR FORMAÇÃO</value></data>
+  <data name="LoadFormation" xml:space="preserve"><value>CARREGAR FORMAÇÃO</value></data>
+  <data name="NewPreset" xml:space="preserve"><value>NOVO PRESET</value></data>
+  <data name="PresetNameNumber" xml:space="preserve"><value>PRESET {0}</value></data>
+  <data name="KeyRequired" xml:space="preserve"><value>DIGITE O NOME DA TECLA PRIMEIRO.</value></data>
+  <data name="ClickPositionRequired" xml:space="preserve"><value>CAPTURE A POSIÇÃO DO CLICK PRIMEIRO.</value></data>
+  <data name="NoPositionCaptured" xml:space="preserve"><value>NENHUMA POSIÇÃO DE CLICK CAPTURADA.</value></data>
+  <data name="PositionCaptured" xml:space="preserve"><value>CLICK CAPTURADO EM ({0:F2}, {1:F2}).</value></data>
+  <data name="DelayMs" xml:space="preserve"><value>ESPERA ANTES DESTA AÇÃO (MS).</value></data>
+  <data name="InvalidDelay" xml:space="preserve"><value>DELAY DEVE SER 0 MS OU MAIS.</value></data>
+  <data name="Edit" xml:space="preserve"><value>EDITAR</value></data>
+  <data name="Delete" xml:space="preserve"><value>EXCLUIR</value></data>
+  <data name="Copy" xml:space="preserve"><value>COPIAR</value></data>
+  <data name="Nickname" xml:space="preserve"><value>APELIDO</value></data>
+  <data name="SameAsRole" xml:space="preserve"><value>MESMO DO PERSONAGEM</value></data>
+  <data name="Class" xml:space="preserve"><value>CLASSE</value></data>
+  <data name="AddCommand" xml:space="preserve"><value>ADICIONAR COMANDO</value></data>
+  <data name="AddClick" xml:space="preserve"><value>ADICIONAR CLIQUE</value></data>
+  <data name="Duplicate" xml:space="preserve"><value>DUPLICAR LINHA</value></data>
+  <data name="RowWithoutAccount" xml:space="preserve"><value>LINHA {0} SEM PERSONAGEM.</value></data>
+  <data name="DuplicatePreset" xml:space="preserve"><value>DUPLICAR PRESET</value></data>
   <data name="CopySuffix" xml:space="preserve"><value> (cópia)</value></data>
-  <data name="Hotkey" xml:space="preserve"><value>Atalho</value></data>
-  <data name="HotkeyHint" xml:space="preserve"><value>CTRL, SHIFT, ALT, WIN + tecla (F1-F12, A-Z, 0-9, SPACE, ENTER, TAB). Modificador obrigatório. Evite reservadas como WIN+L. Botões do mouse não valem como atalho.</value></data>
-  <data name="RecordHotkey" xml:space="preserve"><value>Gravar atalho</value></data>
-  <data name="PressKeys" xml:space="preserve"><value>Pressione as teclas… (ESC cancela)</value></data>
-  <data name="NoHotkey" xml:space="preserve"><value>(nenhum)</value></data>
-  <data name="PresetNameRequired" xml:space="preserve"><value>Preset precisa de um nome.</value></data>
-  <data name="InvalidHotkey" xml:space="preserve"><value>Atalho precisa de modificadores + tecla, ex. CTRL+SHIFT+F9.</value></data>
-  <data name="ExecutionMode" xml:space="preserve"><value>Modo</value></data>
-  <data name="ShowPassword" xml:space="preserve"><value>Mostrar</value></data>
-  <data name="HidePassword" xml:space="preserve"><value>Ocultar</value></data>
-  <data name="All" xml:space="preserve"><value>Todas</value></data>
-  <data name="NewTab" xml:space="preserve"><value>Nova tab</value></data>
-  <data name="Rename" xml:space="preserve"><value>Renomear</value></data>
-  <data name="ServerStats" xml:space="preserve"><value>{0} contas • {1} online</value></data>
-  <data name="DeleteServerTitle" xml:space="preserve"><value>Excluir servidor</value></data>
-  <data name="DeleteServerConfirm" xml:space="preserve"><value>Excluir {0} e suas {1} conta(s)? Grupos e presets que as citam serão limpos.</value></data>
-  <data name="NewGroup" xml:space="preserve"><value>Novo grupo</value></data>
-  <data name="DeleteGroupTitle" xml:space="preserve"><value>Excluir grupo</value></data>
-  <data name="DeleteGroupConfirm" xml:space="preserve"><value>Excluir o grupo {0}? Os presets dele serão excluídos junto.</value></data>
-  <data name="CopyLogin" xml:space="preserve"><value>Copiar login</value></data>
-  <data name="CopyPassword" xml:space="preserve"><value>Copiar senha</value></data>
-  <data name="Refresh" xml:space="preserve"><value>Atualizar</value></data>
-  <data name="Tag" xml:space="preserve"><value>Etiqueta</value></data>
-  <data name="CancelDialog" xml:space="preserve"><value>Cancelar</value></data>
-  <data name="FormationApplied" xml:space="preserve"><value>Formação '{0}': {1} membros</value></data>
-  <data name="FormationAppliedSkipped" xml:space="preserve"><value>Formação '{0}': {1} membros, {2} ignorados</value></data>
-  <data name="PresetFired" xml:space="preserve"><value>Disparados {0}, ignorados {1}</value></data>
-  <data name="PresetCanceled" xml:space="preserve"><value>Cancelado</value></data>
-  <data name="SkippedMark" xml:space="preserve"><value>ignorado</value></data>
-  <data name="Ungrouped" xml:space="preserve"><value>Disponíveis</value></data>
-  <data name="DragHint" xml:space="preserve"><value>Arraste para os grupos • arraste de volta para remover</value></data>
-  <data name="GroupCardStats" xml:space="preserve"><value>{0} membros • {1} online • {2} presets</value></data>
-  <data name="Sequential" xml:space="preserve"><value>Sequencial</value></data>
-  <data name="Simultaneous" xml:space="preserve"><value>Simultâneo</value></data>
-  <data name="DeleteAccountTitle" xml:space="preserve"><value>Excluir conta</value></data>
-  <data name="DeleteAccountConfirm" xml:space="preserve"><value>Excluir {0}? Grupos, tabs e presets que a citam serão limpos.</value></data>
-  <data name="DeletePresetTitle" xml:space="preserve"><value>Excluir preset</value></data>
-  <data name="DeletePresetConfirm" xml:space="preserve"><value>Excluir o preset {0}?</value></data>
-  <data name="BulkDeleteRowsTitle" xml:space="preserve"><value>Excluir comandos</value></data>
-  <data name="BulkDeleteRowsMessage" xml:space="preserve"><value>Excluir {0} comandos?</value></data>
-  <data name="DiscardChangesTitle" xml:space="preserve"><value>Descartar alterações</value></data>
-  <data name="DiscardChangesMessage" xml:space="preserve"><value>Descartar as alterações não salvas?</value></data>
-  <data name="DiscardChangesConfirm" xml:space="preserve"><value>Descartar</value></data>
-  <data name="DeleteTabTitle" xml:space="preserve"><value>Excluir tab</value></data>
-  <data name="DeleteTabConfirm" xml:space="preserve"><value>Excluir a tab {0}? As contas voltam para Todas.</value></data>
+  <data name="Hotkey" xml:space="preserve"><value>ATALHO</value></data>
+  <data name="HotkeyHint" xml:space="preserve"><value>CTRL, SHIFT, ALT, WIN + TECLA (F1-F12, A-Z, 0-9, SPACE, ENTER, TAB). MODIFICADOR OBRIGATÓRIO. EVITE RESERVADAS COMO WIN+L. BOTÕES DO MOUSE NÃO VALEM COMO ATALHO.</value></data>
+  <data name="RecordHotkey" xml:space="preserve"><value>GRAVAR ATALHO</value></data>
+  <data name="PressKeys" xml:space="preserve"><value>PRESSIONE AS TECLAS… (ESC CANCELA)</value></data>
+  <data name="NoHotkey" xml:space="preserve"><value>(NENHUM)</value></data>
+  <data name="PresetNameRequired" xml:space="preserve"><value>PRESET PRECISA DE UM NOME.</value></data>
+  <data name="InvalidHotkey" xml:space="preserve"><value>ATALHO PRECISA DE MODIFICADORES + TECLA, EX. CTRL+SHIFT+F9.</value></data>
+  <data name="ExecutionMode" xml:space="preserve"><value>MODO</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>MOSTRAR</value></data>
+  <data name="HidePassword" xml:space="preserve"><value>OCULTAR</value></data>
+  <data name="All" xml:space="preserve"><value>TODAS</value></data>
+  <data name="NewTab" xml:space="preserve"><value>NOVA TAB</value></data>
+  <data name="Rename" xml:space="preserve"><value>RENOMEAR</value></data>
+  <data name="TabName" xml:space="preserve"><value>NOME DA TAB</value></data>
+  <data name="ServerStats" xml:space="preserve"><value>{0} CONTAS • {1} ONLINE</value></data>
+  <data name="DeleteServerTitle" xml:space="preserve"><value>EXCLUIR SERVIDOR</value></data>
+  <data name="DeleteServerConfirm" xml:space="preserve"><value>EXCLUIR {0} E SUAS {1} CONTA(S)? GRUPOS E PRESETS QUE AS CITAM SERÃO LIMPOS.</value></data>
+  <data name="NewGroup" xml:space="preserve"><value>NOVO GRUPO</value></data>
+  <data name="DeleteGroupTitle" xml:space="preserve"><value>EXCLUIR GRUPO</value></data>
+  <data name="DuplicateGroup" xml:space="preserve"><value>DUPLICAR GRUPO</value></data>
+  <data name="DeleteGroupConfirm" xml:space="preserve"><value>EXCLUIR O GRUPO {0}? OS PRESETS DELE SERÃO EXCLUÍDOS JUNTO.</value></data>
+  <data name="CopyLogin" xml:space="preserve"><value>COPIAR LOGIN</value></data>
+  <data name="CopyPassword" xml:space="preserve"><value>COPIAR SENHA</value></data>
+  <data name="Refresh" xml:space="preserve"><value>ATUALIZAR</value></data>
+  <data name="Tag" xml:space="preserve"><value>ETIQUETA</value></data>
+  <data name="CancelDialog" xml:space="preserve"><value>CANCELAR</value></data>
+  <data name="FormationApplied" xml:space="preserve"><value>FORMAÇÃO '{0}': {1} MEMBROS</value></data>
+  <data name="FormationAppliedSkipped" xml:space="preserve"><value>FORMAÇÃO '{0}': {1} MEMBROS, {2} IGNORADOS</value></data>
+  <data name="PresetFired" xml:space="preserve"><value>DISPARADOS {0}, IGNORADOS {1}</value></data>
+  <data name="PresetCanceled" xml:space="preserve"><value>CANCELADO</value></data>
+  <data name="SkippedMark" xml:space="preserve"><value>IGNORADO</value></data>
+  <data name="Ungrouped" xml:space="preserve"><value>DISPONÍVEIS</value></data>
+  <data name="DragHint" xml:space="preserve"><value>ARRASTE PARA OS GRUPOS • ARRASTE DE VOLTA PARA REMOVER</value></data>
+  <data name="GroupCardStats" xml:space="preserve"><value>{0} MEMBROS • {1} ONLINE • {2} PRESETS</value></data>
+  <data name="Sequential" xml:space="preserve"><value>SEQUENCIAL</value></data>
+  <data name="Simultaneous" xml:space="preserve"><value>SIMULTÂNEO</value></data>
+  <data name="DeleteAccountTitle" xml:space="preserve"><value>EXCLUIR CONTA</value></data>
+  <data name="DeleteAccountConfirm" xml:space="preserve"><value>EXCLUIR {0}? GRUPOS, TABS E PRESETS QUE A CITAM SERÃO LIMPOS.</value></data>
+  <data name="DeletePresetTitle" xml:space="preserve"><value>EXCLUIR PRESET</value></data>
+  <data name="DeletePresetConfirm" xml:space="preserve"><value>EXCLUIR O PRESET {0}?</value></data>
+  <data name="DuplicateFormationName" xml:space="preserve"><value>NOME DE FORMAÇÃO JÁ EXISTE.</value></data>
+  <data name="DeleteFormationTitle" xml:space="preserve"><value>EXCLUIR FORMAÇÃO</value></data>
+  <data name="DeleteFormationConfirm" xml:space="preserve"><value>EXCLUIR A FORMAÇÃO {0}?</value></data>
+  <data name="BulkDeleteRowsTitle" xml:space="preserve"><value>EXCLUIR COMANDOS</value></data>
+  <data name="BulkDeleteRowsMessage" xml:space="preserve"><value>EXCLUIR {0} COMANDOS?</value></data>
+  <data name="DiscardChangesTitle" xml:space="preserve"><value>DESCARTAR ALTERAÇÕES</value></data>
+  <data name="DiscardChangesMessage" xml:space="preserve"><value>DESCARTAR AS ALTERAÇÕES NÃO SALVAS?</value></data>
+  <data name="DiscardChangesConfirm" xml:space="preserve"><value>DESCARTAR</value></data>
+  <data name="DeleteTabTitle" xml:space="preserve"><value>EXCLUIR TAB</value></data>
+  <data name="DeleteTabConfirm" xml:space="preserve"><value>EXCLUIR A TAB {0}? AS CONTAS VOLTAM PARA TODAS.</value></data>
 </root>

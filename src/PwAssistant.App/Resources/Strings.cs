@@ -22,6 +22,7 @@ public static class Strings
     public static string Offline => Get(nameof(Offline));
     public static string GroupMode => Get(nameof(GroupMode));
     public static string Presets => Get(nameof(Presets));
+    public static string SelectPresetHint => Get(nameof(SelectPresetHint));
     public static string Stop => Get(nameof(Stop));
     public static string Save => Get(nameof(Save));
     public static string Login => Get(nameof(Login));
@@ -29,6 +30,7 @@ public static class Strings
     public static string Role => Get(nameof(Role));
     public static string ServerName => Get(nameof(ServerName));
     public static string ClientPath => Get(nameof(ClientPath));
+    public static string GroupName => Get(nameof(GroupName));
     public static string PresetName => Get(nameof(PresetName));
     public static string SyncEnabled => Get(nameof(SyncEnabled));
     public static string FocusSwitch => Get(nameof(FocusSwitch));
@@ -43,8 +45,18 @@ public static class Strings
     public static string ClickOverlayHint => Get(nameof(ClickOverlayHint));
     public static string AccountsOfServer => Get(nameof(AccountsOfServer));
     public static string NoServerSelected => Get(nameof(NoServerSelected));
+    public static string NoGroupSelected => Get(nameof(NoGroupSelected));
+    public static string LeftButton => Get(nameof(LeftButton));
+    public static string RightButton => Get(nameof(RightButton));
+    public static string ImportPreset => Get(nameof(ImportPreset));
+    public static string ExportPreset => Get(nameof(ExportPreset));
+    public static string SelectedCount(int count) =>
+        string.Format(Get(nameof(SelectedCount)), count);
+    public static string ImportFailed => Get(nameof(ImportFailed));
+    public static string SaveBeforeExport => Get(nameof(SaveBeforeExport));
     public static string Remove => Get(nameof(Remove));
     public static string Formations => Get(nameof(Formations));
+    public static string FormationName => Get(nameof(FormationName));
     public static string SaveFormation => Get(nameof(SaveFormation));
     public static string LoadFormation => Get(nameof(LoadFormation));
     public static string NewPreset => Get(nameof(NewPreset));
@@ -82,6 +94,10 @@ public static class Strings
     public static string DeletePresetTitle => Get(nameof(DeletePresetTitle));
     public static string DeletePresetConfirm(string name) =>
         string.Format(Get(nameof(DeletePresetConfirm)), name);
+    public static string DuplicateFormationName => Get(nameof(DuplicateFormationName));
+    public static string DeleteFormationTitle => Get(nameof(DeleteFormationTitle));
+    public static string DeleteFormationConfirm(string name) =>
+        string.Format(Get(nameof(DeleteFormationConfirm)), name);
     public static string BulkDeleteRowsTitle => Get(nameof(BulkDeleteRowsTitle));
     public static string BulkDeleteRowsMessage(int count) =>
         string.Format(Get(nameof(BulkDeleteRowsMessage)), count);
@@ -96,8 +112,10 @@ public static class Strings
     public static string All => Get(nameof(All));
     public static string NewTab => Get(nameof(NewTab));
     public static string Rename => Get(nameof(Rename));
+    public static string TabName => Get(nameof(TabName));
     public static string NewGroup => Get(nameof(NewGroup));
     public static string DeleteGroupTitle => Get(nameof(DeleteGroupTitle));
+    public static string DuplicateGroup => Get(nameof(DuplicateGroup));
     public static string ServerStats(int total, int online) =>
         string.Format(Get(nameof(ServerStats)), total, online);
     public static string DeleteServerTitle => Get(nameof(DeleteServerTitle));

@@ -157,6 +157,11 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>Watched client processes, rooted so Exited always fires.</summary>
     private readonly Dictionary<int, Process> _watched = new();
 
+    /// <summary>Graceful close budget: the client only ever dies by Kill,
+    /// so this is just a short courtesy window before forcing it.</summary>
+    private const int StopGracePolls = 10;
+    private const int StopGraceMs = 100;
+
     public ObservableCollection<ServerRow> Servers { get; } = new();
     public ObservableCollection<AccountCard> Accounts { get; } = new();
     public ObservableCollection<AccountTab> Tabs { get; } = new();
@@ -321,10 +326,11 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddServerAsync()
     {
-        var dialog = new ServerDialog();
-        if (dialog.ShowDialog() == true)
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        (bool ok, string name, string path) = await main.AskServerAsync(null, null);
+        if (!ok) return;
         {
-            var server = new Server { Name = dialog.ServerName, ElementClientPath = dialog.ClientPath };
+            var server = new Server { Name = name, ElementClientPath = path };
             _state.Data.Servers.Add(server);
             var row = new ServerRow(server);
             Servers.Add(row);
@@ -337,11 +343,11 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task EditServerAsync(ServerRow? row)
     {
         if (row is null) return;
-        var dialog = new ServerDialog();
-        dialog.Prefill(row.Model);
-        if (dialog.ShowDialog() != true) return;
-        row.Model.Name = dialog.ServerName;
-        row.Model.ElementClientPath = dialog.ClientPath;
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        (bool ok, string name, string path) = await main.AskServerAsync(row.Model.Name, row.Model.ElementClientPath);
+        if (!ok) return;
+        row.Model.Name = name;
+        row.Model.ElementClientPath = path;
         row.NotifyRenamed();
         await _state.SaveAsync().ConfigureAwait(false);
     }
@@ -350,7 +356,8 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteServerAsync(ServerRow? row)
     {
         if (row is null) return;
-        if (!ConfirmDialog.Ask(
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        if (!await main.AskConfirmAsync(
             AppStrings.DeleteServerTitle,
             AppStrings.DeleteServerConfirm(row.Model.Name, row.Model.Accounts.Count),
             AppStrings.Delete))
@@ -374,27 +381,29 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task AddAccountAsync()
     {
         if (SelectedServer is null) return;
-        var dialog = new AccountDialog();
-        dialog.KnownTags = _state.Data.Tabs
-            .Where(t => t.ServerId == SelectedServer.Model.Id)
-            .Select(t => t.Name)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(n => n)
-            .ToList();
-        if (SelectedTab is not null)
-            dialog.LockTag(SelectedTab.Name);
-        if (dialog.ShowDialog() == true)
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        AccountDraft? draft = await main.AskAccountAsync(
+            new AccountDraft(string.Empty, string.Empty, string.Empty, null, null, null),
+            _state.Data.Tabs
+                .Where(t => t.ServerId == SelectedServer.Model.Id)
+                .Select(t => t.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(n => n)
+                .ToList(),
+            SelectedTab?.Name,
+            requirePassword: true);
+        if (draft is null) return;
         {
             var account = new Account
             {
                 ServerId = SelectedServer.Model.Id,
-                Login = dialog.Login,
-                Role = dialog.Role,
-                Nickname = dialog.Nickname,
-                Class = dialog.Class,
-                Tag = dialog.AccountTag
+                Login = draft.Login,
+                Role = draft.Role,
+                Nickname = draft.Nickname,
+                Class = draft.ClassKey,
+                Tag = draft.Tag
             };
-            _state.SetPassword(account, dialog.Password);
+            _state.SetPassword(account, draft.Password);
             SelectedServer.Model.Accounts.Add(account);
             RebuildAccounts();
             RefreshServerRows();
@@ -406,17 +415,18 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task AddTabAsync()
     {
         if (SelectedServer is null) return;
-        var dialog = new TextPromptDialog("TabName", string.Empty);
-        if (dialog.ShowDialog() != true) return;
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        (bool ok, string name) = await main.AskPromptAsync("TabName", string.Empty);
+        if (!ok) return;
         AccountTab? existing = _state.Data.Tabs.FirstOrDefault(t =>
             t.ServerId == SelectedServer.Model.Id &&
-            string.Equals(t.Name, dialog.Value, StringComparison.OrdinalIgnoreCase));
+            string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase));
         if (existing is not null)
         {
             SelectedTab = existing;
             return;
         }
-        var tab = new AccountTab { ServerId = SelectedServer.Model.Id, Name = dialog.Value };
+        var tab = new AccountTab { ServerId = SelectedServer.Model.Id, Name = name };
         _state.Data.Tabs.Add(tab);
         Tabs.Add(tab);
         TabItems.Add(new TabItem(tab, tab.Name));
@@ -429,9 +439,10 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (tab is null) return;
         string oldName = tab.Name;
-        var dialog = new TextPromptDialog("TabName", tab.Name);
-        if (dialog.ShowDialog() != true) return;
-        tab.Name = dialog.Value;
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        (bool ok, string name) = await main.AskPromptAsync("TabName", tab.Name);
+        if (!ok) return;
+        tab.Name = name;
         foreach (Account account in _state.Data.Servers
             .Where(s => s.Id == tab.ServerId)
             .SelectMany(s => s.Accounts)
@@ -454,7 +465,8 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteTabAsync(AccountTab? tab)
     {
         if (tab is null) return;
-        if (!ConfirmDialog.Ask(
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        if (!await main.AskConfirmAsync(
             AppStrings.DeleteTabTitle,
             AppStrings.DeleteTabConfirm(tab.Name),
             AppStrings.Delete))
@@ -585,8 +597,8 @@ public sealed partial class MainViewModel : ObservableObject
             owned = Process.GetProcessById(pid);
             lock (_watched) _watched[pid] = owned;
             owned.CloseMainWindow();
-            for (int i = 0; i < 20 && !owned.HasExited; i++)
-                await Task.Delay(250).ConfigureAwait(false);
+            for (int i = 0; i < StopGracePolls && !owned.HasExited; i++)
+                await Task.Delay(StopGraceMs).ConfigureAwait(false);
             if (!owned.HasExited)
                 owned.Kill();
             exited = true;
@@ -649,22 +661,27 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task EditAccountAsync(AccountCard? card)
     {
         if (card is null || SelectedServer is null) return;
-        var dialog = new AccountDialog { RequirePassword = false };
-        dialog.KnownTags = _state.Data.Tabs
-            .Where(t => t.ServerId == SelectedServer.Model.Id)
-            .Select(t => t.Name)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(n => n)
-            .ToList();
-        dialog.Prefill(card.Model);
-        if (dialog.ShowDialog() != true) return;
-        card.Model.Login = dialog.Login;
-        card.Model.Role = dialog.Role;
-        card.Model.Nickname = dialog.Nickname;
-        card.Model.Class = dialog.Class;
-        card.Model.Tag = dialog.AccountTag;
-        if (!string.IsNullOrEmpty(dialog.Password))
-            _state.SetPassword(card.Model, dialog.Password);
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        AccountDraft? draft = await main.AskAccountAsync(
+            new AccountDraft(
+                card.Model.Login, string.Empty, card.Model.Role ?? string.Empty,
+                card.Model.Nickname, card.Model.Class, card.Model.Tag),
+            _state.Data.Tabs
+                .Where(t => t.ServerId == SelectedServer.Model.Id)
+                .Select(t => t.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(n => n)
+                .ToList(),
+            lockTag: null,
+            requirePassword: false);
+        if (draft is null) return;
+        card.Model.Login = draft.Login;
+        card.Model.Role = draft.Role;
+        card.Model.Nickname = draft.Nickname;
+        card.Model.Class = draft.ClassKey;
+        card.Model.Tag = draft.Tag;
+        if (!string.IsNullOrEmpty(draft.Password))
+            _state.SetPassword(card.Model, draft.Password);
         await _state.SaveAsync().ConfigureAwait(false);
         App.Current.Dispatcher.Invoke(RebuildAccounts);
     }
@@ -673,7 +690,8 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteAccountAsync(AccountCard? card)
     {
         if (card is null || SelectedServer is null) return;
-        if (!ConfirmDialog.Ask(
+        if (Application.Current.MainWindow is not MainWindow main) return;
+        if (!await main.AskConfirmAsync(
             AppStrings.DeleteAccountTitle,
             AppStrings.DeleteAccountConfirm(card.DisplayName),
             AppStrings.Delete))

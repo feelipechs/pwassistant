@@ -66,11 +66,29 @@ public partial class MainWindow : Window
         Activate();
     }
 
-    private void OnOpenSettings(object sender, RoutedEventArgs e)
+    /// <summary>In-window confirm sheet (no extra window).</summary>
+    public Task<bool> AskConfirmAsync(string title, string message, string confirmLabel) =>
+        ConfirmSheetHost.AskAsync(title, message, confirmLabel);
+
+    /// <summary>In-window text prompt sheet (no extra window).</summary>
+    public Task<(bool Ok, string Value)> AskPromptAsync(string labelKey, string initial) =>
+        PromptSheetHost.AskAsync(labelKey, initial);
+
+    /// <summary>In-window server editor sheet (no extra window).</summary>
+    public Task<(bool Ok, string Name, string Path)> AskServerAsync(string? name, string? path) =>
+        ServerSheetHost.AskAsync(name, path);
+
+    /// <summary>In-window account editor sheet (no extra window).</summary>
+    public Task<AccountDraft?> AskAccountAsync(
+        AccountDraft initial, IEnumerable<string> knownTags, string? lockTag, bool requirePassword) =>
+        AccountSheetHost.EditAsync(initial, knownTags, lockTag, requirePassword);
+
+    /// <summary>In-window settings sheet (no extra window).</summary>
+    public Task<bool> EditSettingsAsync() => SettingsSheetHost.EditAsync(_state);
+
+    private async void OnOpenSettings(object sender, RoutedEventArgs e)
     {
-        var settings = new SettingsWindow(_state);
-        settings.Owner = this;
-        settings.ShowDialog();
+        await EditSettingsAsync();
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
