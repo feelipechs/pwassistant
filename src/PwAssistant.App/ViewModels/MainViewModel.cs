@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,7 +8,6 @@ using PwAssistant.App.Views;
 using PwAssistant.Core.Launcher;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Ux;
-using PwAssistant.WinApi;
 using AppStrings = PwAssistant.App.Resources.Strings;
 
 namespace PwAssistant.App.ViewModels;
@@ -151,8 +149,9 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly GameLauncher _launcher;
     private readonly PresetDispatcher _dispatcher;
     private readonly FileLogger _log;
-    private readonly IServiceProvider _services;
     private readonly FocusController _focus;
+    private readonly IDialogService _dialogs;
+    private readonly ClientWindowMarker _marker;
 
     /// <summary>Watched client processes, rooted so Exited always fires.</summary>
     private readonly Dictionary<int, Process> _watched = new();
@@ -191,14 +190,15 @@ public sealed partial class MainViewModel : ObservableObject
     public string CopyLoginText => AppStrings.CopyLogin;
     public string CopyPasswordText => AppStrings.CopyPassword;
 
-    public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, FileLogger log, IServiceProvider services, FocusController focus)
+    public MainViewModel(AppState state, GameLauncher launcher, PresetDispatcher dispatcher, FileLogger log, FocusController focus, IDialogService dialogs, ClientWindowMarker marker)
     {
         _state = state;
         _launcher = launcher;
         _dispatcher = dispatcher;
         _log = log;
-        _services = services;
         _focus = focus;
+        _dialogs = dialogs;
+        _marker = marker;
     }
 
     public async Task InitializeAsync()
@@ -338,8 +338,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddServerAsync()
     {
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        (bool ok, string name, string path) = await main.AskServerAsync(null, null);
+        (bool ok, string name, string path) = await _dialogs.AskServerAsync(null, null);
         if (!ok) return;
         {
             var server = new Server { Name = name, ElementClientPath = path };
@@ -355,8 +354,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task EditServerAsync(ServerRow? row)
     {
         if (row is null) return;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        (bool ok, string name, string path) = await main.AskServerAsync(row.Model.Name, row.Model.ElementClientPath);
+        (bool ok, string name, string path) = await _dialogs.AskServerAsync(row.Model.Name, row.Model.ElementClientPath);
         if (!ok) return;
         row.Model.Name = name;
         row.Model.ElementClientPath = path;
@@ -368,8 +366,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteServerAsync(ServerRow? row)
     {
         if (row is null) return;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        if (!await main.AskConfirmAsync(
+        if (!await _dialogs.AskConfirmAsync(
             AppStrings.DeleteServerTitle,
             AppStrings.DeleteServerConfirm(row.Model.Name, row.Model.Accounts.Count),
             AppStrings.Delete))
@@ -393,8 +390,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task AddAccountAsync()
     {
         if (SelectedServer is null) return;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        AccountDraft? draft = await main.AskAccountAsync(
+        AccountDraft? draft = await _dialogs.AskAccountAsync(
             new AccountDraft(string.Empty, string.Empty, string.Empty, null, null, null),
             _state.Data.Tabs
                 .Where(t => t.ServerId == SelectedServer.Model.Id)
@@ -427,8 +423,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task AddTabAsync()
     {
         if (SelectedServer is null) return;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        (bool ok, string name) = await main.AskPromptAsync("TabName", string.Empty);
+        (bool ok, string name) = await _dialogs.AskPromptAsync("TabName", string.Empty);
         if (!ok) return;
         AccountTab? existing = _state.Data.Tabs.FirstOrDefault(t =>
             t.ServerId == SelectedServer.Model.Id &&
@@ -451,8 +446,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (tab is null) return;
         string oldName = tab.Name;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        (bool ok, string name) = await main.AskPromptAsync("TabName", tab.Name);
+        (bool ok, string name) = await _dialogs.AskPromptAsync("TabName", tab.Name);
         if (!ok) return;
         tab.Name = name;
         foreach (Account account in _state.Data.Servers
@@ -477,8 +471,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteTabAsync(AccountTab? tab)
     {
         if (tab is null) return;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        if (!await main.AskConfirmAsync(
+        if (!await _dialogs.AskConfirmAsync(
             AppStrings.DeleteTabTitle,
             AppStrings.DeleteTabConfirm(tab.Name),
             AppStrings.Delete))
@@ -526,7 +519,7 @@ public sealed partial class MainViewModel : ObservableObject
             string password = _state.RevealPassword(card.Model);
             GameSession session = await _launcher.LaunchAsync(
                 SelectedServer.Model, card.Model, password, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
-            MarkClientWindow(card.Model);
+            _marker.Mark(card.Model);
             _log.Info($"Launched {card.Model.Login} pid={session.ProcessId}.");
             WatchSession(session, card);
             await _state.SaveAsync().ConfigureAwait(false);
@@ -545,52 +538,6 @@ public sealed partial class MainViewModel : ObservableObject
         finally
         {
             App.Current.Dispatcher.Invoke(() => card.IsLaunching = false);
-        }
-    }
-
-    /// <summary>
-    /// Own taskbar button (per-account AppUserModelID) + class icon.
-    /// Best effort with persisted diagnostics; never fails the launch.
-    /// </summary>
-    private void MarkClientWindow(Account account)
-    {
-        bool iconOk = false;
-        if (ClassCatalog.TryGet(account.Class, out ClassInfo info))
-        {
-            string iconPath = Path.Combine(
-                AppContext.BaseDirectory, "Resources", "Classes", info.Key + ".ico");
-            iconOk = WindowIcon.TrySetIcon(account.WindowHandle, iconPath);
-        }
-        _log.Info($"Marked {account.Login}: icon={iconOk}.");
-        if (!iconOk)
-            _ = RetryIconAsync(account);
-    }
-
-    /// <summary>Best effort: the icon may only stick once settled.</summary>
-    private async Task RetryIconAsync(Account account)
-    {
-        try
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                await Task.Delay(2000).ConfigureAwait(false);
-                if (account.WindowHandle == IntPtr.Zero)
-                    return;
-                if (!ClassCatalog.TryGet(account.Class, out ClassInfo info))
-                    return;
-                string iconPath = Path.Combine(
-                    AppContext.BaseDirectory, "Resources", "Classes", info.Key + ".ico");
-                if (WindowIcon.TrySetIcon(account.WindowHandle, iconPath))
-                {
-                    _log.Info($"Marked {account.Login} on retry: icon=True.");
-                    return;
-                }
-            }
-            _log.Warn($"Marked {account.Login}: icon still False.");
-        }
-        catch (Exception ex)
-        {
-            _log.Error($"Icon retry {account.Login} failed: {ex.Message}");
         }
     }
 
@@ -685,8 +632,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task EditAccountAsync(AccountCard? card)
     {
         if (card is null || SelectedServer is null) return;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        AccountDraft? draft = await main.AskAccountAsync(
+        AccountDraft? draft = await _dialogs.AskAccountAsync(
             new AccountDraft(
                 card.Model.Login, string.Empty, card.Model.Role ?? string.Empty,
                 card.Model.Nickname, card.Model.Class, card.Model.Tag),
@@ -714,8 +660,7 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task DeleteAccountAsync(AccountCard? card)
     {
         if (card is null || SelectedServer is null) return;
-        if (Application.Current.MainWindow is not MainWindow main) return;
-        if (!await main.AskConfirmAsync(
+        if (!await _dialogs.AskConfirmAsync(
             AppStrings.DeleteAccountTitle,
             AppStrings.DeleteAccountConfirm(card.DisplayName),
             AppStrings.Delete))
@@ -790,11 +735,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenGroupMode()
-    {
-        var window = (GroupWindow)_services.GetService(typeof(GroupWindow))!;
-        window.Show();
-    }
+    private void OpenGroupMode() => _dialogs.ShowGroupWindow();
 
     [RelayCommand]
     private void RefreshStatus()

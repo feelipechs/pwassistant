@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Windows;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -126,7 +125,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly FocusController _focus;
     private readonly LoopController _loops;
     private readonly FileLogger _log;
-    private readonly Func<MiniWindow> _miniWindowFactory;
+    private readonly IDialogService _dialogs;
 
     public ObservableCollection<Group> Groups { get; } = new();
     public ObservableCollection<GroupCard> GroupCards { get; } = new();
@@ -187,7 +186,7 @@ public sealed partial class GroupViewModel : ObservableObject
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
         FocusController focus, LoopController loops, FileLogger log,
-        Func<MiniWindow> miniWindowFactory)
+        IDialogService dialogs)
     {
         _state = state;
         _dispatcher = dispatcher;
@@ -195,7 +194,7 @@ public sealed partial class GroupViewModel : ObservableObject
         _focus = focus;
         _loops = loops;
         _log = log;
-        _miniWindowFactory = miniWindowFactory;
+        _dialogs = dialogs;
         GroupCardsView = new CompositeCollection
         {
             new CollectionContainer { Collection = GroupCards },
@@ -356,12 +355,8 @@ public sealed partial class GroupViewModel : ObservableObject
     [RelayCommand]
     private async Task AddGroupAsync()
     {
-        GroupWindow? groupWindow = Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
-        if (groupWindow is null) return;
-        (bool ok, string name) = await groupWindow.AskPromptAsync("GroupName", string.Empty);
-        if (ok)
+        (bool ok, string name) = await _dialogs.AskGroupPromptAsync(this, "GroupName", string.Empty);
+        if (!ok) return;
         {
             var group = new Group { Name = name };
             _state.Data.Groups.Add(group);
@@ -399,11 +394,7 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         if (card is null) return;
         card.IsMenuOpen = false;
-        GroupWindow? groupWindow = Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
-        if (groupWindow is null) return;
-        (bool ok, string name) = await groupWindow.AskPromptAsync("GroupName", card.Group.Name);
+        (bool ok, string name) = await _dialogs.AskGroupPromptAsync(this, "GroupName", card.Group.Name);
         if (!ok) return;
         card.Group.Name = name;
         int index = Groups.IndexOf(card.Group);
@@ -422,7 +413,7 @@ public sealed partial class GroupViewModel : ObservableObject
         if (card is null) return;
         card.IsMenuOpen = false;
         Group group = card.Group;
-        if (await AskOwnSheetAsync(
+        if (await _dialogs.AskGroupConfirmAsync(this,
             AppStrings.DeleteGroupTitle,
             AppStrings.DeleteGroupConfirm(group.Name),
             AppStrings.Delete) is not true)
@@ -449,10 +440,7 @@ public sealed partial class GroupViewModel : ObservableObject
         if (card is null) return;
         card.IsMenuOpen = false;
         ActiveCard = card;
-        Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
-            ?.ShowPresetsTab();
+        _dialogs.ShowPresetsTab(this);
     }
 
     [RelayCommand]
@@ -461,10 +449,7 @@ public sealed partial class GroupViewModel : ObservableObject
         if (card is null) return;
         card.IsMenuOpen = false;
         ActiveCard = card;
-        Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
-            ?.ShowFormationsSheet();
+        _dialogs.ShowFormationsSheet(this);
     }
 
     [RelayCommand]
@@ -562,11 +547,7 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         if (card is null || card.Group.AccountIds.Count == 0) return;
         card.IsMenuOpen = false;
-        GroupWindow? groupWindow = Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
-        if (groupWindow is null) return;
-        (bool ok, string name) = await groupWindow.AskPromptAsync("FormationName", card.Group.Name);
+        (bool ok, string name) = await _dialogs.AskGroupPromptAsync(this, "FormationName", card.Group.Name);
         if (!ok) return;
         if (_state.Data.Formations.Any(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase)))
         {
@@ -586,11 +567,7 @@ public sealed partial class GroupViewModel : ObservableObject
     /// <summary>Renames a formation (duplicate names blocked).</summary>
     public async Task RenameFormationAsync(Formation formation)
     {
-        GroupWindow? groupWindow = Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
-        if (groupWindow is null) return;
-        (bool ok, string name) = await groupWindow.AskPromptAsync("FormationName", formation.Name);
+        (bool ok, string name) = await _dialogs.AskGroupPromptAsync(this, "FormationName", formation.Name);
         if (!ok) return;
         if (_state.Data.Formations.Any(f => f != formation
             && string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase)))
@@ -611,7 +588,7 @@ public sealed partial class GroupViewModel : ObservableObject
     /// <summary>Deletes a formation after confirm.</summary>
     public async Task DeleteFormationAsync(Formation formation)
     {
-        if (await AskOwnSheetAsync(
+        if (await _dialogs.AskGroupConfirmAsync(this,
             AppStrings.DeleteFormationTitle,
             AppStrings.DeleteFormationConfirm(formation.Name),
             AppStrings.Delete) is not true)
@@ -665,10 +642,7 @@ public sealed partial class GroupViewModel : ObservableObject
             return;
         }
         var preset = new Preset { GroupId = SelectedGroup.Id, Name = NewPresetName() };
-        Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
-            ?.LoadPresetInTab(preset, isNew: true);
+        _dialogs.LoadPresetInTab(this, preset, isNew: true);
     }
 
     private string NewPresetName() =>
@@ -678,10 +652,7 @@ public sealed partial class GroupViewModel : ObservableObject
     private void EditPreset(Preset? preset)
     {
         if (preset is null) return;
-        Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
-            ?.LoadPresetInTab(preset, isNew: false);
+        _dialogs.LoadPresetInTab(this, preset, isNew: false);
     }
 
     /// <summary>Commits an editor save (new presets join the collections).</summary>
@@ -703,7 +674,7 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         if (preset is null) return;
         string presetName = preset.Name;
-        if (await AskOwnSheetAsync(
+        if (await _dialogs.AskGroupConfirmAsync(this,
             AppStrings.DeletePresetTitle,
             AppStrings.DeletePresetConfirm(presetName),
             AppStrings.Delete) is not true)
@@ -884,40 +855,6 @@ public sealed partial class GroupViewModel : ObservableObject
     private void MinimizeCardToMini(GroupCard? card)
     {
         if (card?.Group is not Group group) return;
-        Window? groupWindow = Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
-        MiniWindow? existing = Application.Current.Windows.OfType<MiniWindow>().FirstOrDefault();
-        if (existing is not null)
-        {
-            RetargetMini(existing.ViewModel, group);
-            existing.Activate();
-        }
-        else
-        {
-            MiniWindow mini = _miniWindowFactory();
-            mini.Loaded += (_, _) => RetargetMini(mini.ViewModel, group);
-            mini.Closed += (_, _) =>
-            {
-                if (mini.Dispatcher.HasShutdownStarted) return;
-                groupWindow?.Show();
-            };
-            mini.Show();
-        }
-        groupWindow?.Hide();
-    }
-
-    private static void RetargetMini(GroupViewModel vm, Group group) =>
-        vm.ActiveCard = vm.GroupCards.FirstOrDefault(c => c.Group.Id == group.Id);
-
-    /// <summary>Confirm sheet on the window owning this VM.</summary>
-    private Task<bool> AskOwnSheetAsync(string title, string message, string confirmLabel)
-    {
-        GroupWindow? groupWindow = Application.Current.Windows
-            .OfType<GroupWindow>()
-            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
-        if (groupWindow is not null)
-            return groupWindow.AskConfirmAsync(title, message, confirmLabel);
-        return Task.FromResult(false);
+        _dialogs.MinimizeGroupToMini(this, group);
     }
 }

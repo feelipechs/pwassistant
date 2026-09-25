@@ -70,6 +70,8 @@ public partial class App : Application
         services.AddSingleton<PresetDispatcher>();
         services.AddSingleton<SyncController>();
         services.AddSingleton<FocusController>();
+        services.AddSingleton<ClientWindowMarker>();
+        services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton(sp => new LoopController(
             sp.GetRequiredService<PresetDispatcher>(),
             sp.GetRequiredService<FileLogger>()));
