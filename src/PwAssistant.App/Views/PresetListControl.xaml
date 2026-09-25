@@ -1,0 +1,50 @@
+<UserControl x:Class="PwAssistant.App.Views.PresetListControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+    <DockPanel Margin="16,12,16,12">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button x:Name="NewPresetButton" Content="&#xE710;" Command="{Binding AddPresetCommand}"
+                    DockPanel.Dock="Right" Style="{StaticResource IconButton}"/>
+            <TextBlock x:Name="PresetsLabel" Style="{StaticResource SectionTitle}" VerticalAlignment="Center"/>
+        </DockPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Presets}"
+                           PreviewMouseLeftButtonDown="OnPresetPreviewMouseDown"
+                           PreviewMouseMove="OnPresetPreviewMouseMove"
+                           AllowDrop="True"
+                           DragOver="OnPresetDragOver"
+                           Drop="OnPresetDrop">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+                                BorderThickness="1" CornerRadius="6" Padding="4" Margin="0,0,0,3" Cursor="SizeAll">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button Content="&#xE70F;"
+                                            Command="{Binding DataContext.EditPresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                    <Button Content="&#xE8C8;"
+                                            Command="{Binding DataContext.DuplicatePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                    <Button Content="&#xE74D;"
+                                            Command="{Binding DataContext.DeletePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconButton}" Width="24" Height="24" FontSize="12"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource Brush.Foreground}"
+                                           TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+    <!-- Drag ghost host: above content, hit-test invisible. -->
+    <Canvas x:Name="GhostLayer" IsHitTestVisible="False"/>
+    </Grid>
+</UserControl>
