@@ -125,6 +125,7 @@ public static class Strings
     public static string UpdateAvailableConfirm(string version) =>
         string.Format(Get(nameof(UpdateAvailableConfirm)), version);
     public static string UpdateApply => Get(nameof(UpdateApply));
+    public static string ServerPathHint => Get(nameof(ServerPathHint));
     public static string DeleteGroupConfirm(string group) =>
         string.Format(Get(nameof(DeleteGroupConfirm)), group);
     public static string CopyLogin => Get(nameof(CopyLogin));

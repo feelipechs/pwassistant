@@ -92,6 +92,7 @@
   <data name="UpdateAvailableTitle" xml:space="preserve"><value>UPDATE AVAILABLE</value></data>
   <data name="UpdateAvailableConfirm" xml:space="preserve"><value>VERSION {0} IS AVAILABLE. DOWNLOAD, APPLY AND RESTART NOW?</value></data>
   <data name="UpdateApply" xml:space="preserve"><value>UPDATE AND RESTART</value></data>
+  <data name="ServerPathHint" xml:space="preserve"><value>SELECT THE elementclient.exe INSIDE THE x64 FOLDER</value></data>
   <data name="NewGroup" xml:space="preserve"><value>NEW GROUP</value></data>
   <data name="DeleteGroupTitle" xml:space="preserve"><value>DELETE GROUP</value></data>
   <data name="DuplicateGroup" xml:space="preserve"><value>DUPLICATE GROUP</value></data>

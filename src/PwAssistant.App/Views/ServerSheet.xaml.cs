@@ -17,6 +17,7 @@ public partial class ServerSheet : UserControl
         InitializeComponent();
         NameLabel.Text = Strings.ServerName;
         PathLabel.Text = Strings.ClientPath;
+        PathHint.Text = Strings.ServerPathHint;
         SaveButton.Content = Strings.Save;
         CancelButton.Content = Strings.CancelDialog;
     }

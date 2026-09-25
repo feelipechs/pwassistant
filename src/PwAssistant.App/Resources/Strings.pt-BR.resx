@@ -92,6 +92,7 @@
   <data name="UpdateAvailableTitle" xml:space="preserve"><value>ATUALIZAÇÃO DISPONÍVEL</value></data>
   <data name="UpdateAvailableConfirm" xml:space="preserve"><value>VERSÃO {0} DISPONÍVEL. BAIXAR, APLICAR E REINICIAR AGORA?</value></data>
   <data name="UpdateApply" xml:space="preserve"><value>ATUALIZAR E REINICIAR</value></data>
+  <data name="ServerPathHint" xml:space="preserve"><value>SELECIONE O elementclient.exe DENTRO DA PASTA x64</value></data>
   <data name="NewGroup" xml:space="preserve"><value>NOVO GRUPO</value></data>
   <data name="DeleteGroupTitle" xml:space="preserve"><value>EXCLUIR GRUPO</value></data>
   <data name="DuplicateGroup" xml:space="preserve"><value>DUPLICAR GRUPO</value></data>
