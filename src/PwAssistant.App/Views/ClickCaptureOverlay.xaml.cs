@@ -4,8 +4,6 @@ using System.Windows.Interop;
 using PwAssistant.App.Resources;
 using PwAssistant.WinApi;
 
-using PwAssistant.App.Services;
-
 namespace PwAssistant.App.Views;
 
 /// <summary>
@@ -28,7 +26,8 @@ public partial class ClickCaptureOverlay : Window
     {
         _hook = hook;
         InitializeComponent();
-        DialogOwner.Own(this);
+        // No owner on purpose: on close, focus must stay in the game,
+        // never snap back to the preset editor.
         HintLabel.Text = Strings.ClickOverlayHint;
         // Swallow the press; capture on release so the matching button-up
         // can never leak through to the game after Close().
@@ -51,20 +50,20 @@ public partial class ClickCaptureOverlay : Window
         Loaded += (_, _) =>
         {
             // Cover every monitor: Maximized alone only covers the primary.
-            WindowState = WindowState.Normal;            Left = SystemParameters.VirtualScreenLeft;
+            WindowState = WindowState.Normal;
+            Left = SystemParameters.VirtualScreenLeft;
             Top = SystemParameters.VirtualScreenTop;
             Width = SystemParameters.VirtualScreenWidth;
             Height = SystemParameters.VirtualScreenHeight;
-            Activate();
-            Focus();
-            Keyboard.Focus(this);
+            // NOACTIVATE: Activate/Focus silently fail by design — the game
+            // keeps foreground AND keyboard the whole time.
             _hook.KeyTransition += OnHookKey;
         };
         Closed += (_, _) => _hook.KeyTransition -= OnHookKey;
     }
 
     /// <summary>Never steal activation (Mini pattern): clicks land here
-    /// while the editor keeps the keyboard the whole time.</summary>
+    /// while the game keeps foreground and keyboard the whole time.</summary>
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
@@ -75,6 +74,7 @@ public partial class ClickCaptureOverlay : Window
 
     private void OnHookKey(KeyTransition transition)
     {
+        if (!IsVisible) return;
         if (transition.VirtualKey == VK_ESCAPE && transition.IsKeyDown)
             Dispatcher.Invoke(Close);
     }

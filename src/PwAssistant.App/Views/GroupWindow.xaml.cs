@@ -18,12 +18,17 @@ public partial class GroupWindow : Window
     private readonly System.Windows.Threading.DispatcherTimer _onlinePoller;
     private Point _dragStartPoint;
     private bool _isDragging;
+    private readonly PresetEditorControl _editor;
 
-    public GroupWindow(GroupViewModel viewModel)
+    public GroupWindow(GroupViewModel viewModel, PresetEditorControl editor)
     {
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
+        _editor = editor;
+        PresetEditorHost.Content = editor;
+        editor.Saved += OnPresetEditorSaved;
+        editor.Cancelled += OnPresetEditorCancelled;
         DialogOwner.Own(this);
         TitleLabel.Text = Strings.GroupMode;
         PoolLabel.Text = Strings.Ungrouped;
@@ -39,6 +44,57 @@ public partial class GroupWindow : Window
         _onlinePoller.Start();
         Closed += (_, _) => _onlinePoller.Stop();
     }
+
+    /// <summary>In-window confirm sheet (no extra window).</summary>
+    public Task<bool> AskConfirmAsync(string title, string message, string confirmLabel) =>
+        ConfirmSheetHost.AskAsync(title, message, confirmLabel);
+
+    /// <summary>In-window text prompt sheet (no extra window).</summary>
+    public Task<(bool Ok, string Value)> AskPromptAsync(string labelKey, string initial) =>
+        PromptSheetHost.AskAsync(labelKey, initial);
+
+    /// <summary>In-window formations panel (no extra window).</summary>
+    public void ShowFormationsSheet() => FormationsSheetHost.Show();
+
+    /// <summary>Switches the group view to the presets tab (full-bleed).</summary>
+    public void ShowPresetsTab()
+    {
+        RootDock.Visibility = Visibility.Collapsed;
+        PresetTab.Visibility = Visibility.Visible;
+    }
+
+    /// <summary>Back to the cards, guarding unsaved editor state.</summary>
+    private async void ShowCardsTab()
+    {
+        if (_editor.HasUnsavedChanges() && !await _editor.ConfirmDiscardAsync())
+            return;
+        if (_editor.HasUnsavedChanges())
+            _editor.Revert();
+        RootDock.Visibility = Visibility.Visible;
+        PresetTab.Visibility = Visibility.Collapsed;
+    }
+
+    private void OnPresetTabKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape || _editor.IsRecordingHotkey) return;
+        e.Handled = true;
+        ShowCardsTab();
+    }
+
+    /// <summary>Loads a preset into the tab editor.</summary>
+    public void LoadPresetInTab(Preset preset, bool isNew)
+    {
+        _editor.LoadPreset(preset, isNew);
+        ShowPresetsTab();
+    }
+
+    private async void OnPresetEditorSaved(Preset preset, bool isNew)
+    {
+        await ViewModel.PersistPresetAsync(preset, isNew);
+        ShowCardsTab();
+    }
+
+    private void OnPresetEditorCancelled() => ShowCardsTab();
 
     private void OnCardMenuToggle(object sender, RoutedEventArgs e)
     {

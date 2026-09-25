@@ -79,12 +79,7 @@ public partial class App : Application
         services.AddTransient<GroupWindow>();
         services.AddTransient<MiniWindow>();
         services.AddSingleton<Func<MiniWindow>>(sp => () => sp.GetRequiredService<MiniWindow>());
-        services.AddTransient<Func<Preset, PresetEditor>>(sp => preset => new PresetEditor(
-            sp.GetRequiredService<AppState>(),
-            sp.GetRequiredService<IWindowResolver>(),
-            preset,
-            sp.GetRequiredService<KeyboardHook>(),
-            sp.GetRequiredService<SyncController>()));
+        services.AddTransient<PresetEditorControl>();
 
         _provider = services.BuildServiceProvider();
 
@@ -117,6 +112,11 @@ public partial class App : Application
     private static void ForwardWheelAtExtent(object sender, MouseWheelEventArgs e)
     {
         if (sender is not ScrollViewer scroller) return;
+        // Popup-internal scrolling (e.g. ComboBox dropdowns): class handlers
+        // fire inside popups too — never interfere there.
+        if (IsInsidePopup(scroller)) return;
+        // An open dropdown (separate Popup tree) owns the gesture.
+        if (IsOverOpenDropdown()) return;
         // A scroller with no extent must never swallow the gesture (e.g. a
         // SizeToContent dialog behind an open ComboBox dropdown in a Popup).
         if (scroller.ScrollableHeight <= 0) return;
@@ -128,6 +128,34 @@ public partial class App : Application
         if ((e.Delta > 0 && canUp) || (e.Delta <= 0 && canDown)) return;
         e.Handled = true;
         ForwardToParentScroller(scroller, e);
+    }
+
+    /// <summary>True when the pointer sits inside an open Popup
+    /// (e.g. a ComboBox dropdown): the Popup owns the wheel.</summary>
+    private static bool IsOverOpenDropdown()
+    {
+        DependencyObject? node = Mouse.DirectlyOver as DependencyObject;
+        while (node is not null)
+        {
+            if (node is System.Windows.Controls.Primitives.Popup)
+                return true;
+            node = LogicalTreeHelper.GetParent(node);
+        }
+        return false;
+    }
+
+    /// <summary>True when the scroller itself lives inside a Popup: class
+    /// handlers fire there too, and must never steal the dropdown wheel.</summary>
+    private static bool IsInsidePopup(DependencyObject node)
+    {
+        DependencyObject? current = node;
+        while (current is not null)
+        {
+            if (current is System.Windows.Controls.Primitives.Popup)
+                return true;
+            current = VisualTreeHelper.GetParent(current) ?? LogicalTreeHelper.GetParent(current);
+        }
+        return false;
     }
 
     private static bool HasNestedScroller(ScrollViewer outer, MouseEventArgs e)

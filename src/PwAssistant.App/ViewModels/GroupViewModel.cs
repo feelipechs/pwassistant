@@ -126,7 +126,6 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly FocusController _focus;
     private readonly LoopController _loops;
     private readonly FileLogger _log;
-    private readonly Func<Preset, PresetEditor> _editorFactory;
     private readonly Func<MiniWindow> _miniWindowFactory;
 
     public ObservableCollection<Group> Groups { get; } = new();
@@ -170,6 +169,7 @@ public sealed partial class GroupViewModel : ObservableObject
     public string MinimizeText => AppStrings.Minimize;
     public string RenameText => AppStrings.Rename;
     public string DuplicatePresetText => AppStrings.DuplicatePreset;
+    public string DuplicateGroupText => AppStrings.DuplicateGroup;
     public string PresetsText => AppStrings.Presets;
     public string SaveFormationText => AppStrings.SaveFormation;
     public string LoadFormationText => AppStrings.LoadFormation;
@@ -187,7 +187,6 @@ public sealed partial class GroupViewModel : ObservableObject
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
         FocusController focus, LoopController loops, FileLogger log,
-        Func<Preset, PresetEditor> editorFactory,
         Func<MiniWindow> miniWindowFactory)
     {
         _state = state;
@@ -196,7 +195,6 @@ public sealed partial class GroupViewModel : ObservableObject
         _focus = focus;
         _loops = loops;
         _log = log;
-        _editorFactory = editorFactory;
         _miniWindowFactory = miniWindowFactory;
         GroupCardsView = new CompositeCollection
         {
@@ -340,26 +338,32 @@ public sealed partial class GroupViewModel : ObservableObject
 
         foreach (Preset preset in _state.Data.Presets.Where(p => p.GroupId == value.Id))
             Presets.Add(preset);
-        MiniRows.Clear();
-        foreach (Preset preset in Presets)
-            MiniRows.Add(new MiniPresetRow(preset));
+        SyncMiniRows();
         RefreshLoopStates();
 
         _sync.SetSyncedAccounts(OnlineMembers.Select(a => a.Id));
         _focus.SetOrder(OnlineMembers.Select(a => a.Id));
     }
 
-    partial void OnSyncEnabledChanged(bool value) => _sync.Enabled = value;
+    partial void OnSyncEnabledChanged(bool value)
+    {
+        _sync.Enabled = value;
+        _sync.NotifyToggled(value);
+    }
 
     partial void OnFocusEnabledChanged(bool value) => _focus.Enabled = value;
 
     [RelayCommand]
     private async Task AddGroupAsync()
     {
-        var dialog = new TextPromptDialog("GroupName", string.Empty);
-        if (dialog.ShowDialog() == true)
+        GroupWindow? groupWindow = Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
+        if (groupWindow is null) return;
+        (bool ok, string name) = await groupWindow.AskPromptAsync("GroupName", string.Empty);
+        if (ok)
         {
-            var group = new Group { Name = dialog.Value };
+            var group = new Group { Name = name };
             _state.Data.Groups.Add(group);
             Groups.Add(group);
             // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
@@ -369,14 +373,39 @@ public sealed partial class GroupViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Duplicates a group shell (no members — membership is exclusive)
+    /// with its presets cloned (new ids, names kept, hotkeys kept).
+    /// </summary>
+    [RelayCommand]
+    private async Task DuplicateGroupAsync(GroupCard? card)
+    {
+        if (card is null) return;
+        card.IsMenuOpen = false;
+        Group source = card.Group;
+        var copy = new Group { Name = source.Name + AppStrings.CopySuffix };
+        _state.Data.Groups.Insert(_state.Data.Groups.IndexOf(source) + 1, copy);
+        Groups.Insert(Groups.IndexOf(source) + 1, copy);
+        foreach (Preset preset in _state.Data.Presets.Where(p => p.GroupId == source.Id).ToList())
+            _state.Data.Presets.Add(ClonePreset(preset, copy.Id, nameSuffix: null, keepHotkey: true));
+        // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
+        await _state.SaveAsync();
+        RebuildAll();
+        ActiveCard = GroupCards.FirstOrDefault(c => c.Group == copy);
+    }
+
     [RelayCommand]
     private async Task RenameGroupAsync(GroupCard? card)
     {
         if (card is null) return;
         card.IsMenuOpen = false;
-        var dialog = new TextPromptDialog("GroupName", card.Group.Name);
-        if (dialog.ShowDialog() != true) return;
-        card.Group.Name = dialog.Value;
+        GroupWindow? groupWindow = Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
+        if (groupWindow is null) return;
+        (bool ok, string name) = await groupWindow.AskPromptAsync("GroupName", card.Group.Name);
+        if (!ok) return;
+        card.Group.Name = name;
         int index = Groups.IndexOf(card.Group);
         if (index >= 0)
         {
@@ -392,13 +421,14 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         if (card is null) return;
         card.IsMenuOpen = false;
-        if (!ConfirmDialog.Ask(
+        Group group = card.Group;
+        if (await AskOwnSheetAsync(
             AppStrings.DeleteGroupTitle,
-            AppStrings.DeleteGroupConfirm(card.Group.Name),
-            AppStrings.Delete))
+            AppStrings.DeleteGroupConfirm(group.Name),
+            AppStrings.Delete) is not true)
             return;
 
-        Group doomed = card.Group;
+        Group doomed = group;
         foreach (Preset preset in _state.Data.Presets.Where(p => p.GroupId == doomed.Id).ToList())
         {
             _loops.Forget(preset.Id);
@@ -419,7 +449,10 @@ public sealed partial class GroupViewModel : ObservableObject
         if (card is null) return;
         card.IsMenuOpen = false;
         ActiveCard = card;
-        new GroupPresetsWindow(this).Show();
+        Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
+            ?.ShowPresetsTab();
     }
 
     [RelayCommand]
@@ -428,7 +461,10 @@ public sealed partial class GroupViewModel : ObservableObject
         if (card is null) return;
         card.IsMenuOpen = false;
         ActiveCard = card;
-        new GroupFormationsWindow(this, card).Show();
+        Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
+            ?.ShowFormationsSheet();
     }
 
     [RelayCommand]
@@ -460,6 +496,8 @@ public sealed partial class GroupViewModel : ObservableObject
         try
         {
             StatusMessage = "...";
+            // Fresh handles: closes the stale/recycled HWND race for clicks.
+            _state.RefreshOnlineStatus();
             var countdown = new Progress<int>(left => StatusMessage = left.ToString());
             var names = _state.Data.Servers
                 .SelectMany(s => s.Accounts)
@@ -473,7 +511,15 @@ public sealed partial class GroupViewModel : ObservableObject
             int fired = result.Accounts.Count(r => !r.Skipped);
             int skipped = result.Accounts.Count(r => r.Skipped);
             StatusMessage = AppStrings.PresetFired(fired, skipped);
-            _log.Info($"Fired preset {preset.Name}: fired={fired} skipped={skipped}.");
+            _log.Info($"Fired preset {preset.Name} (manual, {preset.Actions.Count} actions): fired={fired} skipped={skipped}.");
+            if (skipped > 0)
+            {
+                string reasons = string.Join("; ", result.Accounts
+                    .Where(r => r.Skipped)
+                    .GroupBy(r => r.Reason ?? r.Error ?? "?")
+                    .Select(g => $"{g.Key}x{g.Count()}"));
+                _log.Warn($"Preset {preset.Name} skipped: {reasons}.");
+            }
         }
         catch (OperationCanceledException)
         {
@@ -516,16 +562,76 @@ public sealed partial class GroupViewModel : ObservableObject
     {
         if (card is null || card.Group.AccountIds.Count == 0) return;
         card.IsMenuOpen = false;
-        var dialog = new TextPromptDialog("FormationName", card.Group.Name);
-        if (dialog.ShowDialog() != true) return;
+        GroupWindow? groupWindow = Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
+        if (groupWindow is null) return;
+        (bool ok, string name) = await groupWindow.AskPromptAsync("FormationName", card.Group.Name);
+        if (!ok) return;
+        if (_state.Data.Formations.Any(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusMessage = AppStrings.DuplicateFormationName;
+            return;
+        }
         var formation = new Formation
         {
-            Name = dialog.Value,
+            Name = name,
             AccountIds = new List<Guid>(card.Group.AccountIds)
         };
         _state.Data.Formations.Add(formation);
         Formations.Add(formation);
         await _state.SaveAsync();
+    }
+
+    /// <summary>Renames a formation (duplicate names blocked).</summary>
+    public async Task RenameFormationAsync(Formation formation)
+    {
+        GroupWindow? groupWindow = Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
+        if (groupWindow is null) return;
+        (bool ok, string name) = await groupWindow.AskPromptAsync("FormationName", formation.Name);
+        if (!ok) return;
+        if (_state.Data.Formations.Any(f => f != formation
+            && string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusMessage = AppStrings.DuplicateFormationName;
+            return;
+        }
+        formation.Name = name;
+        int index = Formations.IndexOf(formation);
+        if (index >= 0)
+        {
+            Formations.RemoveAt(index);
+            Formations.Insert(index, formation);
+        }
+        await _state.SaveAsync();
+    }
+
+    /// <summary>Deletes a formation after confirm.</summary>
+    public async Task DeleteFormationAsync(Formation formation)
+    {
+        if (await AskOwnSheetAsync(
+            AppStrings.DeleteFormationTitle,
+            AppStrings.DeleteFormationConfirm(formation.Name),
+            AppStrings.Delete) is not true)
+            return;
+        _state.Data.Formations.Remove(formation);
+        Formations.Remove(formation);
+        await _state.SaveAsync();
+    }
+
+    /// <summary>Display names for a formation's members ("?" when gone).</summary>
+    public List<string> GetFormationMemberNames(Formation formation)
+    {
+        var byId = _state.Data.Servers
+            .SelectMany(s => s.Accounts)
+            .ToDictionary(a => a.Id);
+        return formation.AccountIds
+            .Select(id => byId.TryGetValue(id, out Account? account)
+                ? (string.IsNullOrWhiteSpace(account.Role) ? account.Login : account.Role)
+                : "?")
+            .ToList();
     }
 
     /// <summary>Applies a saved formation to the card (used by the load list).</summary>
@@ -536,38 +642,56 @@ public sealed partial class GroupViewModel : ObservableObject
             .Select(a => a.Id);
         (IReadOnlyList<Guid> applied, int skipped) =
             FormationApplicator.Apply(formation, known);
+        // Exclusive membership (DnD semantics): pull the applied ids out
+        // of every other group instead of duplicating them across cards.
+        foreach (Group other in _state.Data.Groups.Where(g => g.Id != card.Group.Id))
+            other.AccountIds.RemoveAll(applied.Contains);
         card.Group.AccountIds = new List<Guid>(applied);
         ActiveCard = card;
         await _state.SaveAsync();
         RebuildAll();
+        _log.Info($"Applied formation {formation.Name}: applied={applied.Count} skipped={skipped}.");
         StatusMessage = skipped == 0
             ? AppStrings.FormationApplied(formation.Name, applied.Count)
             : AppStrings.FormationAppliedSkipped(formation.Name, applied.Count, skipped);
     }
 
     [RelayCommand]
-    private async Task AddPresetAsync()
+    private void AddPreset()
     {
-        if (SelectedGroup is null) return;
+        if (SelectedGroup is null)
+        {
+            StatusMessage = AppStrings.NoGroupSelected;
+            return;
+        }
         var preset = new Preset { GroupId = SelectedGroup.Id, Name = NewPresetName() };
-        PresetEditor editor = _editorFactory(preset);
-        if (editor.ShowDialog() != true) return;
-        _state.Data.Presets.Add(preset);
-        Presets.Add(preset);
-        MiniRows.Add(new MiniPresetRow(preset));
-        await _state.SaveAsync();
-        HotkeysChanged?.Invoke();
+        Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
+            ?.LoadPresetInTab(preset, isNew: true);
     }
 
     private string NewPresetName() =>
         string.Format(AppStrings.PresetNameNumber, Presets.Count + 1);
 
     [RelayCommand]
-    private async Task EditPresetAsync(Preset? preset)
+    private void EditPreset(Preset? preset)
     {
         if (preset is null) return;
-        PresetEditor editor = _editorFactory(preset);
-        if (editor.ShowDialog() != true) return;
+        Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this))
+            ?.LoadPresetInTab(preset, isNew: false);
+    }
+
+    /// <summary>Commits an editor save (new presets join the collections).</summary>
+    public async Task PersistPresetAsync(Preset preset, bool isNew)
+    {
+        if (isNew && !_state.Data.Presets.Contains(preset))
+        {
+            _state.Data.Presets.Add(preset);
+            Presets.Add(preset);
+        }
         await _state.SaveAsync();
         RefreshMiniRows();
         Refresh();
@@ -578,10 +702,11 @@ public sealed partial class GroupViewModel : ObservableObject
     private async Task DeletePresetAsync(Preset? preset)
     {
         if (preset is null) return;
-        if (!ConfirmDialog.Ask(
+        string presetName = preset.Name;
+        if (await AskOwnSheetAsync(
             AppStrings.DeletePresetTitle,
-            AppStrings.DeletePresetConfirm(preset.Name),
-            AppStrings.Delete))
+            AppStrings.DeletePresetConfirm(presetName),
+            AppStrings.Delete) is not true)
             return;
         DeletePresetCore(preset);
         await _state.SaveAsync();
@@ -606,32 +731,35 @@ public sealed partial class GroupViewModel : ObservableObject
         await _state.SaveAsync();
     }
 
+    /// <summary>Deep-clones a preset into another group (hotkey optional).</summary>
+    private static Preset ClonePreset(Preset source, Guid groupId, string? nameSuffix, bool keepHotkey) => new()
+    {
+        GroupId = groupId,
+        Name = source.Name + nameSuffix,
+        Hotkey = keepHotkey ? source.Hotkey : null,
+        ExecutionMode = source.ExecutionMode,
+        Actions = source.Actions.Select(a => new AccountAction
+        {
+            AccountId = a.AccountId,
+            Action = new GameAction
+            {
+                Type = a.Action.Type,
+                Key = a.Action.Key,
+                RelativePosition = a.Action.RelativePosition is null
+                    ? null
+                    : new RelativePosition(a.Action.RelativePosition.X, a.Action.RelativePosition.Y),
+                Button = a.Action.Button,
+                DelayBeforeMs = a.Action.DelayBeforeMs,
+                Repeat = a.Action.Repeat is null
+                    ? null
+                    : new RepeatSettings(a.Action.Repeat.Times, a.Action.Repeat.IntervalMs),
+            },
+        }).ToList(),
+    };
+
     private void DuplicatePresetCore(Preset preset)
     {
-        var copy = new Preset
-        {
-            GroupId = preset.GroupId,
-            Name = preset.Name + AppStrings.CopySuffix,
-            Hotkey = null,
-            ExecutionMode = preset.ExecutionMode,
-            Actions = preset.Actions.Select(a => new AccountAction
-            {
-                AccountId = a.AccountId,
-                Action = new GameAction
-                {
-                    Type = a.Action.Type,
-                    Key = a.Action.Key,
-                    RelativePosition = a.Action.RelativePosition is null
-                        ? null
-                        : new RelativePosition(a.Action.RelativePosition.X, a.Action.RelativePosition.Y),
-                    Button = a.Action.Button,
-                    DelayBeforeMs = a.Action.DelayBeforeMs,
-                    Repeat = a.Action.Repeat is null
-                        ? null
-                        : new RepeatSettings(a.Action.Repeat.Times, a.Action.Repeat.IntervalMs),
-                },
-            }).ToList(),
-        };
+        Preset copy = ClonePreset(preset, preset.GroupId, AppStrings.CopySuffix, keepHotkey: false);
         _state.Data.Presets.Insert(_state.Data.Presets.IndexOf(preset) + 1, copy);
         Presets.Insert(Presets.IndexOf(preset) + 1, copy);
         MiniPresetRow? neighbor = MiniRows.FirstOrDefault(r => r.Preset == preset);
@@ -664,15 +792,33 @@ public sealed partial class GroupViewModel : ObservableObject
         }
     }
 
+    /// <summary>Rebuilds MiniRows reusing instances by preset id, so a
+    /// rebuild between button-down and button-up never eats the click.</summary>
+    private void SyncMiniRows()
+    {
+        var byId = MiniRows.ToDictionary(r => r.Preset.Id);
+        MiniRows.Clear();
+        foreach (Preset preset in Presets)
+        {
+            if (byId.TryGetValue(preset.Id, out MiniPresetRow? existing))
+            {
+                MiniRows.Add(existing);
+            }
+            else
+            {
+                MiniRows.Add(new MiniPresetRow(preset)
+                {
+                    IsLooping = _loops.IsArmed(preset.Id),
+                    IsFiring = _loops.IsLooping(preset.Id),
+                });
+            }
+        }
+    }
+
     private void RefreshMiniRows()
     {
-        MiniRows.Clear();
-        foreach (Preset existing in Presets)
-            MiniRows.Add(new MiniPresetRow(existing)
-            {
-                IsLooping = _loops.IsArmed(existing.Id),
-                IsFiring = _loops.IsLooping(existing.Id),
-            });
+        SyncMiniRows();
+        RefreshLoopStates();
     }
 
     /// <summary>Restores the Presets view order from the model (drag cancel).</summary>
@@ -763,4 +909,15 @@ public sealed partial class GroupViewModel : ObservableObject
 
     private static void RetargetMini(GroupViewModel vm, Group group) =>
         vm.ActiveCard = vm.GroupCards.FirstOrDefault(c => c.Group.Id == group.Id);
+
+    /// <summary>Confirm sheet on the window owning this VM.</summary>
+    private Task<bool> AskOwnSheetAsync(string title, string message, string confirmLabel)
+    {
+        GroupWindow? groupWindow = Application.Current.Windows
+            .OfType<GroupWindow>()
+            .FirstOrDefault(w => ReferenceEquals(w.ViewModel, this));
+        if (groupWindow is not null)
+            return groupWindow.AskConfirmAsync(title, message, confirmLabel);
+        return Task.FromResult(false);
+    }
 }

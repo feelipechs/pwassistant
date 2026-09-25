@@ -1,3 +1,5 @@
+using System.Windows;
+using System.Windows.Interop;
 using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Sync;
@@ -70,9 +72,42 @@ public sealed class SyncController : IDisposable
 
     public void SetSyncedAccounts(IEnumerable<Guid> accountIds) => _sync.SetSyncedAccounts(accountIds);
 
+    private long _suppressUntilTicks;
+
+    /// <summary>Briefly drops clicks right after disabling (the disabling
+    /// press itself arrives while still enabled).</summary>
+    public void NotifyToggled(bool enabled)
+    {
+        if (!enabled)
+            Interlocked.Exchange(ref _suppressUntilTicks, DateTimeOffset.UtcNow.AddMilliseconds(300).UtcTicks);
+    }
+
+    /// <summary>True when the point falls on one of our own windows.</summary>
+    private static bool IsOwnWindow(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero || Application.Current is null) return false;
+        foreach (Window window in Application.Current.Windows)
+        {
+            IntPtr handle = new WindowInteropHelper(window).Handle;
+            if (handle != IntPtr.Zero && handle == hwnd)
+                return true;
+        }
+        return false;
+    }
+
     private void OnLeftButtonDown(MasterClick click)
     {
         if (!_sync.Enabled || Volatile.Read(ref _suspendCount) > 0) return;
+        if (DateTimeOffset.UtcNow.UtcTicks < Interlocked.Read(ref _suppressUntilTicks)) return;
+        try
+        {
+            if (IsOwnWindow(_resolver.ResolveTopWindowAtPoint(click.ScreenX, click.ScreenY)))
+                return;
+        }
+        catch (WinApiException)
+        {
+            return;
+        }
 
         List<Account> online = AllOnlineAccounts().ToList();
         Account? master = FindTopmostAccount(online, click.ScreenX, click.ScreenY)
