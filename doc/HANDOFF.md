@@ -1,4 +1,4 @@
-# HANDOFF — estado em 2026-09-25, base 14d0ad3
+# HANDOFF — estado em 2026-09-25, base ad61720
 ## Pronto (validado)
 - Build 0 erros/warnings; testes 71/71.
 - 4 commits locais (sem push): sheets novos, migração Main, fusão Grupo/presets, polimento Mini + notas U15–U18.
