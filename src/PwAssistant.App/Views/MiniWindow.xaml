@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:PwAssistant.Core.Models;assembly=PwAssistant.Core"
         xmlns:views="clr-namespace:PwAssistant.App.Views"
-        Title="PW Assistant Mini" Height="420" Width="300" MinWidth="260" MinHeight="300"
+        Title="PW ASSISTANT MINI" Height="420" Width="300" MinWidth="260" MinHeight="300"
         Topmost="True" WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True" AllowsTransparency="True"
         Background="Transparent" Foreground="{DynamicResource Brush.Foreground}"
@@ -41,9 +41,11 @@
                     <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <ListBox x:Name="MiniMembersList" Grid.Column="0" MinHeight="120" ItemsSource="{Binding Members}">
+                <ListBox x:Name="MiniMembersList" Grid.Column="0" MinHeight="120" ItemsSource="{Binding Members}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="Margin" Value="0"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Account.Status}" Value="{x:Static models:AccountStatus.Offline}">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -53,7 +55,7 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                                    <Border x:Name="MiniCardBorder" Style="{StaticResource MiniCard}" Cursor="Arrow" Padding="5" Margin="0,0,0,4">
+                                    <Border x:Name="MiniCardBorder" Style="{StaticResource MiniCard}" Cursor="Arrow" Padding="3" Margin="0,0,0,2">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Width="16" Height="16" Margin="0,0,6,0"
                                            Source="{Binding ClassImagePath}">
@@ -67,7 +69,8 @@
                                             </Style>
                                         </Image.Style>
                                     </Image>
-                                    <TextBlock x:Name="MemberName" Text="{Binding CharacterName}" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="MemberName" Text="{Binding CharacterName}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding CharacterName}"/>
                                 </StackPanel>
                             </Border>
                             <DataTemplate.Triggers>

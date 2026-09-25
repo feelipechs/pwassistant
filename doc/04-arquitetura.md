@@ -272,12 +272,48 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   visibilidade; só Shift esquerdo arma tap; highlight do Mini pinta
   card (`RaisedHover`+`Ring`); delay default 100; ícone da classe no
   ComboBox do editor; captura com ESC (`PreviewKeyDown`+foco+hook),
-  Sync suspenso + overlay multi-monitor sem clique no jogo (captura no
-   UP; jogo sempre à frente; overlay `NOACTIVATE` + foco cravado no
-   editor); play com spinner (`E72C` girando) e browse com pasta
+     Sync suspenso + overlay multi-monitor sem clique no jogo (captura no
+   UP só com DOWN novo; overlay sem dono + `BringToFront` pós-captura:
+   foco termina no jogo); play com spinner (`E72C` girando) e browse com pasta
    (`E838`); Stop limpa modelo + refresh
   (processos enraizados); `PresetKeys` =
   F1–F12/0–9/A–Z/Tab/Space; gate do drag ignora chrome do scrollbar.
+- **U15 sheets, fatias 1–2 (2026-09-22, código pendente de validação):**
+  `ConfirmSheet` + `PromptSheet` (dimmer + card, click-fora/ESC cancela,
+  `Task`) hospedados em Main e Grupo (+presets/editor pro confirm);
+  `ServerSheet` + `AccountSheet` + `SettingsSheet` na Main (draft +
+  recorder com guarda de ESC); 5 deletes + 5 prompts + 4 server/account
+  viraram `await`;   `ConfirmDialog`, `TextPromptDialog`, `ServerDialog`,
+  `AccountDialog`, `SettingsWindow` e `GroupFormationsWindow` deletados;
+  gerenciador de formações no painel (renomear com bloqueio de
+  duplicata, excluir com confirm, expansível de membros);
+- **U16 aba Presets (2026-09-22, código pendente de validação):**
+  `[Cards] [Presets]` no topo do Grupo (estado só-view); lista migra
+  pra `PresetListControl` (`LiveMove`+ghost intactos);
+  `GroupPresetsWindow` deletada; editor-dialog segue até a etapa b.
+- **U17 in-game round (2026-09-23, código pendente de validação):**
+  sync ignora janelas próprias + suprime 300ms pós-desligue; roda cede
+  pra dropdown aberto (sender em Popup retorna); delay com
+  `PropertyChanged`; `MiniRows` reusadas por id; log manual com
+  contagem de ações; Simultâneo serializado por conta; refresh de
+  handles antes de disparar; skips com motivos em `Warn`.
+- **U18 UI round (2026-09-23, código pendente de validação):** `ms` ao
+  lado do delay; `Left/Right` → `ESQUERDO/DIREITO`; `KeyBox` alinhado
+  sobre o `RowButtonBox`; Mini sem scroll horizontal + linhas compactas;
+  resx PT+EN em maiúsculas (exceto `CopySuffix`) + `Title`s; import/export
+  de preset (JSON, um por arquivo, id novo, grupo atual); bulk no header
+  + contador de selecionados; `GroupName/TabName/FormationName`
+  restaurados (lookup dinâmico do prompt); título `MODO GRUPO`;
+  duplicar grupo (casca + presets com hotkey, sem membros);
+  formação exclusiva (sem duplicar entre cards) + log.
+- **U17 fusão presets+comandos (2026-09-22, código pendente de
+  validação):** `PresetEditorControl` embutido ao lado da lista
+  (`Saved`/`Cancelled` voltam pros cartões, sem tabs — drill-in
+  tela-cheia; bulk condicional por seleção; header com `WrapPanel`).
+  Aba default selecionada no ctor (Checked no XAML crashava no parse —
+  NRE com árvore incompleta) + guarda `IsLoaded`. Enter salva
+  no prompt; formações viraram painel do Grupo (aplica no `ActiveCard`); modal nunca
+  chama `Close()` após `DialogResult` (crash `VerifyNotClosing`).
 - **Idioma**: código/XAML-names em inglês; todo texto visível em pt-BR via
   `.resx` (`Resources.pt-BR`), nunca hardcoded em inglês na tela.
 - ViewModels nunca referenciam HWND/PID (falam com `Core` por Ids); `App`
