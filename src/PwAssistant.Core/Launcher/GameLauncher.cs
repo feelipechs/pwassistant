@@ -74,12 +74,15 @@ public sealed class GameLauncher
     }
 
     /// <summary>
-    /// Identity-only shortcut: same path/target/workdir/icon, but NO
-    /// arguments — hence no secret on disk. This is the resting state of
-    /// every .lnk file. Credentials exist on disk only in the brief window
-    /// between materializing the full shortcut and scrubbing it right
-    /// after Process.Start (see LaunchAsync), plus crash residue cleaned
-    /// by CleanseShortcuts at startup.
+    /// Resting shortcut: same path/target/workdir/icon, but NO secret.
+    /// It keeps the non-secret <c>user:</c> token because the taskbar
+    /// derives the shortcut's implicit AppID from its arguments (proven
+    /// by the per-account buttons experiment — and by the regression
+    /// when resting shortcuts went fully empty): distinct logins keep
+    /// distinct taskbar buttons. Credentials exist on disk only in the
+    /// brief window between materializing the full shortcut and scrubbing
+    /// it right after Process.Start (see LaunchAsync), plus crash residue
+    /// cleaned by CleanseShortcuts at startup.
     /// </summary>
     public static ShortcutDefinition BuildIdentityShortcutDefinition(
         Server server, Account account, string clientsDirectory, string iconDirectory)
@@ -88,7 +91,7 @@ public sealed class GameLauncher
             ? string.Empty
             : Path.GetDirectoryName(server.ElementClientPath) ?? string.Empty;
         return WithIcon(server, account, clientsDirectory, iconDirectory,
-            arguments: string.Empty, workingDirectory);
+            arguments: $"user:{account.Login}", workingDirectory);
     }
 
     private static ShortcutDefinition WithIcon(

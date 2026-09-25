@@ -315,10 +315,14 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
   no prompt; formações viraram painel do Grupo (aplica no `ActiveCard`); modal nunca
   chama `Close()` após `DialogResult` (crash `VerifyNotClosing`).
 - **U19 segredos no launch (2026-09-25, código pendente de validação):**
-  `.lnk` em repouso é só identidade (sem args, sem segredo); credenciais
-  vão ao disco só no instante do `Process.Start` e o `finally` do launch
-  reescreve a identidade em seguida; `CleanseAllShortcuts` no startup
-  remove resíduo de crash e órfãos `{guid:N}.lnk`. `LogRedactor` mascara
+  `.lnk` em repouso é identidade + token `user:` (não-secreto);
+  credenciais vão ao disco só no instante do `Process.Start` e o `finally`
+  do launch reescreve o repouso em seguida; `CleanseAllShortcuts` no startup
+  remove resíduo de crash e órfãos `{guid:N}.lnk`. O `user:` em repouso é
+  proposital: a taskbar deriva o AppID implícito dos argumentos do atalho
+  (repouso vazio empilhou as contas — regressão observada em 2026-09-25).
+  Exibir o login é seguro: ele já está em claro no `accounts.json` e na
+  tela do jogo — o `.lnk` não cria exposição nova; só a senha é segredo. `LogRedactor` mascara
   `pwd:`/`user:`/`role:` (case-insensitive); logins isolados seguem nos
   logs por diagnóstico. **Risco aceito:** a senha segue visível na linha
   de comando do processo durante o launch (Task Manager) — inerente ao

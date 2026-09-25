@@ -11,11 +11,16 @@ recupera a senha. Viola a lei nº 4 do `AGENTS.md`.
 
 ## Mudança
 
-1. `GameLauncher.cs`: `.lnk` passa a guardar **só identidade**
-   (alvo, working dir, ícone da classe, `accountId` se preciso) —
-   **nenhum argumento com segredo**. A senha é resolvida em runtime
-   via `AccountStore.RevealPassword` (DPAPI) na hora do Play e montada
-   só no `ProcessStartInfo.Arguments` em memória.
+1. `GameLauncher.cs`: `.lnk` em repouso guarda **identidade + token
+   `user:{login}` (não-secreto) — **nenhum argumento com segredo**. A senha
+   é resolvida em runtime via `AccountStore.RevealPassword` (DPAPI) na hora
+   do Play e montada só no `ProcessStartInfo.Arguments` em memória, mais o
+   `.lnk` efêmero do instante do Start (scrub no `finally`) e o cleanse no
+   startup. O token `user:` em repouso é proposital: a taskbar deriva o
+   AppID implícito do atalho a partir dos argumentos (regressão comprovada
+   quando o repouso ficou totalmente vazio — contas empilharam). Duplo-clique
+   direto no `.lnk` abre a tela de login com o usuário preenchido (fluxo não
+   suportado, mas benigno).
 2. Confirmar que o agrupamento da taskbar continua funcionando só com
    identidade do atalho (alvo + AppUserModelID/ícone): validar com
    2 Plays (classes iguais e diferentes) → 2 botões separados.
@@ -37,7 +42,8 @@ Registrar em `doc/04-arquitetura.md` como risco aceito.
 
 ## Aceite
 
-- [ ] Nenhum `.lnk` em `%AppData%\PwAssistant\clients\` contém `pwd:`.
+- [ ] Nenhum `.lnk` em `%AppData%\PwAssistant\clients\` contém `pwd:`
+      (mas contém `user:` — esperado).
 - [ ] 2 Plays (classes iguais e diferentes) → 2 botões separados na
       taskbar, cada um com o ícone da classe.
 - [ ] `dotnet build` 0/0 + `dotnet test` verde (inclui `LoggingTests`

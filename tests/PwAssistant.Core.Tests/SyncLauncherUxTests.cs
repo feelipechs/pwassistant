@@ -134,9 +134,23 @@ public sealed class GameLauncherTests
             server, account, "pw", @"C:\clients", @"C:\icons");
 
         Assert.Equal(full.ShortcutPath, identity.ShortcutPath);
-        Assert.Equal(string.Empty, identity.Arguments);
+        // Resting state keeps the non-secret user: token (taskbar grouping)
+        // and never the password.
+        Assert.Contains("user:hero", identity.Arguments);
         Assert.DoesNotContain("pwd:", identity.Arguments);
-        Assert.DoesNotContain("user:", identity.Arguments);
+    }
+
+    [Fact]
+    public void IdentityShortcut_DiffersPerLogin()
+    {
+        var server = new Server { ElementClientPath = @"C:\pw\elementclient.exe" };
+
+        ShortcutDefinition one = GameLauncher.BuildIdentityShortcutDefinition(
+            server, new Account { Login = "a" }, @"C:\clients", @"C:\icons");
+        ShortcutDefinition two = GameLauncher.BuildIdentityShortcutDefinition(
+            server, new Account { Login = "b" }, @"C:\clients", @"C:\icons");
+
+        Assert.NotEqual(one.Arguments, two.Arguments);
     }
 
     [Fact]
@@ -153,7 +167,9 @@ public sealed class GameLauncherTests
         Assert.Equal(2, ensured.Count);
         Assert.Contains("pwd:pw-secret", ensured[0].Arguments);
         Assert.Equal(ensured[0].ShortcutPath, ensured[1].ShortcutPath);
-        Assert.Equal(string.Empty, ensured[1].Arguments);
+        // Scrubbed back to the resting state: user: token, no password.
+        Assert.Contains("user:hero", ensured[1].Arguments);
+        Assert.DoesNotContain("pwd:", ensured[1].Arguments);
     }
 
     [Fact]
@@ -177,7 +193,8 @@ public sealed class GameLauncherTests
 
             Assert.Equal(2, fixedCount);
             ShortcutDefinition rewritten = Assert.Single(ensured);
-            Assert.Equal(string.Empty, rewritten.Arguments);
+            Assert.Contains("user:hero", rewritten.Arguments);
+            Assert.DoesNotContain("pwd:", rewritten.Arguments);
             Assert.False(File.Exists(orphan));
             Assert.True(File.Exists(foreign));
         }
