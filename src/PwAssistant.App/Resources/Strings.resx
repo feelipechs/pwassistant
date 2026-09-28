@@ -27,6 +27,7 @@
   <data name="GroupName" xml:space="preserve"><value>GROUP NAME</value></data>
   <data name="PresetName" xml:space="preserve"><value>PRESET NAME</value></data>
   <data name="SyncEnabled" xml:space="preserve"><value>SYNC CLICKS</value></data>
+  <data name="SyncInclude" xml:space="preserve"><value>INCLUDE IN SYNC</value></data>
   <data name="FocusSwitch" xml:space="preserve"><value>SWITCH WINDOWS</value></data>
   <data name="FocusConfig" xml:space="preserve"><value>WINDOW SWITCHING KEYS</value></data>
   <data name="CycleKey" xml:space="preserve"><value>CYCLE KEY</value></data>

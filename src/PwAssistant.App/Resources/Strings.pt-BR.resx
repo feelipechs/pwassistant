@@ -27,6 +27,7 @@
   <data name="GroupName" xml:space="preserve"><value>NOME DO GRUPO</value></data>
   <data name="PresetName" xml:space="preserve"><value>NOME DO PRESET</value></data>
   <data name="SyncEnabled" xml:space="preserve"><value>SINCRONIZAR CLIQUES</value></data>
+  <data name="SyncInclude" xml:space="preserve"><value>INCLUIR NO SYNC</value></data>
   <data name="FocusSwitch" xml:space="preserve"><value>ALTERNAR JANELAS</value></data>
   <data name="FocusConfig" xml:space="preserve"><value>TECLAS DE TROCA DE JANELA</value></data>
   <data name="CycleKey" xml:space="preserve"><value>TECLA DE CICLO</value></data>

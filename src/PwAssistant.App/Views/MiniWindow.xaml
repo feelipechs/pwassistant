@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:PwAssistant.Core.Models;assembly=PwAssistant.Core"
         xmlns:views="clr-namespace:PwAssistant.App.Views"
+        xmlns:res="clr-namespace:PwAssistant.App.Resources"
         Title="PW ASSISTANT MINI" Height="420" Width="300" MinWidth="260" MinHeight="300"
         Topmost="True" WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True" AllowsTransparency="True"
@@ -57,6 +58,11 @@
                         <DataTemplate>
                                     <Border x:Name="MiniCardBorder" Style="{StaticResource MiniCard}" Cursor="Arrow" Padding="3" Margin="0,0,0,2">
                                 <StackPanel Orientation="Horizontal">
+                                    <CheckBox IsChecked="{Binding IsSyncIncluded}" Focusable="False"
+                                              VerticalAlignment="Center" Margin="0,0,4,0"
+                                              ToolTip="{x:Static res:Strings.SyncInclude}"
+                                              Command="{Binding DataContext.ToggleSyncExclusionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                              CommandParameter="{Binding}"/>
                                     <Image Width="16" Height="16" Margin="0,0,6,0"
                                            Source="{Binding ClassImagePath}">
                                         <Image.Style>

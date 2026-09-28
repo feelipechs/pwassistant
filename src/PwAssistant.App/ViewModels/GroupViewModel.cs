@@ -41,6 +41,10 @@ public sealed partial class MemberOption : ObservableObject
     [ObservableProperty]
     private bool isActive;
 
+    /// <summary>Session-only sync opt-out (Mini checkbox); default included.</summary>
+    [ObservableProperty]
+    private bool isSyncIncluded = true;
+
     public string DisplayName => string.IsNullOrWhiteSpace(Account.Role)
         ? Account.Login
         : $"{Account.Role} ({Account.Login})";
@@ -239,9 +243,11 @@ public sealed partial class GroupViewModel : ObservableObject
     /// <summary>
     /// Reconciles a bound option list with the model, reusing instances by
     /// account id so containers don't re-realize every poll (perf). Order
-    /// follows the source; unknown ids drop out.
+    /// follows the source; unknown ids drop out. Sync flags mirror the
+    /// session exclusion set so rebuilds never reset the Mini checkboxes.
     /// </summary>
-    private static void SyncOptions(ObservableCollection<MemberOption> target, IEnumerable<Account> accounts)
+    private void SyncOptions(
+        ObservableCollection<MemberOption> target, IEnumerable<Account> accounts)
     {
         var byId = target.ToDictionary(m => m.Account.Id);
         target.Clear();
@@ -250,14 +256,38 @@ public sealed partial class GroupViewModel : ObservableObject
             if (byId.TryGetValue(account.Id, out MemberOption? existing))
             {
                 existing.IsActive = false;
+                existing.IsSyncIncluded = !_syncExcluded.Contains(account.Id);
                 existing.RefreshStatus();
                 target.Add(existing);
             }
             else
             {
-                target.Add(new MemberOption(account));
+                target.Add(new MemberOption(account)
+                {
+                    IsSyncIncluded = !_syncExcluded.Contains(account.Id),
+                });
             }
         }
+    }
+
+    /// <summary>Session-only sync exclusion (Mini checkboxes), by account id.</summary>
+    private readonly HashSet<Guid> _syncExcluded = new();
+
+    /// <summary>Flips one account in/out of Sync replicas (Mini checkbox).</summary>
+    [RelayCommand]
+    private void ToggleSyncExclusion(MemberOption? option)
+    {
+        if (option is null) return;
+        Guid id = option.Account.Id;
+        if (_syncExcluded.Contains(id))
+            _syncExcluded.Remove(id);
+        else
+            _syncExcluded.Add(id);
+        bool included = !_syncExcluded.Contains(id);
+        foreach (MemberOption other in GroupCards.SelectMany(c => c.Members)
+            .Concat(Pool).Concat(Members).Where(m => m.Account.Id == id))
+            other.IsSyncIncluded = included;
+        _sync.SetSyncExcluded(_syncExcluded);
     }
 
     /// <summary>Rebuilds cards, pool and the active selection (Mini/sync path).</summary>

@@ -33,6 +33,7 @@ public static class Strings
     public static string GroupName => Get(nameof(GroupName));
     public static string PresetName => Get(nameof(PresetName));
     public static string SyncEnabled => Get(nameof(SyncEnabled));
+    public static string SyncInclude => Get(nameof(SyncInclude));
     public static string FocusSwitch => Get(nameof(FocusSwitch));
     public static string FocusConfig => Get(nameof(FocusConfig));
     public static string CycleKey => Get(nameof(CycleKey));

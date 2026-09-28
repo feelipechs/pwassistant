@@ -34,6 +34,7 @@ public sealed class SyncController : IDisposable
         _resolver = resolver;
         _log = log;
         _hook.LeftButtonDown += OnLeftButtonDown;
+        _hook.RightButtonDown += OnRightButtonDown;
     }
 
     public bool Enabled
@@ -75,6 +76,27 @@ public sealed class SyncController : IDisposable
 
     public void SetSyncedAccounts(IEnumerable<Guid> accountIds) => _sync.SetSyncedAccounts(accountIds);
 
+    private readonly HashSet<Guid> _excluded = new();
+    private readonly object _excludedGate = new();
+
+    /// <summary>Session-only per-account opt-out (Mini checkboxes):
+    /// excluded accounts neither trigger nor receive replicas.</summary>
+    public void SetSyncExcluded(IEnumerable<Guid> accountIds)
+    {
+        lock (_excludedGate)
+        {
+            _excluded.Clear();
+            foreach (Guid id in accountIds)
+                _excluded.Add(id);
+        }
+    }
+
+    private bool IsExcluded(Guid accountId)
+    {
+        lock (_excludedGate)
+            return _excluded.Contains(accountId);
+    }
+
     private long _suppressUntilTicks;
 
     /// <summary>Briefly drops clicks right after disabling (the disabling
@@ -98,13 +120,17 @@ public sealed class SyncController : IDisposable
         return false;
     }
 
-    private void OnLeftButtonDown(MasterClick click)
+    private void OnLeftButtonDown(MasterClick click) => OnButtonDown(click, MouseButton.Left);
+
+    private void OnRightButtonDown(MasterClick click) => OnButtonDown(click, MouseButton.Right);
+
+    private void OnButtonDown(MasterClick click, MouseButton button)
     {
         // Global hook callback: any throw would propagate into the hook,
         // so every failure path below ends in log + return.
         try
         {
-            HandleLeftButtonDown(click);
+            HandleButtonDown(click, button);
         }
         catch (Exception ex)
         {
@@ -112,7 +138,7 @@ public sealed class SyncController : IDisposable
         }
     }
 
-    private void HandleLeftButtonDown(MasterClick click)
+    private void HandleButtonDown(MasterClick click, MouseButton button)
     {
         if (!_sync.Enabled || Volatile.Read(ref _suspendCount) > 0) return;
         if (DateTimeOffset.UtcNow.UtcTicks < Interlocked.Read(ref _suppressUntilTicks)) return;
@@ -126,7 +152,7 @@ public sealed class SyncController : IDisposable
             return;
         }
 
-        List<Account> online = AllOnlineAccounts().ToList();
+        List<Account> online = AllOnlineAccounts().Where(a => !IsExcluded(a.Id)).ToList();
         Account? master = FindTopmostAccount(online, click.ScreenX, click.ScreenY)
             ?? FindFirstContainingAccount(online, click.ScreenX, click.ScreenY);
         if (master is null) return;
@@ -143,7 +169,7 @@ public sealed class SyncController : IDisposable
             return;
         }
 
-        _ = ReplicateAsync(master, online, client.X, client.Y, size.Width, size.Height);
+        _ = ReplicateAsync(master, online, client.X, client.Y, size.Width, size.Height, button);
     }
 
     /// <summary>Master = the topmost registered game window at the click point.</summary>
@@ -175,10 +201,11 @@ public sealed class SyncController : IDisposable
     }
 
     private async Task ReplicateAsync(
-        Account master, List<Account> online, int clientX, int clientY, int clientWidth, int clientHeight)
+        Account master, List<Account> online, int clientX, int clientY, int clientWidth, int clientHeight,
+        MouseButton button)
     {
         RelativePosition? fraction = _sync.CaptureMasterClick(
-            clientX, clientY, clientWidth, clientHeight, isLeftButton: true);
+            clientX, clientY, clientWidth, clientHeight, isLeftButton: button == MouseButton.Left);
         if (fraction is null) return;
 
         foreach (Account replica in online.Where(a => a.Id != master.Id && _sync.IsSynced(a.Id)))
@@ -187,7 +214,7 @@ public sealed class SyncController : IDisposable
             {
                 await _strategy.SendUiClickAsync(
                     new ReplicaTarget(replica.Id, replica.WindowHandle),
-                    fraction.X, fraction.Y, MouseButton.Left).ConfigureAwait(false);
+                    fraction.X, fraction.Y, button).ConfigureAwait(false);
             }
             catch (WinApiException)
             {
