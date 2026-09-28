@@ -1,14 +1,18 @@
-# HANDOFF — estado em 2026-09-25, base 9e4da46
+# HANDOFF — estado em 2026-09-28, base 6388cea
 ## Pronto (validado)
 - Build 0 erros/warnings; testes 79/79.
-- Limpeza pré-público concluída: commands redundantes removidos
-  (`ff488ab`), README enxuto (`9e4da46`, segurança em garantias
-  simples — detalhes em `doc/architecture.md`).
+- Lote 1 UI (`d709f79`): warning, status dots, clamp taskbar, wheel combo,
+  blink loop, tray (tudo verificado isolado).
+- Lote 2 fluxos: sync-por-conta no Mini + sync botão direito (`8dd8dbe`),
+  refresh de membros do editor (`c31d6df`), remoção do Simultaneous com
+  migração (`6388cea`).
 ## Pronto (código, pendente de jogo/Windows)
-- Push + tornar repo público + Release v1.0.1 + teste delta fim-a-fim.
+- Validação no jogo: Lote 1 visual, duplicate→editor, sync checkboxes,
+  sync direito, presets Simultaneous migrados.
+- Fase 3: observabilidade primeiro (logs jobId/HWND/cancel), depois fixes.
 ## Próximo passo
-- `git push` (terminal do usuário) e repo público.
+- Push (terminal do usuário) + testes no jogo + mandar log se falhar.
 ## Backlog pós-validação (ponteiro p/ `doc/backlog.md`)
-- Ver arquivo; U9-futuro (grade do Mini) aberto.
+- Ver arquivo; ambientes prod/dev/test aguardando explicação do usuário.
 ## Perguntas abertas
 - Certificado de code signing (pago) vs SmartScreen — pendente.
