@@ -400,9 +400,10 @@ public sealed partial class GroupViewModel : ObservableObject
             var group = new Group { Name = name };
             _state.Data.Groups.Add(group);
             Groups.Add(group);
-            // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
-            await _state.SaveAsync();
-            RebuildAll();
+        // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
+        await _state.SaveAsync();
+        _log.Info($"Persisted groups: {string.Join(", ", GroupCards.Select(c => $"{c.Group.Name}={c.Group.AccountIds.Count}"))}.");
+        RebuildAll();
             ActiveCard = GroupCards.FirstOrDefault(c => c.Group == group);
         }
     }

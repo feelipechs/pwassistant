@@ -160,16 +160,8 @@ public partial class PresetEditorControl : UserControl
         _isNew = isNew;
         ErrorLabel.Text = string.Empty;
         MemberAccounts.Clear();
-        var accountsById = _state.Data.Servers
-            .SelectMany(s => s.Accounts)
-            .ToDictionary(a => a.Id);
-
-        IEnumerable<Account> scope = _state.Data.Groups
-            .FirstOrDefault(g => g.Id == preset.GroupId) is Group group
-            ? group.AccountIds.Where(accountsById.ContainsKey).Select(id => accountsById[id])
-            : accountsById.Values;
         var optionsById = new Dictionary<Guid, MemberOption>();
-        foreach (Account account in scope)
+        foreach (Account account in ScopeAccounts(preset.GroupId))
         {
             var option = new MemberOption(account);
             MemberAccounts.Add(option);
@@ -200,6 +192,32 @@ public partial class PresetEditorControl : UserControl
         EmptyState.Visibility = Visibility.Collapsed;
         ImportPresetButton.IsEnabled = true;
         ExportPresetButton.IsEnabled = true;
+    }
+
+    /// <summary>Member scope for a group (all accounts when unknown).</summary>
+    private IEnumerable<Account> ScopeAccounts(Guid? groupId)
+    {
+        var accountsById = _state.Data.Servers
+            .SelectMany(s => s.Accounts)
+            .ToDictionary(a => a.Id);
+        return _state.Data.Groups
+            .FirstOrDefault(g => g.Id == groupId) is Group group
+            ? group.AccountIds.Where(accountsById.ContainsKey).Select(id => accountsById[id])
+            : accountsById.Values;
+    }
+
+    /// <summary>
+    /// Adds newly-available members without touching rows: safe when the tab
+    /// reshows with membership changed behind an open editor (add-only, so
+    /// existing selections can never be orphaned here).
+    /// </summary>
+    public void RefreshMemberScope()
+    {
+        if (_editing is null) return;
+        var known = new HashSet<Guid>(MemberAccounts.Select(o => o.Account.Id));
+        foreach (Account account in ScopeAccounts(_editing.GroupId))
+            if (known.Add(account.Id))
+                MemberAccounts.Add(new MemberOption(account));
     }
 
     /// <summary>True while an unsaved-new or dirty edit is loaded.</summary>

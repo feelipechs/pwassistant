@@ -61,6 +61,9 @@ public partial class GroupWindow : Window
     /// <summary>Switches the group view to the presets tab (full-bleed).</summary>
     public void ShowPresetsTab()
     {
+        // Membership may have changed behind an open editor (DnD on the
+        // cards tab): merge newcomers before showing, rows untouched.
+        _editor.RefreshMemberScope();
         RootDock.Visibility = Visibility.Collapsed;
         PresetTab.Visibility = Visibility.Visible;
     }
