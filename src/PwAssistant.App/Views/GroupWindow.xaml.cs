@@ -29,6 +29,7 @@ public partial class GroupWindow : Window
         PresetEditorHost.Content = editor;
         editor.Saved += OnPresetEditorSaved;
         editor.Cancelled += OnPresetEditorCancelled;
+        MaximizeClamp.Attach(this);
         // Independent window (no Owner): owned windows always render above
         // their owner, which trapped Main below Group.
         TitleLabel.Text = Strings.GroupMode;

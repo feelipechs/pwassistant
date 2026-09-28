@@ -148,18 +148,17 @@ public partial class App : Application
         ForwardToParentScroller(scroller, e);
     }
 
-    /// <summary>True when the pointer sits inside an open Popup
-    /// (e.g. a ComboBox dropdown): the Popup owns the wheel.</summary>
+    /// <summary>True when the pointer sits inside a popup (e.g. an open
+    /// ComboBox dropdown): popup content lives in a separate visual tree
+    /// whose root is never a Window, so the popup owns the wheel.</summary>
     private static bool IsOverOpenDropdown()
     {
-        DependencyObject? node = Mouse.DirectlyOver as DependencyObject;
-        while (node is not null)
-        {
-            if (node is System.Windows.Controls.Primitives.Popup)
-                return true;
-            node = LogicalTreeHelper.GetParent(node);
-        }
-        return false;
+        if (Mouse.DirectlyOver is not DependencyObject node)
+            return false;
+        DependencyObject root = node;
+        while (VisualTreeHelper.GetParent(root) is DependencyObject parent)
+            root = parent;
+        return root is not Window;
     }
 
     /// <summary>True when the scroller itself lives inside a Popup: class

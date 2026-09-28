@@ -53,6 +53,7 @@ public partial class MiniWindow : Window
         Closed += (_, _) => ViewModel.Loops.Changed -= OnLoopsChanged;
         ViewModel.Loops.Progressed += OnLoopProgressed;
         Closed += (_, _) => ViewModel.Loops.Progressed -= OnLoopProgressed;
+        MaximizeClamp.Attach(this);
     }
 
     private void OnLoopsChanged() =>

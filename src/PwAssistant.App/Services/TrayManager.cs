@@ -25,10 +25,19 @@ public sealed class TrayManager : IDisposable
             _icon.Visible = true;
             return;
         }
-        var menu = new WinForms.ContextMenuStrip();
-        var open = new WinForms.ToolStripMenuItem(Strings.TrayShow);
+        var menu = new WinForms.ContextMenuStrip
+        {
+            Renderer = new WinForms.ToolStripProfessionalRenderer(new DarkColorTable()),
+        };
+        var open = new WinForms.ToolStripMenuItem(Strings.TrayShow)
+        {
+            ForeColor = Drawing.Color.FromArgb(0xFA, 0xFA, 0xFA),
+        };
         open.Click += (_, _) => OpenRequested?.Invoke(this, EventArgs.Empty);
-        var exit = new WinForms.ToolStripMenuItem(Strings.TrayExit);
+        var exit = new WinForms.ToolStripMenuItem(Strings.TrayExit)
+        {
+            ForeColor = Drawing.Color.FromArgb(0xFA, 0xFA, 0xFA),
+        };
         exit.Click += (_, _) => ExitRequested?.Invoke(this, EventArgs.Empty);
         menu.Items.Add(open);
         menu.Items.Add(new WinForms.ToolStripSeparator());
@@ -56,6 +65,33 @@ public sealed class TrayManager : IDisposable
     {
         if (_icon is not null)
             _icon.Visible = false;
+    }
+
+    /// <summary>Dark menu matching the app theme (approximates
+    /// Brush.Card #171717, Border #262626, RaisedHover #303030,
+    /// Foreground #FAFAFA).</summary>
+    private sealed class DarkColorTable : WinForms.ProfessionalColorTable
+    {
+        private static readonly Drawing.Color Card = Drawing.Color.FromArgb(0x17, 0x17, 0x17);
+        private static readonly Drawing.Color Border = Drawing.Color.FromArgb(0x26, 0x26, 0x26);
+        private static readonly Drawing.Color Hover = Drawing.Color.FromArgb(0x30, 0x30, 0x30);
+        private static readonly Drawing.Color Text = Drawing.Color.FromArgb(0xFA, 0xFA, 0xFA);
+
+        public override Drawing.Color ToolStripDropDownBackground => Card;
+        public override Drawing.Color MenuBorder => Border;
+        public override Drawing.Color MenuItemSelected => Hover;
+        public override Drawing.Color MenuItemSelectedGradientBegin => Hover;
+        public override Drawing.Color MenuItemSelectedGradientEnd => Hover;
+        public override Drawing.Color MenuItemPressedGradientBegin => Hover;
+        public override Drawing.Color MenuItemPressedGradientEnd => Hover;
+        public override Drawing.Color MenuItemBorder => Border;
+        public override Drawing.Color MenuStripGradientBegin => Card;
+        public override Drawing.Color MenuStripGradientEnd => Card;
+        public override Drawing.Color ImageMarginGradientBegin => Card;
+        public override Drawing.Color ImageMarginGradientEnd => Card;
+        public override Drawing.Color ImageMarginGradientMiddle => Card;
+        public override Drawing.Color SeparatorDark => Border;
+        public override Drawing.Color ToolStripBorder => Border;
     }
 
     public void Dispose()

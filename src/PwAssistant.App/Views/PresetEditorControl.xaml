@@ -56,7 +56,7 @@
                         Style="{StaticResource PrimaryIconButton}"/>
             </StackPanel>
         </DockPanel>
-            <TextBlock x:Name="ErrorLabel" Margin="0,4,0,0" FontSize="11" Foreground="{DynamicResource Brush.Destructive}"/>
+            <TextBlock x:Name="ErrorLabel" Margin="0,4,0,0" FontSize="11" HorizontalAlignment="Right" Foreground="{DynamicResource Brush.Destructive}"/>
         <ListBox x:Name="ActionList" AllowDrop="True" SelectionMode="Extended"
                  SelectionChanged="OnActionSelectionChanged"
                  PreviewMouseLeftButtonDown="OnRowPreviewMouseDown"

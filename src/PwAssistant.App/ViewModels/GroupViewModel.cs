@@ -58,6 +58,13 @@ public sealed partial class MemberOption : ObservableObject
         ? Views.StatusKind.Online
         : Views.StatusKind.Offline;
 
+    /// <summary>Re-reads Account.Status (instances are reused across polls).</summary>
+    public void RefreshStatus()
+    {
+        OnPropertyChanged(nameof(StatusText));
+        OnPropertyChanged(nameof(DisplayStatus));
+    }
+
     public string? ClassImagePath => string.IsNullOrWhiteSpace(Account.Class)
         ? null
         : $"/PwAssistant.App;component/Resources/Classes/{Account.Class.Trim().ToLowerInvariant()}.png";
@@ -95,6 +102,7 @@ public sealed partial class GroupCard : ObservableObject
     private bool isDragOver;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Subtitle))]
     private int onlineCount;
 
     [ObservableProperty]
@@ -242,6 +250,7 @@ public sealed partial class GroupViewModel : ObservableObject
             if (byId.TryGetValue(account.Id, out MemberOption? existing))
             {
                 existing.IsActive = false;
+                existing.RefreshStatus();
                 target.Add(existing);
             }
             else

@@ -18,6 +18,7 @@ public sealed partial class AccountCard : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
+    [NotifyPropertyChangedFor(nameof(DisplayStatus))]
     [NotifyPropertyChangedFor(nameof(PlayText))]
     [NotifyPropertyChangedFor(nameof(PlayGlyph))]
     private AccountStatus status;
@@ -101,6 +102,7 @@ public sealed partial class ServerRow : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatsText))]
+    [NotifyPropertyChangedFor(nameof(DisplayStatus))]
     [NotifyPropertyChangedFor(nameof(HasOnline))]
     private int onlineCount;
 

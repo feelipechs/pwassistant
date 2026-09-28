@@ -4,8 +4,8 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="TrayShow" xml:space="preserve"><value>ABRIR</value></data>
-  <data name="TrayExit" xml:space="preserve"><value>SAIR</value></data>
+  <data name="TrayShow" xml:space="preserve"><value>Abrir</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Sair</value></data>
   <data name="TrayTip" xml:space="preserve"><value>PW ASSISTANT</value></data>
   <data name="Minimize" xml:space="preserve"><value>MINIMIZAR</value></data>
   <data name="Servers" xml:space="preserve"><value>SERVIDORES</value></data>

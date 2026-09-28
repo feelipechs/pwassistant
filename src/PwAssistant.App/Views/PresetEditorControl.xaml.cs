@@ -158,6 +158,7 @@ public partial class PresetEditorControl : UserControl
     {
         _editing = preset;
         _isNew = isNew;
+        ErrorLabel.Text = string.Empty;
         MemberAccounts.Clear();
         var accountsById = _state.Data.Servers
             .SelectMany(s => s.Accounts)
@@ -224,6 +225,7 @@ public partial class PresetEditorControl : UserControl
         Rows.Clear();
         MemberAccounts.Clear();
         NameBox.Text = string.Empty;
+        ErrorLabel.Text = string.Empty;
         _recordedHotkey = string.Empty;
         UpdateHotkeyLabel();
         _initial = null;
@@ -259,6 +261,7 @@ public partial class PresetEditorControl : UserControl
         PreviewKeyDown -= OnHotkeyRecordKey;
         HotkeyBox.BorderBrush = (System.Windows.Media.Brush)FindResource("Brush.Input");
         RecordHotkeyButton.Content = Strings.RecordHotkey;
+        ErrorLabel.Text = string.Empty;
         RecordHotkeyButton.Focus();
     }
 
@@ -637,6 +640,7 @@ public partial class PresetEditorControl : UserControl
     private void OnSave(object sender, RoutedEventArgs e)
     {
         if (_editing is null) return;
+        ErrorLabel.Text = string.Empty;
         string name = NameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {

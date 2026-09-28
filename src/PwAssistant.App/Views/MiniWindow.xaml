@@ -93,7 +93,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource Brush.Raised}" BorderBrush="{DynamicResource Brush.Border}"
+                            <Border x:Name="RowBorder" Background="{DynamicResource Brush.Raised}" BorderBrush="{DynamicResource Brush.Border}"
                                     BorderThickness="1" CornerRadius="8" Padding="0" Margin="0,0,4,2">
                                 <DockPanel VerticalAlignment="Center">
                                     <CheckBox IsChecked="{Binding IsLooping, Mode=OneWay}" Focusable="False"
@@ -119,7 +119,12 @@
                                                                 Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)"
                                                                 From="{StaticResource Color.MutedForeground}"
                                                                 To="{StaticResource Color.Primary}"
-                                                                Duration="0:0:0.6"/>
+                                                                Duration="0:0:0.35"/>
+                                                <ColorAnimation Storyboard.TargetName="RowBorder"
+                                                                Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                                From="{StaticResource Color.Border}"
+                                                                To="{StaticResource Color.Primary}"
+                                                                Duration="0:0:0.35"/>
                                             </Storyboard>
                                         </BeginStoryboard>
                                     </DataTrigger.EnterActions>

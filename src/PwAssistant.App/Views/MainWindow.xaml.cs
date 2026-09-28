@@ -50,6 +50,7 @@ public partial class MainWindow : Window
             VersionLabel.Visibility = Visibility.Visible;
         }
         SourceInitialized += OnSourceInitialized;
+        MaximizeClamp.Attach(this);
         _tray.OpenRequested += (_, _) => RestoreFromBackground();
         _tray.ExitRequested += (_, _) =>
         {
