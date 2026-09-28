@@ -12,10 +12,12 @@ public enum MouseButton
     Right
 }
 
+/// <summary>Preset dispatch order. Sequential-only by design: synchronized
+/// multi-client bursts trip server-side bot heuristics (observed account
+/// kicks); PW Helper is sequential-only for the same reason.</summary>
 public enum ExecutionMode
 {
-    Sequential,
-    Simultaneous
+    Sequential
 }
 
 public enum AccountStatus

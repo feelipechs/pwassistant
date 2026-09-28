@@ -70,7 +70,12 @@ public sealed class JsonFileAccountStore : IAccountStore
         await using FileStream stream = File.OpenRead(path);
         AppData? data = await JsonSerializer.DeserializeAsync<AppData>(
             stream, JsonOptions, cancellationToken).ConfigureAwait(false);
-        return data ?? new AppData();
+        data ??= new AppData();
+        // Retired mode: pre-removal Simultaneous presets run Sequential.
+        foreach (Preset preset in data.Presets)
+            if (preset.ExecutionMode != ExecutionMode.Sequential)
+                preset.ExecutionMode = ExecutionMode.Sequential;
+        return data;
     }
 
     public async Task SaveAsync(string path, AppData data, CancellationToken cancellationToken = default)

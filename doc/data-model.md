@@ -42,7 +42,7 @@ Preset
  ├─ GroupId
  ├─ Name
  ├─ Hotkey               (opcional)
- ├─ ExecutionMode: Sequential | Simultaneous
+ ├─ ExecutionMode: Sequential (fixo; Simultaneous removido em 2026-09-25)
  └─ Actions: List<AccountAction>
 
 AccountAction

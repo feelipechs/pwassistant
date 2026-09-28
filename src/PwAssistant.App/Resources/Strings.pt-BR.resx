@@ -112,7 +112,6 @@
   <data name="DragHint" xml:space="preserve"><value>ARRASTE PARA OS GRUPOS • ARRASTE DE VOLTA PARA REMOVER</value></data>
   <data name="GroupCardStats" xml:space="preserve"><value>{0} MEMBROS • {1} ONLINE • {2} PRESETS</value></data>
   <data name="Sequential" xml:space="preserve"><value>SEQUENCIAL</value></data>
-  <data name="Simultaneous" xml:space="preserve"><value>SIMULTÂNEO</value></data>
   <data name="DeleteAccountTitle" xml:space="preserve"><value>EXCLUIR CONTA</value></data>
   <data name="DeleteAccountConfirm" xml:space="preserve"><value>EXCLUIR {0}? GRUPOS, TABS E PRESETS QUE A CITAM SERÃO LIMPOS.</value></data>
   <data name="DeletePresetTitle" xml:space="preserve"><value>EXCLUIR PRESET</value></data>

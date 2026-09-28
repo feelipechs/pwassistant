@@ -47,21 +47,16 @@ testes práticos no Windows.
 
 ## Execução de Preset
 
-`MacroExecutor.Execute(preset)`:
+`MacroExecutor.Execute(preset)` (sequential-only desde 2026-09-25 —
+`Simultaneous` removido: rajadas sincronizadas multi-conta dispararam
+heurística anti-bot no campo, com kick de conta; PW Helper é
+sequencial-only pelo mesmo motivo):
 
 1. Resolve `Hwnd` atual de cada `AccountId` envolvida (via processo ativo).
-2. Se `ExecutionMode == Sequential`:
-   - Para cada AccountAction, na ordem definida: aguarda `DelayBeforeMs`,
-     executa a ação via `IInputStrategy`, segue para a próxima.
-3. Se `ExecutionMode == Simultaneous`:
-   - Dispara uma task/thread por conta, cada uma aguardando seu próprio
-     `DelayBeforeMs` e executando via `IInputStrategy`.
-   - **Só é verdadeiramente simultâneo se a estratégia ativa for
-     PostMessage** (sem depender de foco). Com SendInput+foco, o
-     "simultâneo" é, na prática, sequencial rápido.
-4. Se `Repeat` estiver definida na Action, repete conforme
-   `Times`/`IntervalMs` antes de passar para a próxima conta (sequencial)
-   ou dentro da própria task (simultâneo).
+2. Para cada AccountAction, na ordem definida: aguarda `DelayBeforeMs`,
+   executa a ação via `IInputStrategy`, segue para a próxima.
+3. Se `Repeat` estiver definida na Action, repete conforme
+   `Times`/`IntervalMs` antes de passar para a próxima conta.
 
 ## Hotkey global de disparo de preset
 

@@ -139,13 +139,7 @@ public partial class PresetEditorControl : UserControl
         AddClickButton.ToolTip = Strings.AddClick;
         NameCaption.Text = Strings.PresetName;
         ModeCaption.Text = Strings.ExecutionMode;
-        ModeBox.DisplayMemberPath = "Label";
-        ModeBox.SelectedValuePath = "Value";
-        ModeBox.ItemsSource = new[]
-        {
-            new { Value = ExecutionMode.Sequential, Label = Strings.Sequential },
-            new { Value = ExecutionMode.Simultaneous, Label = Strings.Simultaneous },
-        };
+        ModeValue.Text = Strings.Sequential;
         HotkeyCaption.Text = Strings.Hotkey;
         RecordHotkeyButton.Content = Strings.RecordHotkey;
         HotkeyHintLabel.Text = Strings.HotkeyHint;
@@ -185,7 +179,6 @@ public partial class PresetEditorControl : UserControl
             });
         }
         NameBox.Text = preset.Name;
-        ModeBox.SelectedValue = preset.ExecutionMode;
         _recordedHotkey = preset.Hotkey ?? string.Empty;
         UpdateHotkeyLabel();
         _initial = TakeSnapshot();
@@ -722,9 +715,7 @@ public partial class PresetEditorControl : UserControl
 
         _editing.Name = name;
         _editing.Hotkey = string.IsNullOrEmpty(hotkey) ? null : hotkey;
-        _editing.ExecutionMode = ModeBox.SelectedValue is ExecutionMode mode
-            ? mode
-            : ExecutionMode.Simultaneous;
+        _editing.ExecutionMode = ExecutionMode.Sequential;
         _editing.Actions.Clear();
         _editing.Actions.AddRange(rebuilt);
         // Saved state is the new clean baseline (else every later
@@ -759,7 +750,7 @@ public partial class PresetEditorControl : UserControl
 
     private EditorSnapshot TakeSnapshot() => new(
         NameBox.Text.Trim(),
-        ModeBox.SelectedValue is ExecutionMode mode ? mode : ExecutionMode.Simultaneous,
+        ExecutionMode.Sequential,
         _recordedHotkey.Trim(),
         Rows.Select(r => new RowData(
             r.SelectedAccount?.Account.Id ?? Guid.Empty,

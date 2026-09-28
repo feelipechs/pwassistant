@@ -65,12 +65,11 @@ foco). Driver kernel e injeção estão **descartados em definitivo**.
 
 ## `MacroExecutor` — semântica
 
-- Entrada: lista ordenada de `(IWindowTarget, Action)` + `ExecutionMode`.
+- Entrada: lista ordenada de `(IWindowTarget, Action)` + `ExecutionMode`
+  (sempre `Sequential` desde 2026-09-25 — `Simultaneous` removido, ver
+  `macro-engine.md`).
 - `Sequential`: por conta, na ordem — espera `DelayBeforeMs`, executa via
   `IInputStrategy`, aplica `Repeat` (vezes × intervalo) antes da próxima.
-- `Simultaneous`: uma task por conta com seu próprio `DelayBeforeMs`.
-  Com `PostMessage` (sem foco) é simultâneo de verdade; documentar que com a
-  estratégia de fallback seria rajada sequencial rápida.
 - Resolução de alvo: `AccountId → Hwnd` no momento do disparo (via processo
   ativo); conta offline/ admisssível é pulada com log, nunca aborta o lote.
 - Cancelamento cooperativo por `jobId` (protocolo próprio:

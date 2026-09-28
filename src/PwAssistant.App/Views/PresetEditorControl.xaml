@@ -17,7 +17,8 @@
                     <TextBox x:Name="NameBox" Width="160" Margin="0,0,16,4"/>
                     <TextBlock x:Name="ModeCaption" VerticalAlignment="Center" Margin="0,0,8,0"
                                Foreground="{DynamicResource Brush.MutedForeground}"/>
-                    <ComboBox x:Name="ModeBox" Width="120" Margin="0,0,16,4"/>
+                    <TextBlock x:Name="ModeValue" VerticalAlignment="Center" Margin="0,0,16,4"
+                               Foreground="{DynamicResource Brush.Foreground}"/>
                     <TextBlock x:Name="HotkeyCaption" VerticalAlignment="Center" Margin="0,0,8,0"
                                Foreground="{DynamicResource Brush.MutedForeground}"/>
                     <Button x:Name="RecordHotkeyButton" Click="OnRecordHotkey" Style="{StaticResource OutlineButton}" Margin="0,0,8,4" MinWidth="110"/>

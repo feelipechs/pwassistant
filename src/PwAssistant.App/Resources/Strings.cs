@@ -88,7 +88,6 @@ public static class Strings
     public static string InvalidHotkey => Get(nameof(InvalidHotkey));
     public static string ExecutionMode => Get(nameof(ExecutionMode));
     public static string Sequential => Get(nameof(Sequential));
-    public static string Simultaneous => Get(nameof(Simultaneous));
     public static string DeleteAccountTitle => Get(nameof(DeleteAccountTitle));
     public static string DeleteAccountConfirm(string name) =>
         string.Format(Get(nameof(DeleteAccountConfirm)), name);

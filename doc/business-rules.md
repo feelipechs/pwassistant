@@ -24,7 +24,7 @@ normativa; em caso de conflito com código, o código deve ser corrigido
   nunca são excluídas). "Todas" é implícita.
 - **Server**: excluir pede confirmação e limpa em cascata (contas saem de
   grupos, tabs e ações de preset que as citam).
-- **Preset**: `Id, GroupId, Name, Hotkey?, ExecutionMode, Actions[]`.
+- **Preset**: `Id, GroupId, Name, Hotkey?, ExecutionMode (= Sequential, fixo), Actions[]`.
 - **AccountAction**: `AccountId + Action`.
 - **Action**: `Type (Key|Click), Key?, RelativePosition?, DelayBeforeMs,
   Repeat?`.
@@ -38,11 +38,10 @@ normativa; em caso de conflito com código, o código deve ser corrigido
 1. Resolver `Hwnd` atual de cada `AccountId` (processo ativo). Sem HWND → pula + log.
 2. `Sequential`: ordem definida, `DelayBeforeMs` antes de cada ação,
    `Repeat` (vezes × intervalo) esgota antes da próxima conta.
-3. `Simultaneous`: uma task por conta; cada uma respeita seu `DelayBeforeMs`.
-4. Toda ação usa a receita da estratégia ativa (v1: priming + send + higiene
+3. Toda ação usa a receita da estratégia ativa (v1: priming + send + higiene
    opcional, ver `architecture.md`). Retorno da API (`PostMessage != 0`)
    NÃO significa efeito no jogo — logar, mas não tratar como sucesso.
-5. Cancelamento por `jobId`: para o lote entre ações (nunca no meio de um
+4. Cancelamento por `jobId`: para o lote entre ações (nunca no meio de um
    par DOWN/UP — par é atômico).
 
 ## Modo Grupo e Sync Click

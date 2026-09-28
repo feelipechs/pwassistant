@@ -112,7 +112,6 @@
   <data name="DragHint" xml:space="preserve"><value>DRAG TO GROUPS • DRAG BACK TO REMOVE</value></data>
   <data name="GroupCardStats" xml:space="preserve"><value>{0} MEMBERS • {1} ONLINE • {2} PRESETS</value></data>
   <data name="Sequential" xml:space="preserve"><value>SEQUENTIAL</value></data>
-  <data name="Simultaneous" xml:space="preserve"><value>SIMULTANEOUS</value></data>
   <data name="DeleteAccountTitle" xml:space="preserve"><value>DELETE ACCOUNT</value></data>
   <data name="DeleteAccountConfirm" xml:space="preserve"><value>DELETE {0}? GROUPS, TABS AND PRESETS POINTING AT IT ARE CLEANED UP.</value></data>
   <data name="DeletePresetTitle" xml:space="preserve"><value>DELETE PRESET</value></data>

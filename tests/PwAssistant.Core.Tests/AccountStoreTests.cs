@@ -51,6 +51,19 @@ public sealed class AccountStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Load_NormalizesRetiredSimultaneousToSequential()
+    {
+        var store = new JsonFileAccountStore(new TestProtector());
+        await File.WriteAllTextAsync(_file,
+            """{"Version":1,"Servers":[],"Groups":[],"Presets":[{"Id":"00000000-0000-0000-0000-000000000001","GroupId":"00000000-0000-0000-0000-000000000002","Name":"Legacy","ExecutionMode":1,"Actions":[]}],"Formations":[],"Tabs":[]}""");
+
+        AppData loaded = await store.LoadAsync(_file);
+
+        Preset preset = Assert.Single(loaded.Presets);
+        Assert.Equal(ExecutionMode.Sequential, preset.ExecutionMode);
+    }
+
+    [Fact]
     public async Task SavedFile_NeverContainsPlaintextPassword()
     {
         var store = new JsonFileAccountStore(new TestProtector());

@@ -113,19 +113,6 @@ public sealed class MacroExecutorTests
     }
 
     [Fact]
-    public async Task Simultaneous_ExecutesAllAccounts()
-    {
-        var strategy = new FakeStrategy();
-        var executor = new MacroExecutor(strategy, Resolver(AccountA, AccountB));
-
-        PresetExecutionResult result = await executor.ExecuteAsync(
-            TwoAccountPreset(ExecutionMode.Simultaneous), Guid.NewGuid());
-
-        Assert.Equal(2, strategy.Calls.Count);
-        Assert.All(result.Accounts, r => Assert.False(r.Skipped));
-    }
-
-    [Fact]
     public async Task ClickAction_ForwardsMouseButton()
     {
         var strategy = new FakeStrategy();

@@ -40,9 +40,6 @@ public sealed class MacroExecutor
     {
         ArgumentNullException.ThrowIfNull(preset);
 
-        if (preset.ExecutionMode == ExecutionMode.Simultaneous)
-            return await ExecuteSimultaneousAsync(preset, jobId, progress, cancellationToken).ConfigureAwait(false);
-
         var results = new List<AccountExecutionResult>();
         int index = 0;
         foreach (AccountAction accountAction in preset.Actions)
@@ -53,42 +50,6 @@ public sealed class MacroExecutor
             progress?.Report(new PresetProgress(++index, preset.Actions.Count, result.AccountId, result.Skipped));
         }
         return new PresetExecutionResult(jobId, preset.Id, false, results);
-    }
-
-    /// <summary>
-    /// Parallel across accounts, sequential within each account: two tasks
-    /// posting to the same HWND would interleave priming and drop inputs.
-    /// Result order and progress indices follow the preset order.
-    /// </summary>
-    private async Task<PresetExecutionResult> ExecuteSimultaneousAsync(
-        Preset preset, Guid jobId,
-        IProgress<PresetProgress>? progress, CancellationToken cancellationToken)
-    {
-        AccountExecutionResult?[] results = new AccountExecutionResult?[preset.Actions.Count];
-        Task[] tasks = preset.Actions
-            .Select((accountAction, index) => (accountAction, index))
-            .GroupBy(x => x.accountAction.AccountId)
-            .Select(async accountGroup =>
-            {
-                foreach ((AccountAction accountAction, int index) in accountGroup)
-                {
-                    AccountExecutionResult result = await ExecuteSingleAsync(accountAction, cancellationToken).ConfigureAwait(false);
-                    results[index] = result;
-                    progress?.Report(new PresetProgress(index + 1, preset.Actions.Count, result.AccountId, result.Skipped));
-                }
-            })
-            .ToArray();
-
-        try
-        {
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-
-        return new PresetExecutionResult(jobId, preset.Id, false, results.Select(r => r!).ToList());
     }
 
     private async Task<AccountExecutionResult> ExecuteSingleAsync(

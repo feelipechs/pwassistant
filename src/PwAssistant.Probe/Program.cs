@@ -16,12 +16,12 @@ if (args.Length == 0 || args[0] is "-h" or "--help")
         PwAssistant.Probe — M1/M3 validation console (run on Windows, game WITHOUT focus).
           probe key --pid <pid> --key F1 [--countdown 3] [--no-hygiene]
           probe click --pid <pid> --x <cx> --y <cy> [--countdown 3] [--no-hygiene]
-          probe preset --pid <pid1> --pid <pid2> --x <cx> --y <cy> [--countdown 3] [--no-hygiene] [--sequential]
+          probe preset --pid <pid1> --pid <pid2> --x <cx> --y <cy> [--countdown 3] [--no-hygiene]
           probe sync --pid <pid1> --pid <pid2> [--no-hygiene]
 
         Client-area pixel coords for click. Observe the game visually.
         Preset (M3): key F1 on the first PID + UI-click on the second PID in one
-        Simultaneous dispatch, plus a ghost offline account proving skip-without-abort.
+        sequential dispatch, plus a ghost offline account proving skip-without-abort.
         Sync (M4): installs the mouse hook and stays live until ENTER — a physical
         left-click inside ANY listed window replicates as a UI-click to the others.
         No fixed master; the focused window at click time is the master.
@@ -103,7 +103,7 @@ switch (args[0].ToLowerInvariant())
             Console.Error.WriteLine("Missing --x / --y client-area pixel coords for the click action.");
             return 2;
         }
-        bool sequential = options.ContainsKey("sequential");
+        // Note: dispatch is sequential-only (Simultaneous retired).
 
         var accountIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var targets = new Dictionary<Guid, IWindowTarget>();
@@ -140,7 +140,7 @@ switch (args[0].ToLowerInvariant())
         var preset = new Preset
         {
             Name = "Probe M3",
-            ExecutionMode = sequential ? ExecutionMode.Sequential : ExecutionMode.Simultaneous,
+            ExecutionMode = ExecutionMode.Sequential,
             Actions =
             [
                 new AccountAction
