@@ -163,6 +163,32 @@ public sealed partial class MainViewModel : ObservableObject
     private const int StopGracePolls = 10;
     private const int StopGraceMs = 100;
 
+    /// <summary>Settle gap between bulk launches: LaunchAsync already waits
+    /// for the window, so this is only breathing room (adaptive per machine).</summary>
+    private const int BulkSettleMs = 2000;
+
+    private CancellationTokenSource? _bulkCts;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BulkActionText))]
+    private bool isBulkRunning;
+
+    /// <summary>Bulk toggle label for the selected tab (never "All"):
+    /// cancel while running, close when all online, open otherwise.</summary>
+    public string BulkActionText
+    {
+        get
+        {
+            if (IsBulkRunning)
+                return AppStrings.CancelDialog;
+            if (SelectedServer is null || SelectedTab is null || Accounts.Count == 0)
+                return AppStrings.OpenAll;
+            return Accounts.All(c => c.Model.Status == AccountStatus.Online)
+                ? AppStrings.CloseAll
+                : AppStrings.OpenAll;
+        }
+    }
+
     public ObservableCollection<ServerRow> Servers { get; } = new();
     public ObservableCollection<AccountCard> Accounts { get; } = new();
     public ObservableCollection<AccountTab> Tabs { get; } = new();
@@ -323,6 +349,7 @@ public sealed partial class MainViewModel : ObservableObject
         _state.RefreshOnlineStatus();
         foreach (ServerRow row in Servers)
             row.Refresh();
+        OnPropertyChanged(nameof(BulkActionText));
     }
 
     private async Task PersistSelectionAsync()
@@ -349,6 +376,7 @@ public sealed partial class MainViewModel : ObservableObject
             Servers.Add(row);
             SelectedServer = row;
             await _state.SaveAsync().ConfigureAwait(false);
+            ToastService.Show(AppStrings.ToastAdded(name));
         }
     }
 
@@ -362,6 +390,7 @@ public sealed partial class MainViewModel : ObservableObject
         row.Model.ElementClientPath = path;
         row.NotifyRenamed();
         await _state.SaveAsync().ConfigureAwait(false);
+        ToastService.Show(AppStrings.ToastSaved(name));
     }
 
     [RelayCommand]
@@ -386,6 +415,7 @@ public sealed partial class MainViewModel : ObservableObject
             SelectedServer = Servers.FirstOrDefault();
         RefreshServerRows();
         await _state.SaveAsync().ConfigureAwait(false);
+        ToastService.Show(AppStrings.ToastRemoved(row.Model.Name));
     }
 
     [RelayCommand]
@@ -418,6 +448,7 @@ public sealed partial class MainViewModel : ObservableObject
             RebuildAccounts();
             RefreshServerRows();
             await _state.SaveAsync().ConfigureAwait(false);
+            ToastService.Show(AppStrings.ToastAdded(draft.Login));
         }
     }
 
@@ -441,6 +472,7 @@ public sealed partial class MainViewModel : ObservableObject
         TabItems.Add(new TabItem(tab, tab.Name));
         SelectedTab = tab;
         await _state.SaveAsync().ConfigureAwait(false);
+        ToastService.Show(AppStrings.ToastAdded(name));
     }
 
     [RelayCommand]
@@ -491,6 +523,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedTab == tab)
             SelectedTab = null;
         await _state.SaveAsync().ConfigureAwait(false);
+        ToastService.Show(AppStrings.ToastRemoved(tab.Name));
     }
 
     [RelayCommand]
@@ -514,13 +547,20 @@ public sealed partial class MainViewModel : ObservableObject
             await StopClientAsync(card).ConfigureAwait(false);
             return;
         }
+        await PlayOneAsync(card).ConfigureAwait(false);
+    }
+
+    /// <summary>Launches one offline client (no toggle). Shared by manual
+    /// Play and bulk open. Returns true when the client launched.</summary>
+    private async Task<bool> PlayOneAsync(AccountCard card)
+    {
         try
         {
             card.IsLaunching = true;
             StatusMessage = "...";
             string password = _state.RevealPassword(card.Model);
             GameSession session = await _launcher.LaunchAsync(
-                SelectedServer.Model, card.Model, password, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+                SelectedServer!.Model, card.Model, password, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
             _marker.Mark(card.Model);
             _log.Info($"Launched {card.Model.Login} pid={session.ProcessId}.");
             WatchSession(session, card);
@@ -531,15 +571,84 @@ public sealed partial class MainViewModel : ObservableObject
                 RefreshServerRows();
             });
             StatusMessage = string.Empty;
+            ToastService.Show(AppStrings.ToastOpened(card.Model.Login));
+            return true;
         }
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
             _log.Error($"Launch {card?.Model.Login} failed: {ex.Message}");
+            ToastService.Show(AppStrings.ToastFailed(card?.Model.Login ?? "?", ex.Message), ToastKind.Error);
+            return false;
         }
         finally
         {
             App.Current.Dispatcher.Invoke(() => card.IsLaunching = false);
+        }
+    }
+
+    /// <summary>
+    /// Bulk open/close for the selected tab only (never "All"): opens every
+    /// offline account in sequence (next starts once the previous window is
+    /// up, plus a settle gap — adaptive per machine) or closes every online
+    /// one. A second click cancels.
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenCloseAllInTabAsync()
+    {
+        if (IsBulkRunning)
+        {
+            _bulkCts?.Cancel();
+            return;
+        }
+        if (SelectedServer is null || SelectedTab is null) return;
+        List<AccountCard> cards = Accounts.ToList();
+        if (cards.Count == 0) return;
+
+        _state.RefreshOnlineStatus();
+        foreach (AccountCard card in cards)
+            card.Refresh();
+        bool allOnline = cards.All(c => c.Model.Status == AccountStatus.Online);
+
+        _bulkCts = new CancellationTokenSource();
+        IsBulkRunning = true;
+        try
+        {
+            int done = 0;
+            foreach (AccountCard card in cards)
+            {
+                _bulkCts.Token.ThrowIfCancellationRequested();
+                StatusMessage = $"{++done}/{cards.Count}…";
+                if (allOnline)
+                {
+                    if (card.Model.Status == AccountStatus.Online)
+                        await StopClientAsync(card).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (card.Model.Status == AccountStatus.Online)
+                        continue;
+                    await PlayOneAsync(card).ConfigureAwait(false);
+                    await Task.Delay(BulkSettleMs, _bulkCts.Token).ConfigureAwait(false);
+                }
+            }
+            StatusMessage = string.Empty;
+            _log.Info($"Bulk {(allOnline ? "close" : "open")} tab {SelectedTab.Name}: {cards.Count} accounts.");
+            ToastService.Show(allOnline
+                ? AppStrings.ToastClosed(SelectedTab.Name)
+                : AppStrings.ToastOpened(SelectedTab.Name));
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = AppStrings.PresetCanceled;
+            _log.Info("Bulk open/close canceled.");
+            ToastService.Show(AppStrings.PresetCanceled, ToastKind.Warn);
+        }
+        finally
+        {
+            _bulkCts?.Dispose();
+            _bulkCts = null;
+            IsBulkRunning = false;
         }
     }
 
@@ -574,6 +683,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             StatusMessage = ex.Message;
             _log.Error($"Stop {card.Model.Login} failed: {ex.Message}");
+            ToastService.Show(AppStrings.ToastFailed(card.Model.Login, ex.Message), ToastKind.Error);
         }
         finally
         {
@@ -613,6 +723,7 @@ public sealed partial class MainViewModel : ObservableObject
                 // Paired with the rooted handle above: release it here.
                 process.Dispose();
                 _log.Info($"Client pid={session.ProcessId} exited.");
+                ToastService.Show(AppStrings.ToastClosed(card.Model.Login));
                 _dispatcher.CancelAll();
                 _focus.RemoveAccount(card.Model.Id);
                 card.Model.ProcessId = null;
@@ -656,6 +767,7 @@ public sealed partial class MainViewModel : ObservableObject
             _state.SetPassword(card.Model, draft.Password);
         await _state.SaveAsync().ConfigureAwait(false);
         App.Current.Dispatcher.Invoke(RebuildAccounts);
+        ToastService.Show(AppStrings.ToastSaved(draft.Login));
     }
 
     [RelayCommand]
@@ -668,6 +780,7 @@ public sealed partial class MainViewModel : ObservableObject
             AppStrings.Delete))
             return;
         Guid id = card.Model.Id;
+        string displayName = card.DisplayName;
         SelectedServer.Model.Accounts.Remove(card.Model);
         foreach (Group group in _state.Data.Groups)
             group.AccountIds.Remove(id);
@@ -681,6 +794,7 @@ public sealed partial class MainViewModel : ObservableObject
             RebuildAccounts();
             RefreshServerRows();
         });
+        ToastService.Show(AppStrings.ToastRemoved(displayName));
     }
 
     [RelayCommand]

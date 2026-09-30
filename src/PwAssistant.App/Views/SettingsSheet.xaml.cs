@@ -29,6 +29,7 @@ public partial class SettingsSheet : UserControl
         CycleKeyCaption.Text = Strings.CycleKey;
         NumpadCheck.Content = Strings.NumpadSelect;
         ShiftTapCheck.Content = Strings.ShiftTapToggle;
+        VerboseCheck.Content = Strings.VerboseFireLog;
         ArmingHintLabel.Text = Strings.ArmingHint;
         SaveButton.Content = Strings.Save;
         RecordCycleButton.Content = Strings.RecordHotkey;
@@ -47,6 +48,8 @@ public partial class SettingsSheet : UserControl
         UpdateCycleLabel();
         NumpadCheck.IsChecked = _originalNumpad;
         ShiftTapCheck.IsChecked = _originalShiftTap;
+        // Session-only diagnostics flag: applied live, outside Save/Discard.
+        VerboseCheck.IsChecked = _state.VerboseFireLog;
         Visibility = Visibility.Visible;
         _tcs = new TaskCompletionSource<bool>();
         Dispatcher.InvokeAsync(() => CloseButton.Focus());
@@ -155,6 +158,12 @@ public partial class SettingsSheet : UserControl
             MessageBox.Show(Window.GetWindow(this), ex.Message, Strings.Settings);
             return false;
         }
+    }
+
+    private void OnVerboseChanged(object sender, RoutedEventArgs e)
+    {
+        if (_state is not null)
+            _state.VerboseFireLog = VerboseCheck.IsChecked == true;
     }
 
     private void OnClose(object sender, RoutedEventArgs e) => Discard();

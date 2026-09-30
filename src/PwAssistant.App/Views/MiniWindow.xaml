@@ -111,7 +111,7 @@
                                     <Button x:Name="FireButton" Content="{Binding DisplayFireText}" Focusable="False"
                                             FontSize="10" MinHeight="18" Padding="4,0" Margin="0"
                                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                                            Style="{StaticResource GhostButton}"
+                                            Style="{StaticResource GhostButton}" ClickMode="Release"
                                             Command="{Binding DataContext.FirePresetCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                             CommandParameter="{Binding Preset}"/>
                                 </DockPanel>

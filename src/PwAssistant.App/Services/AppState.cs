@@ -19,6 +19,9 @@ public sealed class AppState
     public AppData Data { get; private set; } = new();
     public Server? SelectedServer { get; set; }
 
+    /// <summary>Session-only per-message fire trace (Settings toggle, never persisted).</summary>
+    public bool VerboseFireLog { get; set; }
+
     public AppState(IAccountStore store, IWindowResolver resolver, string filePath)
     {
         _store = store;
@@ -88,6 +91,38 @@ public sealed class AppState
             .SelectMany(s => s.Accounts)
             .FirstOrDefault(a => a.Id == accountId);
         if (account is null || account.WindowHandle == IntPtr.Zero)
+            return null;
+        return new AccountWindowTarget(account.Id, account.WindowHandle);
+    }
+
+    /// <summary>Like <see cref="ResolveTarget"/> but re-resolves PID → HWND
+    /// right now for this account only (fresh handle per send, tolerant to
+    /// window recreation mid-batch). Updates the cached handle.</summary>
+    public IWindowTarget? ResolveTargetLive(Guid accountId)
+    {
+        Account? account = Data.Servers
+            .SelectMany(s => s.Accounts)
+            .FirstOrDefault(a => a.Id == accountId);
+        if (account is null || account.ProcessId is null)
+        {
+            if (account is not null)
+                account.WindowHandle = IntPtr.Zero;
+            return null;
+        }
+
+        try
+        {
+            Process.GetProcessById(account.ProcessId.Value);
+        }
+        catch (ArgumentException)
+        {
+            account.ProcessId = null;
+            account.WindowHandle = IntPtr.Zero;
+            return null;
+        }
+
+        account.WindowHandle = _resolver.ResolveWindow(account.ProcessId.Value);
+        if (account.WindowHandle == IntPtr.Zero)
             return null;
         return new AccountWindowTarget(account.Id, account.WindowHandle);
     }

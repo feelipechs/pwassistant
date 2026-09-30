@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Interop;
 using PwAssistant.App.Services;
 using PwAssistant.App.ViewModels;
+using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Ux;
 using PwAssistant.WinApi;
@@ -20,16 +21,22 @@ public partial class MainWindow : Window
     private readonly FileLogger _log;
     private GlobalHotKeyManager? _hotkeys;
     private bool _hotkeysRegistered;
+    /// <summary>Hotkey auto-repeat guard: RegisterHotKey reports key-down,
+    /// so a held hotkey must not fork one job per repeat.</summary>
+    private const int HotkeyDebounceMs = 800;
+    private readonly Dictionary<Guid, DateTimeOffset> _hotkeyLastFire = new();
     private readonly TrayManager _tray = new();
     private bool _allowClose;
+    private readonly IWindowResolver _resolver;
 
     public MainViewModel ViewModel { get; }
 
-    public MainWindow(MainViewModel viewModel, AppState state, PresetDispatcher dispatcher, FileLogger log)
+    public MainWindow(MainViewModel viewModel, AppState state, PresetDispatcher dispatcher, FileLogger log, IWindowResolver resolver)
     {
         _state = state;
         _dispatcher = dispatcher;
         _log = log;
+        _resolver = resolver;
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
@@ -51,6 +58,7 @@ public partial class MainWindow : Window
         }
         SourceInitialized += OnSourceInitialized;
         MaximizeClamp.Attach(this);
+        ToastService.BalloonSink = (title, message) => _tray.ShowBalloon(title, message);
         _tray.OpenRequested += (_, _) => RestoreFromBackground();
         _tray.ExitRequested += (_, _) =>
         {
@@ -156,9 +164,27 @@ public partial class MainWindow : Window
     /// never lost to an unobserved task.</summary>
     private async void FireFromHotkey(Preset preset)
     {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        lock (_hotkeyLastFire)
+        {
+            if (_hotkeyLastFire.TryGetValue(preset.Id, out DateTimeOffset last)
+                && (now - last).TotalMilliseconds < HotkeyDebounceMs)
+            {
+                _log.Info($"Hotkey fire {preset.Name} ignored (repeat debounced).");
+                return;
+            }
+            _hotkeyLastFire[preset.Id] = now;
+        }
         try
         {
-            await _dispatcher.FireAsync(preset);
+            Core.Execution.PresetExecutionResult result = await _dispatcher.FireAsync(preset);
+            var byId = _state.Data.Servers
+                .SelectMany(s => s.Accounts)
+                .ToDictionary(a => a.Id);
+            PresetFireLog.Log(_log, _resolver, preset, result, "hotkey", id =>
+                byId.TryGetValue(id, out Account? a)
+                    ? ((string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role), a.ProcessId)
+                    : ("?", null));
         }
         catch (Exception ex)
         {

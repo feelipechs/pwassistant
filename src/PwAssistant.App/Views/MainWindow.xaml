@@ -86,6 +86,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="0" Margin="0,0,0,4">
@@ -122,28 +123,34 @@
                 </ItemsControl>
                 <Button x:Name="AddTabButton" Content="&#xE710;" Command="{Binding AddTabCommand}"
                         Style="{StaticResource IconButton}"/>
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsTabSelected}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
-                    <Border Width="1" Margin="4,4" Background="{DynamicResource Brush.Border}"/>
-                    <Button x:Name="RenameTabButton" Content="&#xE70F;"
-                            Command="{Binding RenameTabCommand}" CommandParameter="{Binding SelectedTab}"
-                            Style="{StaticResource IconButton}"/>
-                    <Button x:Name="DeleteTabButton" Content="&#xE74D;"
-                            Command="{Binding DeleteTabCommand}" CommandParameter="{Binding SelectedTab}"
-                            Style="{StaticResource IconButton}"/>
-                </StackPanel>
                 </StackPanel>
             </DockPanel>
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <!-- Tag context row: title + actions left, bulk open/close right.
+                 Visible only with a tab selected; collapses to zero on "All". -->
+            <DockPanel Grid.Row="2" Margin="0,0,0,8" LastChildFill="False">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsTabSelected}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+                <Button Content="{Binding BulkActionText}" Command="{Binding OpenCloseAllInTabCommand}"
+                        DockPanel.Dock="Right" Style="{StaticResource OutlineButton}" MinWidth="110"/>
+                <TextBlock Text="{Binding SelectedTab.Name}" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                           Foreground="{DynamicResource Brush.Foreground}" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding SelectedTab.Name}"/>
+                <Button x:Name="RenameTabButton" Content="&#xE70F;"
+                        Command="{Binding RenameTabCommand}" CommandParameter="{Binding SelectedTab}"
+                        Style="{StaticResource IconButton}" Margin="8,0,0,0"/>
+                <Button x:Name="DeleteTabButton" Content="&#xE74D;"
+                        Command="{Binding DeleteTabCommand}" CommandParameter="{Binding SelectedTab}"
+                        Style="{StaticResource IconButton}"/>
+            </DockPanel>
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="AccountCards" ItemsSource="{Binding Accounts}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -273,5 +280,6 @@
         <views:ServerSheet x:Name="ServerSheetHost" Visibility="Collapsed"/>
         <views:AccountSheet x:Name="AccountSheetHost" Visibility="Collapsed"/>
         <views:SettingsSheet x:Name="SettingsSheetHost" Visibility="Collapsed"/>
+        <views:ToastHost Margin="16,16,0,0"/>
     </Grid>
 </Window>

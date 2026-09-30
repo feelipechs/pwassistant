@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using PwAssistant.App.Services;
 using PwAssistant.App.Views;
 using PwAssistant.Core.Execution;
+using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Sync;
 using PwAssistant.Core.Ux;
@@ -138,6 +139,13 @@ public sealed partial class GroupViewModel : ObservableObject
     private readonly LoopController _loops;
     private readonly FileLogger _log;
     private readonly IDialogService _dialogs;
+    private readonly IWindowResolver _resolver;
+
+    /// <summary>Single-shot fire debounce: a second click with a job started
+    /// less than this ago is ignored (double-click must not fork jobs).</summary>
+    private const int SingleFireDebounceMs = 500;
+    private readonly object _fireGate = new();
+    private readonly Dictionary<Guid, DateTimeOffset> _lastSingleFire = new();
 
     public ObservableCollection<Group> Groups { get; } = new();
     public ObservableCollection<GroupCard> GroupCards { get; } = new();
@@ -198,7 +206,7 @@ public sealed partial class GroupViewModel : ObservableObject
     public GroupViewModel(
         AppState state, PresetDispatcher dispatcher, SyncController sync,
         FocusController focus, LoopController loops, FileLogger log,
-        IDialogService dialogs)
+        IDialogService dialogs, IWindowResolver resolver)
     {
         _state = state;
         _dispatcher = dispatcher;
@@ -207,6 +215,7 @@ public sealed partial class GroupViewModel : ObservableObject
         _loops = loops;
         _log = log;
         _dialogs = dialogs;
+        _resolver = resolver;
         GroupCardsView = new CompositeCollection
         {
             new CollectionContainer { Collection = GroupCards },
@@ -400,12 +409,13 @@ public sealed partial class GroupViewModel : ObservableObject
             var group = new Group { Name = name };
             _state.Data.Groups.Add(group);
             Groups.Add(group);
-        // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
-        await _state.SaveAsync();
-        _log.Info($"Persisted groups: {string.Join(", ", GroupCards.Select(c => $"{c.Group.Name}={c.Group.AccountIds.Count}"))}.");
-        RebuildAll();
+            // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
+            await _state.SaveAsync();
+            _log.Info($"Persisted groups: {string.Join(", ", GroupCards.Select(c => $"{c.Group.Name}={c.Group.AccountIds.Count}"))}.");
+            RebuildAll();
             ActiveCard = GroupCards.FirstOrDefault(c => c.Group == group);
         }
+        ToastService.Show(AppStrings.ToastAdded(name));
     }
 
     /// <summary>
@@ -427,6 +437,7 @@ public sealed partial class GroupViewModel : ObservableObject
         await _state.SaveAsync();
         RebuildAll();
         ActiveCard = GroupCards.FirstOrDefault(c => c.Group == copy);
+        ToastService.Show(AppStrings.ToastAdded(copy.Name));
     }
 
     [RelayCommand]
@@ -445,6 +456,7 @@ public sealed partial class GroupViewModel : ObservableObject
         }
         card.NotifyRenamed();
         await _state.SaveAsync().ConfigureAwait(false);
+        ToastService.Show(AppStrings.ToastSaved(name));
     }
 
     [RelayCommand]
@@ -472,6 +484,7 @@ public sealed partial class GroupViewModel : ObservableObject
         // No ConfigureAwait(false): RebuildAll touches UI-bound collections.
         await _state.SaveAsync();
         RebuildAll();
+        ToastService.Show(AppStrings.ToastRemoved(doomed.Name));
     }
 
     [RelayCommand]
@@ -518,6 +531,21 @@ public sealed partial class GroupViewModel : ObservableObject
             RefreshLoopStates();
             return;
         }
+        // Toggle paths above keep click semantics; only single shots debounce.
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        bool debounced;
+        lock (_fireGate)
+        {
+            debounced = _lastSingleFire.TryGetValue(preset.Id, out DateTimeOffset last)
+                && (now - last).TotalMilliseconds < SingleFireDebounceMs;
+            if (!debounced)
+                _lastSingleFire[preset.Id] = now;
+        }
+        if (debounced)
+        {
+            _log.Info($"Fire preset {preset.Name} ignored (debounced).");
+            return;
+        }
         try
         {
             StatusMessage = "...";
@@ -536,15 +564,13 @@ public sealed partial class GroupViewModel : ObservableObject
             int fired = result.Accounts.Count(r => !r.Skipped);
             int skipped = result.Accounts.Count(r => r.Skipped);
             StatusMessage = AppStrings.PresetFired(fired, skipped);
-            _log.Info($"Fired preset {preset.Name} (manual, {preset.Actions.Count} actions): fired={fired} skipped={skipped}.");
-            if (skipped > 0)
-            {
-                string reasons = string.Join("; ", result.Accounts
-                    .Where(r => r.Skipped)
-                    .GroupBy(r => r.Reason ?? r.Error ?? "?")
-                    .Select(g => $"{g.Key}x{g.Count()}"));
-                _log.Warn($"Preset {preset.Name} skipped: {reasons}.");
-            }
+            var byId = _state.Data.Servers
+                .SelectMany(s => s.Accounts)
+                .ToDictionary(a => a.Id);
+            PresetFireLog.Log(_log, _resolver, preset, result, "manual", id =>
+                byId.TryGetValue(id, out Account? a)
+                    ? ((string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role), a.ProcessId)
+                    : ("?", null));
         }
         catch (OperationCanceledException)
         {
@@ -707,6 +733,7 @@ public sealed partial class GroupViewModel : ObservableObject
         RefreshMiniRows();
         Refresh();
         HotkeysChanged?.Invoke();
+        ToastService.Show(AppStrings.ToastSaved(preset.Name));
     }
 
     [RelayCommand]
@@ -722,6 +749,7 @@ public sealed partial class GroupViewModel : ObservableObject
         DeletePresetCore(preset);
         await _state.SaveAsync();
         HotkeysChanged?.Invoke();
+        ToastService.Show(AppStrings.ToastRemoved(presetName));
     }
 
     private void DeletePresetCore(Preset preset)
@@ -804,9 +832,15 @@ public sealed partial class GroupViewModel : ObservableObject
     }
 
     /// <summary>Rebuilds MiniRows reusing instances by preset id, so a
-    /// rebuild between button-down and button-up never eats the click.</summary>
+    /// rebuild between button-down and button-up never eats the click.
+    /// Skips entirely when the id set is unchanged: clearing the collection
+    /// recreates item containers even for reused rows, which can cancel an
+    /// in-flight Click.</summary>
     private void SyncMiniRows()
     {
+        if (MiniRows.Count == Presets.Count
+            && MiniRows.Select(r => r.Preset.Id).SequenceEqual(Presets.Select(p => p.Id)))
+            return;
         var byId = MiniRows.ToDictionary(r => r.Preset.Id);
         MiniRows.Clear();
         foreach (Preset preset in Presets)

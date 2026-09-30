@@ -79,7 +79,7 @@ public partial class App : Application
                 def.WorkingDirectory, def.IconLocation)));
         services.AddSingleton<MacroExecutor>(sp => new MacroExecutor(
             sp.GetRequiredService<IInputStrategy>(),
-            id => sp.GetRequiredService<AppState>().ResolveTarget(id)));
+            id => sp.GetRequiredService<AppState>().ResolveTargetLive(id)));
         services.AddSingleton<MacroJobRunner>(sp => new MacroJobRunner(
             (preset, jobId, progress, ct) => sp.GetRequiredService<MacroExecutor>().ExecuteAsync(preset, jobId, progress, ct)));
         services.AddSingleton<PresetDispatcher>();
@@ -90,7 +90,9 @@ public partial class App : Application
         services.AddSingleton<AppUpdater>();
         services.AddSingleton(sp => new LoopController(
             sp.GetRequiredService<PresetDispatcher>(),
-            sp.GetRequiredService<FileLogger>()));
+            sp.GetRequiredService<FileLogger>(),
+            sp.GetRequiredService<IWindowResolver>(),
+            sp.GetRequiredService<AppState>()));
         services.AddTransient<MainViewModel>();
         services.AddTransient<GroupViewModel>();
         services.AddTransient<MainWindow>();
@@ -100,6 +102,18 @@ public partial class App : Application
         services.AddTransient<PresetEditorControl>();
 
         _provider = services.BuildServiceProvider();
+
+        // Per-message fire trace (verbose flag in Settings, off by default).
+        // Timestamp-correlates with the job lines from PresetFireLog.
+        if (_provider.GetRequiredService<IInputStrategy>() is PostMessageBackgroundStrategy background)
+        {
+            AppState state = _provider.GetRequiredService<AppState>();
+            background.Traced += trace =>
+            {
+                if (state.VerboseFireLog)
+                    log.Info($"  [trace] hwnd=0x{trace.Hwnd:X} {trace.Tag} msg=0x{trace.Message:X} ok={(trace.Ok ? 1 : 0)} win32={trace.Win32Error}");
+            };
+        }
 
         var sync = _provider.GetRequiredService<SyncController>();
         sync.Start();

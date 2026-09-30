@@ -197,6 +197,7 @@
         <views:PresetListControl Grid.Column="0"/>
         <ContentControl x:Name="PresetEditorHost" Grid.Column="1" Margin="8,0,0,0"/>
     </Grid>
+    <views:ToastHost Grid.RowSpan="2" Margin="16,16,0,0"/>
     <!-- Overlay order: content first, then ghost, then sheets with the
          confirm sheet absolute last (a sheet opened from inside another
          must land on top). Never add content after this block. -->

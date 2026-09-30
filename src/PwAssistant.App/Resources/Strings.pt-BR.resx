@@ -127,4 +127,13 @@
   <data name="DeleteTabTitle" xml:space="preserve"><value>EXCLUIR TAB</value></data>
   <data name="DeleteTabConfirm" xml:space="preserve"><value>EXCLUIR A TAB {0}? AS CONTAS VOLTAM PARA TODAS.</value></data>
   <data name="OrphanAccountHint" xml:space="preserve"><value>MEMBRO ORIGINAL NÃO DISPONÍVEL NO GRUPO.</value></data>
+  <data name="VerboseFireLog" xml:space="preserve"><value>LOG DETALHADO DE DISPARO</value></data>
+  <data name="OpenAll" xml:space="preserve"><value>ABRIR TODAS</value></data>
+  <data name="CloseAll" xml:space="preserve"><value>FECHAR TODAS</value></data>
+  <data name="ToastAdded" xml:space="preserve"><value>{0} ADICIONADO</value></data>
+  <data name="ToastRemoved" xml:space="preserve"><value>{0} REMOVIDO</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>{0} SALVO</value></data>
+  <data name="ToastOpened" xml:space="preserve"><value>{0} ABERTO</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>{0} FECHADO</value></data>
+  <data name="ToastFailed" xml:space="preserve"><value>{0} FALHOU: {1}</value></data>
 </root>

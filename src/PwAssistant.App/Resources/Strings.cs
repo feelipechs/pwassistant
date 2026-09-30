@@ -147,4 +147,19 @@ public static class Strings
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
     public static string OrphanAccountHint => Get(nameof(OrphanAccountHint));
+    public static string VerboseFireLog => Get(nameof(VerboseFireLog));
+    public static string OpenAll => Get(nameof(OpenAll));
+    public static string CloseAll => Get(nameof(CloseAll));
+    public static string ToastAdded(string name) =>
+        string.Format(Get(nameof(ToastAdded)), name);
+    public static string ToastRemoved(string name) =>
+        string.Format(Get(nameof(ToastRemoved)), name);
+    public static string ToastSaved(string name) =>
+        string.Format(Get(nameof(ToastSaved)), name);
+    public static string ToastOpened(string name) =>
+        string.Format(Get(nameof(ToastOpened)), name);
+    public static string ToastClosed(string name) =>
+        string.Format(Get(nameof(ToastClosed)), name);
+    public static string ToastFailed(string name, string reason) =>
+        string.Format(Get(nameof(ToastFailed)), name, reason);
 }

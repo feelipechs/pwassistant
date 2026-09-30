@@ -1,4 +1,5 @@
 using PwAssistant.Core.Execution;
+using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
 using PwAssistant.Core.Ux;
 
@@ -19,6 +20,8 @@ public sealed class LoopController : IDisposable
 
     private readonly PresetDispatcher _dispatcher;
     private readonly FileLogger _log;
+    private readonly IWindowResolver _resolver;
+    private readonly AppState _state;
     private readonly Dictionary<Guid, CancellationTokenSource> _loops = new();
     private readonly HashSet<Guid> _armed = new();
     private readonly object _gate = new();
@@ -29,10 +32,12 @@ public sealed class LoopController : IDisposable
     /// <summary>Raised on the loop thread after every iteration.</summary>
     public event Action<Guid, PresetExecutionResult>? Progressed;
 
-    public LoopController(PresetDispatcher dispatcher, FileLogger log)
+    public LoopController(PresetDispatcher dispatcher, FileLogger log, IWindowResolver resolver, AppState state)
     {
         _dispatcher = dispatcher;
         _log = log;
+        _resolver = resolver;
+        _state = state;
     }
 
     /// <summary>True while the loop is firing (blink).</summary>
@@ -74,6 +79,7 @@ public sealed class LoopController : IDisposable
             _loops[preset.Id] = new CancellationTokenSource();
         }
         _ = RunLoopAsync(preset);
+        _log.Info($"Loop {preset.Name} started.");
         Changed?.Invoke();
     }
 
@@ -123,6 +129,10 @@ public sealed class LoopController : IDisposable
                 PresetExecutionResult result = await _dispatcher
                     .FireAsync(preset, 0, null, null, cts.Token).ConfigureAwait(false);
                 Progressed?.Invoke(preset.Id, result);
+                // Clean iterations stay on screen only (Progressed); the file
+                // log gets cancels, errors-with-skips, and the start line.
+                if (result.Canceled || result.Accounts.Any(r => r.Skipped))
+                    LogIteration(preset, result);
                 await Task.Delay(IterationGap, cts.Token).ConfigureAwait(false);
             }
         }
@@ -145,6 +155,17 @@ public sealed class LoopController : IDisposable
             cts.Dispose();
             Changed?.Invoke();
         }
+    }
+
+    private void LogIteration(Preset preset, PresetExecutionResult result)
+    {
+        var byId = _state.Data.Servers
+            .SelectMany(s => s.Accounts)
+            .ToDictionary(a => a.Id);
+        PresetFireLog.Log(_log, _resolver, preset, result, "loop", id =>
+            byId.TryGetValue(id, out Account? a)
+                ? ((string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role), a.ProcessId)
+                : ("?", null));
     }
 
     public void Dispose()

@@ -67,6 +67,20 @@ public sealed class TrayManager : IDisposable
             _icon.Visible = false;
     }
 
+    /// <summary>Fallback for toasts when no app window is visible.</summary>
+    public void ShowBalloon(string title, string message)
+    {
+        if (_disposed || _icon is null) return;
+        try
+        {
+            _icon.ShowBalloonTip(3000, title, message, WinForms.ToolTipIcon.Info);
+        }
+        catch
+        {
+            // Best effort: a balloon must never break the notifying action.
+        }
+    }
+
     /// <summary>Dark menu matching the app theme (approximates
     /// Brush.Card #171717, Border #262626, RaisedHover #303030,
     /// Foreground #FAFAFA).</summary>
