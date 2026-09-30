@@ -28,3 +28,7 @@ Thumbs.db
 
 # Original user artwork (duplicates of src/PwAssistant.App/Resources/Classes)
 images/
+
+# Local analysis inputs (third-party decompiles, sibling-app logs)
+hexrays/
+logs/

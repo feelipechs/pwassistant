@@ -1,7 +1,12 @@
+using System.Runtime.InteropServices;
 using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
 
 namespace PwAssistant.WinApi;
+
+/// <summary>One posted message with its queue-acceptance result (diagnostics only:
+/// Ok=true proves delivery to the queue, never game effect).</summary>
+public sealed record SendTrace(DateTimeOffset At, IntPtr Hwnd, string Tag, uint Message, bool Ok, int Win32Error);
 
 /// <summary>Priming/send timings for the validated recipe. Adjustable for tuning, never zeroed.</summary>
 public sealed record WinApiTiming(
@@ -19,6 +24,9 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
 {
     private readonly WinApiTiming _timing;
     private readonly bool _applyHygiene;
+
+    /// <summary>Raised once per posted message (diagnostics; null when nobody listens).</summary>
+    public event Action<SendTrace>? Traced;
 
     public PostMessageBackgroundStrategy(WinApiTiming? timing = null, bool applyHygiene = true)
     {
@@ -96,9 +104,12 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
             ? target.WindowHandle
             : throw new WinApiException($"No live window for account {target.AccountId}.");
 
-    private static void Post(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam, string tag)
+    private void Post(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam, string tag)
     {
-        if (!NativeMethods.PostMessageW(hwnd, message, wParam, lParam))
-            throw new WinApiException($"PostMessage failed: {tag} (msg=0x{message:X}).");
+        bool ok = NativeMethods.PostMessageW(hwnd, message, wParam, lParam);
+        int error = ok ? 0 : Marshal.GetLastWin32Error();
+        Traced?.Invoke(new SendTrace(DateTimeOffset.UtcNow, hwnd, tag, message, ok, error));
+        if (!ok)
+            throw new WinApiException($"PostMessage failed: {tag} (msg=0x{message:X}, win32={error}).");
     }
 }

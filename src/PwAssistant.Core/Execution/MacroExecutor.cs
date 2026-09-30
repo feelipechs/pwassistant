@@ -7,7 +7,8 @@ public sealed record AccountExecutionResult(
     Guid AccountId,
     bool Skipped,
     string? Reason = null,
-    string? Error = null);
+    string? Error = null,
+    IntPtr WindowHandle = default);
 
 public sealed record PresetExecutionResult(
     Guid JobId,
@@ -79,7 +80,7 @@ public sealed class MacroExecutor
                 await SendOnceAsync(target, accountAction.Action, cancellationToken).ConfigureAwait(false);
             }
 
-            return new AccountExecutionResult(accountAction.AccountId, Skipped: false);
+            return new AccountExecutionResult(accountAction.AccountId, Skipped: false, WindowHandle: target.WindowHandle);
         }
         catch (OperationCanceledException)
         {
@@ -87,7 +88,7 @@ public sealed class MacroExecutor
         }
         catch (Exception ex)
         {
-            return new AccountExecutionResult(accountAction.AccountId, Skipped: true, Error: ex.Message);
+            return new AccountExecutionResult(accountAction.AccountId, Skipped: true, Error: ex.Message, WindowHandle: target.WindowHandle);
         }
     }
 

@@ -23,6 +23,46 @@ public static class WindowFocus
         NativeMethods.SetWindowLongPtr(windowHandle, GWL_EXSTYLE, (IntPtr)(style.ToInt64() | WS_EX_NOACTIVATE.ToInt64()));
     }
 
+    /// <summary>
+    /// Best-effort live window-state probes for fire diagnostics.
+    /// Never throw; a dead handle simply reports false.
+    /// </summary>
+    public static bool IsAlive(IntPtr windowHandle)
+    {
+        try
+        {
+            return windowHandle != IntPtr.Zero && NativeMethods.IsWindow(windowHandle);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool IsVisible(IntPtr windowHandle)
+    {
+        try
+        {
+            return windowHandle != IntPtr.Zero && NativeMethods.IsWindowVisible(windowHandle);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool IsMinimized(IntPtr windowHandle)
+    {
+        try
+        {
+            return windowHandle != IntPtr.Zero && NativeMethods.IsIconic(windowHandle);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public static bool BringToFront(IntPtr windowHandle)
     {
         if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))

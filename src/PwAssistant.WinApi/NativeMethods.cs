@@ -20,12 +20,15 @@ internal static class NativeMethods
     internal static extern bool IsWindowVisible(IntPtr hWnd);
 
     [DllImport("user32.dll")]
+    internal static extern bool IsIconic(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
     internal static extern bool IsWindow(IntPtr hWnd);
 
     [DllImport("user32.dll")]
     internal static extern uint MapVirtualKeyW(uint uCode, uint uMapType);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     internal static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll")]
