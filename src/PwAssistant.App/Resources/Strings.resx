@@ -126,4 +126,5 @@
   <data name="DiscardChangesConfirm" xml:space="preserve"><value>DISCARD</value></data>
   <data name="DeleteTabTitle" xml:space="preserve"><value>DELETE TAB</value></data>
   <data name="DeleteTabConfirm" xml:space="preserve"><value>DELETE TAB {0}? ITS ACCOUNTS STAY IN ALL.</value></data>
+  <data name="OrphanAccountHint" xml:space="preserve"><value>ORIGINAL MEMBER NOT AVAILABLE IN GROUP.</value></data>
 </root>

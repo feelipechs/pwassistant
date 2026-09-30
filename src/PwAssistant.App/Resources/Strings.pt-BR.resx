@@ -126,4 +126,5 @@
   <data name="DiscardChangesConfirm" xml:space="preserve"><value>DESCARTAR</value></data>
   <data name="DeleteTabTitle" xml:space="preserve"><value>EXCLUIR TAB</value></data>
   <data name="DeleteTabConfirm" xml:space="preserve"><value>EXCLUIR A TAB {0}? AS CONTAS VOLTAM PARA TODAS.</value></data>
+  <data name="OrphanAccountHint" xml:space="preserve"><value>MEMBRO ORIGINAL NÃO DISPONÍVEL NO GRUPO.</value></data>
 </root>

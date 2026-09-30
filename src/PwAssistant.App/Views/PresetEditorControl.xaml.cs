@@ -25,6 +25,11 @@ public sealed partial class PresetActionRow : ObservableObject
     [ObservableProperty]
     private MemberOption? selectedAccount;
 
+    /// <summary>True when the row references an account outside the preset group scope
+    /// (e.g. cloned group shell). Select stays empty on purpose; UI shows an info badge.</summary>
+    [ObservableProperty]
+    private bool hasMissingAccount;
+
     [ObservableProperty]
     private ActionType type = ActionType.Key;
 
@@ -46,6 +51,8 @@ public sealed partial class PresetActionRow : ObservableObject
     {
         AccountId = value?.Account.Id ?? Guid.Empty;
         AccountName = value?.DisplayName ?? string.Empty;
+        if (value is not null)
+            HasMissingAccount = false;
     }
 
     public Guid AccountId { get; private set; } = Guid.Empty;
@@ -82,6 +89,7 @@ public sealed partial class PresetActionRow : ObservableObject
     public PresetActionRow Duplicate() => new()
     {
         SelectedAccount = SelectedAccount,
+        HasMissingAccount = HasMissingAccount && SelectedAccount is null,
         Type = Type,
         Key = Key,
         Position = Position,
@@ -138,8 +146,6 @@ public partial class PresetEditorControl : UserControl
         AddCommandButton.ToolTip = Strings.AddCommand;
         AddClickButton.ToolTip = Strings.AddClick;
         NameCaption.Text = Strings.PresetName;
-        ModeCaption.Text = Strings.ExecutionMode;
-        ModeValue.Text = Strings.Sequential;
         HotkeyCaption.Text = Strings.Hotkey;
         RecordHotkeyButton.Content = Strings.RecordHotkey;
         HotkeyHintLabel.Text = Strings.HotkeyHint;
@@ -169,6 +175,7 @@ public partial class PresetEditorControl : UserControl
             Rows.Add(new PresetActionRow
             {
                 SelectedAccount = option,
+                HasMissingAccount = option is null && existing.AccountId != Guid.Empty,
                 Type = existing.Action.Type,
                 Key = existing.Action.Key,
                 Position = existing.Action.RelativePosition,

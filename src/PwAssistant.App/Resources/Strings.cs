@@ -146,4 +146,5 @@ public static class Strings
     public static string GroupCardStats => Get(nameof(GroupCardStats));
     public static string RowWithoutAccount(int line) =>
         string.Format(Get(nameof(RowWithoutAccount)), line);
+    public static string OrphanAccountHint => Get(nameof(OrphanAccountHint));
 }

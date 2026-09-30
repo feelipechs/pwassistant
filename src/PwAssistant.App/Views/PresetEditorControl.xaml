@@ -15,10 +15,6 @@
                     <TextBlock x:Name="NameCaption" VerticalAlignment="Center" Margin="0,0,8,0"
                                Foreground="{DynamicResource Brush.MutedForeground}"/>
                     <TextBox x:Name="NameBox" Width="160" Margin="0,0,16,4"/>
-                    <TextBlock x:Name="ModeCaption" VerticalAlignment="Center" Margin="0,0,8,0"
-                               Foreground="{DynamicResource Brush.MutedForeground}"/>
-                    <TextBlock x:Name="ModeValue" VerticalAlignment="Center" Margin="0,0,16,4"
-                               Foreground="{DynamicResource Brush.Foreground}"/>
                     <TextBlock x:Name="HotkeyCaption" VerticalAlignment="Center" Margin="0,0,8,0"
                                Foreground="{DynamicResource Brush.MutedForeground}"/>
                     <Button x:Name="RecordHotkeyButton" Click="OnRecordHotkey" Style="{StaticResource OutlineButton}" Margin="0,0,8,4" MinWidth="110"/>
@@ -57,7 +53,7 @@
                         Style="{StaticResource PrimaryIconButton}"/>
             </StackPanel>
         </DockPanel>
-            <TextBlock x:Name="ErrorLabel" Margin="0,4,0,0" FontSize="11" HorizontalAlignment="Right" Foreground="{DynamicResource Brush.Destructive}"/>
+        <TextBlock x:Name="ErrorLabel" DockPanel.Dock="Top" Margin="0,4,0,0" FontSize="11" HorizontalAlignment="Right" Foreground="{DynamicResource Brush.Destructive}"/>
         <ListBox x:Name="ActionList" AllowDrop="True" SelectionMode="Extended"
                  SelectionChanged="OnActionSelectionChanged"
                  PreviewMouseLeftButtonDown="OnRowPreviewMouseDown"
@@ -100,6 +96,21 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
+                        <TextBlock Text="&#xE946;" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="14"
+                                   FontFamily="{StaticResource IconFont}"
+                                   Foreground="{DynamicResource Brush.Warning}"
+                                   ToolTip="{x:Static res:Strings.OrphanAccountHint}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasMissingAccount}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                         <ComboBox x:Name="RowKeyBox" Width="80" Margin="36,0,8,0"
                                   ItemsSource="{Binding DataContext.AvailableKeys, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                   SelectedItem="{Binding Key, Mode=TwoWay}"/>
