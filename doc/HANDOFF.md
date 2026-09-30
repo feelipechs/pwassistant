@@ -1,17 +1,14 @@
-# HANDOFF — estado em 2026-09-28, base 6388cea
+# HANDOFF — estado em 2026-09-30, base 0990ffd
 ## Pronto (validado)
 - Build 0 erros/warnings; testes 79/79.
-- Lote 1 UI (`d709f79`): warning, status dots, clamp taskbar, wheel combo,
-  blink loop, tray (tudo verificado isolado).
-- Lote 2 fluxos: sync-por-conta no Mini + sync botão direito (`8dd8dbe`),
-  refresh de membros do editor (`c31d6df`), remoção do Simultaneous com
-  migração (`6388cea`).
+- Lote 3 editor (`0990ffd`, validado pelo usuário no Windows): warning
+  com dock Top, bloco "MODO SEQUENCIAL" removido, badge ⓘ de órfão
+  com tooltip, foco pós-Play sem puxão (jogo assume, App assume no clique).
 ## Pronto (código, pendente de jogo/Windows)
-- Validação no jogo: Lote 1 visual, duplicate→editor, sync checkboxes,
-  sync direito, presets Simultaneous migrados.
-- Fase 3: observabilidade primeiro (logs jobId/HWND/cancel), depois fixes.
+- Lotes 1–2 anteriores seguem pendentes de validação in-game (servidor
+  em update na janela de teste).
 ## Próximo passo
-- Push (terminal do usuário) + testes no jogo + mandar log se falhar.
+- Push (terminal do usuário) + Fase 3a observabilidade.
 ## Backlog pós-validação (ponteiro p/ `doc/backlog.md`)
 - Ver arquivo; ambientes prod/dev/test aguardando explicação do usuário.
 ## Perguntas abertas
