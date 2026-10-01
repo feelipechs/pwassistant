@@ -9,15 +9,14 @@ namespace PwAssistant.App.Services;
 /// Dispatch decorator (Fase 4b + clean recipe, 2026-10-01): two opt-in
 /// session/persisted modes over the legacy T1/C4 background recipe.
 /// Focused mode (persisted): real foreground per account via
-/// BringToFront + restore at batch end. Clean mode (session): bare
-/// DOWN/UP sends with NO foreground call at all — our interactive process
-/// holds the foreground grant (the Fire click itself), so even an unforced
-/// SetForegroundWindow would be granted and visibly switch; the Helper's
-/// sender never holds the grant (no input), hence flash-only there. A
-/// lock-denied call changes nothing the game can observe, so bare sends
-/// without poison (no fake priming, no WA_INACTIVE hygiene, suspect #1
-/// for background skips) are the whole recipe. Sends stay PostMessage
-/// (no SendInput, no injection).
+/// BringToFront + restore at batch end. Clean mode (session): one real,
+/// unforced SetForegroundWindow per account with NO accompanying input —
+/// the Helper's recipe read faithfully: denied (flash-only) without the
+/// foreground grant is the background case; granted (visible switch) with
+/// it, e.g. after the Fire button click. Result logged as setfg=1/0.
+/// Either way the sends are bare (no fake priming, no WA_INACTIVE hygiene,
+/// suspect #1 for background skips). Sends stay PostMessage (no SendInput,
+/// no injection).
 /// </summary>
 public sealed class FocusedInputStrategy : IInputStrategy
 {
@@ -33,6 +32,7 @@ public sealed class FocusedInputStrategy : IInputStrategy
     private readonly FileLogger _log;
     private IntPtr _lastHwnd = IntPtr.Zero;
     private IntPtr _batchPreviousForeground = IntPtr.Zero;
+    private bool _batchMovedForeground;
 
     public event Action<SendTrace>? Traced
     {
@@ -83,11 +83,14 @@ public sealed class FocusedInputStrategy : IInputStrategy
             }
             else if (Clean)
             {
-                // No foreground call by design (see class docs): just the
-                // per-account gap, then bare sends. Foreground is only
-                // observed (read-only) for the verbose log.
+                // One real, unforced SetForegroundWindow, no input alongside.
+                // Blocked (taskbar flashes, setfg=0) is the expected
+                // background case; granted (setfg=1) visibly switches.
+                bool granted = WindowFocus.TrySetSoft(target.WindowHandle);
+                if (granted)
+                    _batchMovedForeground = true;
                 if (_state.VerboseFireLog)
-                    _log.Info($"  [fg] hwnd=0x{target.WindowHandle:X} fg=0x{SafeForeground():X}");
+                    _log.Info($"  [fg] hwnd=0x{target.WindowHandle:X} setfg={(granted ? 1 : 0)}");
                 _lastHwnd = target.WindowHandle;
                 await Task.Delay(CleanSettleMs, cancellationToken).ConfigureAwait(false);
             }
@@ -99,7 +102,8 @@ public sealed class FocusedInputStrategy : IInputStrategy
     {
         _lastHwnd = IntPtr.Zero;
         _batchPreviousForeground = IntPtr.Zero;
-        if (!Enabled) return;
+        _batchMovedForeground = false;
+        if (!Enabled && !Clean) return;
         try
         {
             _batchPreviousForeground = _resolver.GetForegroundWindow();
@@ -113,16 +117,14 @@ public sealed class FocusedInputStrategy : IInputStrategy
     public void EndBatch()
     {
         _lastHwnd = IntPtr.Zero;
-        // Clean mode moves nothing, so there is nothing to restore.
-        if (!Enabled)
-        {
-            _batchPreviousForeground = IntPtr.Zero;
-            return;
-        }
         try
         {
-            if (_batchPreviousForeground != IntPtr.Zero)
+            if (_batchPreviousForeground == IntPtr.Zero)
+                return;
+            if (Enabled)
                 WindowFocus.BringToFront(_batchPreviousForeground);
+            else if (_batchMovedForeground)
+                WindowFocus.TrySetSoft(_batchPreviousForeground);
         }
         catch
         {
@@ -131,18 +133,7 @@ public sealed class FocusedInputStrategy : IInputStrategy
         finally
         {
             _batchPreviousForeground = IntPtr.Zero;
-        }
-    }
-
-    private IntPtr SafeForeground()
-    {
-        try
-        {
-            return _resolver.GetForegroundWindow();
-        }
-        catch
-        {
-            return IntPtr.Zero;
+            _batchMovedForeground = false;
         }
     }
 }

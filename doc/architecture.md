@@ -90,17 +90,17 @@ pós-envio é a suspeita nº 1 dos skips: dizemos ao jogo "você está inativo"
 após cada ação.
 
 `CleanDispatch` (sessão, default off, checkbox "RECEITA LIMPA (TESTE)"):
-envios nus por conta (`MOVE → DOWN → UP` colados; tecla `DOWN → UP` com
-scan code próprio — desvio consciente do `lParam=0` / sem-`UP` dele), com
-um gap de 50 ms entre contas. Sem prime falso, sem higiene. **Nenhuma
-chamada de foreground no modo limpo, por desenho:** nosso processo
-interativo detém o direito de foreground (o próprio clique no Disparar),
-então até um `SetForegroundWindow` sem forçar seria concedido e trocaria
-a tela visivelmente (confirmado no teste 2026-10-01 com a flag ligada);
-o sender dele nunca detém o direito (sem input), daí flash-only lá. Uma
-chamada negada pelo lock não muda nada observável pelo jogo — a parte
-operativa da receita são as mensagens sem `WA_INACTIVE`, não a chamada.
-Verbose registra o foreground vigente por conta (`[fg]`, só leitura).
+uma chamada real de `SetForegroundWindow` por conta, sem forçar e sem
+input junto — a receita do Helper lida à risca: negada (flash-only,
+`setfg=0`) sem o direito de foreground é o caso background; concedida
+(`setfg=1`, troca visível) com ele, ex. logo após o clique no Disparar
+(confirmado no teste 2026-10-01: botão concede, hotkey/loop não).
+Envios nus (`MOVE → DOWN → UP` colados; tecla `DOWN → UP` com scan code
+próprio — desvio consciente do `lParam=0` / sem-`UP` dele), gap de 50 ms
+entre contas. Sem prime falso, sem higiene. Restore do foreground
+anterior só se o lote realmente moveu o foco. Verbose registra o
+resultado por conta (`[fg] setfg=1/0`) — o instrumento do A/B botão
+(com grant) vs. hotkey/loop (sem grant).
 
 ## `MacroExecutor` — semântica
 
