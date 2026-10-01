@@ -63,28 +63,6 @@ public static class WindowFocus
         }
     }
 
-    /// <summary>
-    /// Single real SetForegroundWindow call, no forcing of any kind: no
-    /// Alt-tap, no thread attach, no restore. When the foreground lock
-    /// denies it the taskbar flashes instead — that blocked call is still
-    /// the Helper's "breach" prime, so the raw result is returned (never
-    /// throws) and the caller decides. Never injects input.
-    /// </summary>
-    public static bool TrySetSoft(IntPtr windowHandle)
-    {
-        if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))
-            return false;
-
-        try
-        {
-            return NativeMethods.SetForegroundWindow(windowHandle);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     public static bool BringToFront(IntPtr windowHandle)
     {
         if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))

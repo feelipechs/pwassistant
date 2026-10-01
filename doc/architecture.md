@@ -90,13 +90,17 @@ pós-envio é a suspeita nº 1 dos skips: dizemos ao jogo "você está inativo"
 após cada ação.
 
 `CleanDispatch` (sessão, default off, checkbox "RECEITA LIMPA (TESTE)"):
-`TrySetSoft` (uma chamada real, sem Alt-tap/attach, resultado logado como
-`[fg] setfg=1/0` no verbose) + envios nus (`MOVE → DOWN → UP` colados;
-tecla `DOWN → UP` com scan code próprio — desvio consciente do `lParam=0` /
-sem-`UP` dele). Sem prime falso, sem higiene. Restore do foreground anterior
-só se o lote realmente moveu o foco. Quando bloqueado (caso comum com o main
-em uso) comporta-se como background sem flicker; quando concedido, como foco
-com restore — um caminho só que degrada com graça.
+envios nus por conta (`MOVE → DOWN → UP` colados; tecla `DOWN → UP` com
+scan code próprio — desvio consciente do `lParam=0` / sem-`UP` dele), com
+um gap de 50 ms entre contas. Sem prime falso, sem higiene. **Nenhuma
+chamada de foreground no modo limpo, por desenho:** nosso processo
+interativo detém o direito de foreground (o próprio clique no Disparar),
+então até um `SetForegroundWindow` sem forçar seria concedido e trocaria
+a tela visivelmente (confirmado no teste 2026-10-01 com a flag ligada);
+o sender dele nunca detém o direito (sem input), daí flash-only lá. Uma
+chamada negada pelo lock não muda nada observável pelo jogo — a parte
+operativa da receita são as mensagens sem `WA_INACTIVE`, não a chamada.
+Verbose registra o foreground vigente por conta (`[fg]`, só leitura).
 
 ## `MacroExecutor` — semântica
 
