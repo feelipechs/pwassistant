@@ -11,7 +11,7 @@
                         BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,0,0,8">
                     <DockPanel>
                         <Border x:Name="KindBar" DockPanel.Dock="Left" Width="3" Margin="0,0,8,0" CornerRadius="2"
-                                Background="{DynamicResource Brush.Primary}"/>
+                                Background="{DynamicResource Brush.Success}"/>
                         <TextBlock Text="{Binding Message}" VerticalAlignment="Center" TextWrapping="Wrap"
                                    Foreground="{DynamicResource Brush.Foreground}" FontSize="{StaticResource Font.Size.Sm}"/>
                     </DockPanel>

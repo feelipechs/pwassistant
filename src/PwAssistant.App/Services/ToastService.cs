@@ -94,6 +94,8 @@ public static class ToastService
         if (dispatcher.CheckAccess())
             action();
         else
-            dispatcher.Invoke(action);
+            // Fire-and-forget by contract: death handlers must never block
+            // worker threads waiting on a busy UI.
+            dispatcher.BeginInvoke(action);
     }
 }

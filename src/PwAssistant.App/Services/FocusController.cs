@@ -40,6 +40,10 @@ public sealed class FocusController : IDisposable
 
     public bool Enabled { get; set; }
 
+    /// <summary>True while a bulk open/close runs: deaths skip the focus
+    /// fallback (one pass, if any, happens at the end of the batch).</summary>
+    public bool SuppressFallback { get; set; }
+
     /// <summary>Live config (backed by AppData, persisted on change).</summary>
     public FocusSettings Settings { get; set; } = new();
 
@@ -52,7 +56,7 @@ public sealed class FocusController : IDisposable
     public void RemoveAccount(Guid accountId)
     {
         Guid? fallback = _focus.Remove(accountId);
-        if (fallback is null || !Enabled) return;
+        if (fallback is null || !Enabled || SuppressFallback) return;
         Focus(fallback);
     }
 

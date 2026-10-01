@@ -133,7 +133,7 @@
   <data name="ToastAdded" xml:space="preserve"><value>{0} ADICIONADO</value></data>
   <data name="ToastRemoved" xml:space="preserve"><value>{0} REMOVIDO</value></data>
   <data name="ToastSaved" xml:space="preserve"><value>{0} SALVO</value></data>
-  <data name="ToastOpened" xml:space="preserve"><value>{0} ABERTO</value></data>
-  <data name="ToastClosed" xml:space="preserve"><value>{0} FECHADO</value></data>
+  <data name="ToastOpened" xml:space="preserve"><value>{0} INICIADO</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>{0} ENCERRADO</value></data>
   <data name="ToastFailed" xml:space="preserve"><value>{0} FALHOU: {1}</value></data>
 </root>

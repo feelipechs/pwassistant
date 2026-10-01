@@ -169,6 +169,14 @@ public sealed partial class MainViewModel : ObservableObject
 
     private CancellationTokenSource? _bulkCts;
 
+    /// <summary>True while a bulk open/close runs: death handlers skip
+    /// per-client UI refresh, toasts and focus fallback (one pass at the end).</summary>
+    private bool _bulkClosing;
+
+    /// <summary>Model-level launch guard: survives card rebuilds (a second
+    /// Play on a fresh card must not fork a duplicate client).</summary>
+    private readonly HashSet<Guid> _launching = new();
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BulkActionText))]
     private bool isBulkRunning;
@@ -335,13 +343,18 @@ public sealed partial class MainViewModel : ObservableObject
     private void RebuildAccounts()
     {
         Accounts.Clear();
-        if (SelectedServer is null) return;
+        if (SelectedServer is null)
+        {
+            OnPropertyChanged(nameof(BulkActionText));
+            return;
+        }
         IEnumerable<Account> scope = SelectedTab is null
             ? SelectedServer.Model.Accounts
             : SelectedServer.Model.Accounts.Where(a =>
                 string.Equals(a.Tag, SelectedTab.Name, StringComparison.OrdinalIgnoreCase));
         foreach (Account account in scope)
             Accounts.Add(new AccountCard(account));
+        OnPropertyChanged(nameof(BulkActionText));
     }
 
     private void RefreshServerRows()
@@ -554,6 +567,11 @@ public sealed partial class MainViewModel : ObservableObject
     /// Play and bulk open. Returns true when the client launched.</summary>
     private async Task<bool> PlayOneAsync(AccountCard card)
     {
+        if (card.Model.Status == AccountStatus.Online) return false;
+        lock (_launching)
+        {
+            if (!_launching.Add(card.Model.Id)) return false;
+        }
         try
         {
             card.IsLaunching = true;
@@ -565,7 +583,7 @@ public sealed partial class MainViewModel : ObservableObject
             _log.Info($"Launched {card.Model.Login} pid={session.ProcessId}.");
             WatchSession(session, card);
             await _state.SaveAsync().ConfigureAwait(false);
-            App.Current.Dispatcher.Invoke(() =>
+            await App.Current.Dispatcher.InvokeAsync(() =>
             {
                 card.Refresh();
                 RefreshServerRows();
@@ -583,7 +601,9 @@ public sealed partial class MainViewModel : ObservableObject
         }
         finally
         {
-            App.Current.Dispatcher.Invoke(() => card.IsLaunching = false);
+            lock (_launching)
+                _launching.Remove(card.Model.Id);
+            await App.Current.Dispatcher.InvokeAsync(() => card.IsLaunching = false);
         }
     }
 
@@ -612,6 +632,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         _bulkCts = new CancellationTokenSource();
         IsBulkRunning = true;
+        _bulkClosing = true;
+        _focus.SuppressFallback = true;
         try
         {
             int done = 0;
@@ -626,7 +648,7 @@ public sealed partial class MainViewModel : ObservableObject
                 }
                 else
                 {
-                    if (card.Model.Status == AccountStatus.Online)
+                    if (card.Model.Status == AccountStatus.Online || IsLaunchingNow(card.Model.Id))
                         continue;
                     await PlayOneAsync(card).ConfigureAwait(false);
                     await Task.Delay(BulkSettleMs, _bulkCts.Token).ConfigureAwait(false);
@@ -634,9 +656,6 @@ public sealed partial class MainViewModel : ObservableObject
             }
             StatusMessage = string.Empty;
             _log.Info($"Bulk {(allOnline ? "close" : "open")} tab {SelectedTab.Name}: {cards.Count} accounts.");
-            ToastService.Show(allOnline
-                ? AppStrings.ToastClosed(SelectedTab.Name)
-                : AppStrings.ToastOpened(SelectedTab.Name));
         }
         catch (OperationCanceledException)
         {
@@ -649,7 +668,23 @@ public sealed partial class MainViewModel : ObservableObject
             _bulkCts?.Dispose();
             _bulkCts = null;
             IsBulkRunning = false;
+            _bulkClosing = false;
+            _focus.SuppressFallback = false;
+            // Single coalesced refresh for the whole batch.
+            await App.Current.Dispatcher.InvokeAsync(() =>
+            {
+                foreach (AccountCard card in cards)
+                    card.Refresh();
+                RebuildAccounts();
+                RefreshServerRows();
+            });
         }
+    }
+
+    private bool IsLaunchingNow(Guid accountId)
+    {
+        lock (_launching)
+            return _launching.Contains(accountId);
     }
 
     /// <summary>
@@ -699,7 +734,8 @@ public sealed partial class MainViewModel : ObservableObject
         // Explicit fallback: never rely solely on Exited to restore icons.
         card.Model.ProcessId = null;
         card.Model.WindowHandle = IntPtr.Zero;
-        App.Current.Dispatcher.Invoke(() =>
+        if (_bulkClosing) return;
+        await App.Current.Dispatcher.InvokeAsync(() =>
         {
             card.Refresh();
             RefreshServerRows();
@@ -722,13 +758,18 @@ public sealed partial class MainViewModel : ObservableObject
                 lock (_watched) _watched.Remove(session.ProcessId);
                 // Paired with the rooted handle above: release it here.
                 process.Dispose();
+                // Dedupe: the Stop fallback may have cleared this already.
+                if (card.Model.ProcessId is null && card.Model.WindowHandle == IntPtr.Zero)
+                    return;
                 _log.Info($"Client pid={session.ProcessId} exited.");
-                ToastService.Show(AppStrings.ToastClosed(card.Model.Login));
                 _dispatcher.CancelAll();
                 _focus.RemoveAccount(card.Model.Id);
                 card.Model.ProcessId = null;
                 card.Model.WindowHandle = IntPtr.Zero;
-                App.Current.Dispatcher.Invoke(() =>
+                // During bulk the finally pass refreshes once and stays silent.
+                if (_bulkClosing) return;
+                ToastService.Show(AppStrings.ToastClosed(card.Model.Login));
+                _ = App.Current.Dispatcher.InvokeAsync(() =>
                 {
                     card.Refresh();
                     RefreshServerRows();

@@ -143,7 +143,7 @@ public sealed partial class GroupViewModel : ObservableObject
 
     /// <summary>Single-shot fire debounce: a second click with a job started
     /// less than this ago is ignored (double-click must not fork jobs).</summary>
-    private const int SingleFireDebounceMs = 500;
+    private const int SingleFireDebounceMs = 150;
     private readonly object _fireGate = new();
     private readonly Dictionary<Guid, DateTimeOffset> _lastSingleFire = new();
 
