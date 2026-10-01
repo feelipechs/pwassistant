@@ -32,6 +32,7 @@ public partial class SettingsSheet : UserControl
         ShiftTapCheck.Content = Strings.ShiftTapToggle;
         FocusedCheck.Content = Strings.FocusedDispatch;
         VerboseCheck.Content = Strings.VerboseFireLog;
+        CleanCheck.Content = Strings.CleanDispatch;
         ArmingHintLabel.Text = Strings.ArmingHint;
         SaveButton.Content = Strings.Save;
         RecordCycleButton.Content = Strings.RecordHotkey;
@@ -52,8 +53,9 @@ public partial class SettingsSheet : UserControl
         NumpadCheck.IsChecked = _originalNumpad;
         ShiftTapCheck.IsChecked = _originalShiftTap;
         FocusedCheck.IsChecked = _originalFocused;
-        // Session-only diagnostics flag: applied live, outside Save/Discard.
+        // Session-only diagnostics flags: applied live, outside Save/Discard.
         VerboseCheck.IsChecked = _state.VerboseFireLog;
+        CleanCheck.IsChecked = _state.CleanDispatch;
         Visibility = Visibility.Visible;
         _tcs = new TaskCompletionSource<bool>();
         Dispatcher.InvokeAsync(() => CloseButton.Focus());
@@ -169,6 +171,12 @@ public partial class SettingsSheet : UserControl
     {
         if (_state is not null)
             _state.VerboseFireLog = VerboseCheck.IsChecked == true;
+    }
+
+    private void OnCleanChanged(object sender, RoutedEventArgs e)
+    {
+        if (_state is not null)
+            _state.CleanDispatch = CleanCheck.IsChecked == true;
     }
 
     private void OnClose(object sender, RoutedEventArgs e) => Discard();

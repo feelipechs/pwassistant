@@ -22,6 +22,9 @@ public sealed class AppState
     /// <summary>Session-only per-message fire trace (Settings toggle, never persisted).</summary>
     public bool VerboseFireLog { get; set; }
 
+    /// <summary>Session-only clean recipe (Helper mirror, Settings toggle, never persisted).</summary>
+    public bool CleanDispatch { get; set; }
+
     public AppState(IAccountStore store, IWindowResolver resolver, string filePath)
     {
         _store = store;

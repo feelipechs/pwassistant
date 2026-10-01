@@ -78,6 +78,26 @@ Chave: `AppData.FocusedDispatch` (default off), checkbox no Settings. Vale para
 botão, hotkey e loop. Efeito colateral assumido: flicker visível durante o lote
 (taskbar pisca como no PW Helper — sinal de pedido real de foreground).
 
+## Receita limpa (modo teste de sessão, desde 2026-10-01)
+
+Resposta do dev do PW Helper (confirmada): ele chama o `SetForegroundWindow`
+**real e sozinho por conta** — sem Ctrl (a "tecla reservada" só força a troca
+visível quando ele QUER trocar), sem ação simultânea — e o Windows
+**bloqueia** a troca (foreground-lock: "não é natural, não-humano"). A taskbar
+pisca, a tela não troca, e o segundo plano executa mesmo assim. Conclusão: o
+segredo não está no foco — está nas mensagens. Nossa higiene `WA_INACTIVE`
+pós-envio é a suspeita nº 1 dos skips: dizemos ao jogo "você está inativo"
+após cada ação.
+
+`CleanDispatch` (sessão, default off, checkbox "RECEITA LIMPA (TESTE)"):
+`TrySetSoft` (uma chamada real, sem Alt-tap/attach, resultado logado como
+`[fg] setfg=1/0` no verbose) + envios nus (`MOVE → DOWN → UP` colados;
+tecla `DOWN → UP` com scan code próprio — desvio consciente do `lParam=0` /
+sem-`UP` dele). Sem prime falso, sem higiene. Restore do foreground anterior
+só se o lote realmente moveu o foco. Quando bloqueado (caso comum com o main
+em uso) comporta-se como background sem flicker; quando concedido, como foco
+com restore — um caminho só que degrada com graça.
+
 ## `MacroExecutor` — semântica
 
 - Entrada: lista ordenada de `(IWindowTarget, Action)` + `ExecutionMode`
