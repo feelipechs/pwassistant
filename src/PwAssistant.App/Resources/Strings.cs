@@ -148,6 +148,7 @@ public static class Strings
         string.Format(Get(nameof(RowWithoutAccount)), line);
     public static string OrphanAccountHint => Get(nameof(OrphanAccountHint));
     public static string VerboseFireLog => Get(nameof(VerboseFireLog));
+    public static string FocusedDispatch => Get(nameof(FocusedDispatch));
     public static string OpenAll => Get(nameof(OpenAll));
     public static string CloseAll => Get(nameof(CloseAll));
     public static string ToastAdded(string name) =>

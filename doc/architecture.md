@@ -1,7 +1,11 @@
 # Arquitetura — PwAssistant
 
-Decisões travadas por prova real (receita T1 abaixo e `HANDOFF.md`): input sem foco via `PostMessage` com priming de ativação.
-Sem driver, sem injeção, sem foco real, sem flicker.
+Decisões travadas por prova real (receita T1 abaixo e `HANDOFF.md`): input via `PostMessage` com priming de ativação.
+Sem driver, sem injeção, sem `SendInput` como padrão.
+Background puro (sem foco real, sem flicker) é o default validado; em máquinas
+carregadas (10 clients, PC fraco) o engine ignora `PostMessage` sem foreground —
+descoberta 2026-10-01 (teste A/B + logs `fg=1` executa / `fg=0` ignora) que
+motivou o modo com foco abaixo. Doc atualizado no mesmo passo (lei nº 5).
 
 ## Solução e projetos (.NET 8, C#)
 
@@ -62,6 +66,17 @@ Eficiência (requisito do projeto):
 Fallback documentado (não implementar até haver prova de necessidade):
 `ForegroundSwapSendInputStrategy` (`AttachThreadInput` + `SendInput` + restaura
 foco). Driver kernel e injeção estão **descartados em definitivo**.
+
+## Disparo com foco (modo opt-in, desde 2026-10-01)
+
+`FocusedInputStrategy` (decorator em `App.Services` sobre o
+`PostMessageBackgroundStrategy`): com a chave global ligada, traz cada janela
+à frente de verdade (`WindowFocus.BringToFront`, receita do B4) antes dos envios
+daquela conta e restaura o foreground anterior no fim do lote (`finally`, até sob
+cancel). Envios continuam `PostMessage` T1/C4 — sem `SendInput`, sem injeção.
+Chave: `AppData.FocusedDispatch` (default off), checkbox no Settings. Vale para
+botão, hotkey e loop. Efeito colateral assumido: flicker visível durante o lote
+(taskbar pisca como no PW Helper — sinal de pedido real de foreground).
 
 ## `MacroExecutor` — semântica
 

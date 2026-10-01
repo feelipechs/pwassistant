@@ -18,6 +18,7 @@ public partial class SettingsSheet : UserControl
     private int _originalCycleKey;
     private bool _originalNumpad;
     private bool _originalShiftTap;
+    private bool _originalFocused;
 
     private int _draftCycleKey;
     private bool _recordingCycleKey;
@@ -29,6 +30,7 @@ public partial class SettingsSheet : UserControl
         CycleKeyCaption.Text = Strings.CycleKey;
         NumpadCheck.Content = Strings.NumpadSelect;
         ShiftTapCheck.Content = Strings.ShiftTapToggle;
+        FocusedCheck.Content = Strings.FocusedDispatch;
         VerboseCheck.Content = Strings.VerboseFireLog;
         ArmingHintLabel.Text = Strings.ArmingHint;
         SaveButton.Content = Strings.Save;
@@ -45,9 +47,11 @@ public partial class SettingsSheet : UserControl
         _originalCycleKey = _draftCycleKey = _state.Data.FocusSettings.CycleKey;
         _originalNumpad = _state.Data.FocusSettings.NumpadEnabled;
         _originalShiftTap = _state.Data.FocusSettings.ShiftTapEnabled;
+        _originalFocused = _state.Data.FocusedDispatch;
         UpdateCycleLabel();
         NumpadCheck.IsChecked = _originalNumpad;
         ShiftTapCheck.IsChecked = _originalShiftTap;
+        FocusedCheck.IsChecked = _originalFocused;
         // Session-only diagnostics flag: applied live, outside Save/Discard.
         VerboseCheck.IsChecked = _state.VerboseFireLog;
         Visibility = Visibility.Visible;
@@ -140,6 +144,7 @@ public partial class SettingsSheet : UserControl
         _state.Data.FocusSettings.CycleKey = _draftCycleKey;
         _state.Data.FocusSettings.NumpadEnabled = NumpadCheck.IsChecked == true;
         _state.Data.FocusSettings.ShiftTapEnabled = ShiftTapCheck.IsChecked == true;
+        _state.Data.FocusedDispatch = FocusedCheck.IsChecked == true;
         // Report saved only after the disk write confirms.
         if (await SaveAsync())
             Finish(true);
@@ -176,6 +181,7 @@ public partial class SettingsSheet : UserControl
             _state.Data.FocusSettings.CycleKey = _originalCycleKey;
             _state.Data.FocusSettings.NumpadEnabled = _originalNumpad;
             _state.Data.FocusSettings.ShiftTapEnabled = _originalShiftTap;
+            _state.Data.FocusedDispatch = _originalFocused;
         }
         Finish(false);
     }

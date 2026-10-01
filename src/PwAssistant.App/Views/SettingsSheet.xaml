@@ -21,6 +21,7 @@
                 </StackPanel>
                 <CheckBox x:Name="NumpadCheck" Margin="0,8,0,0" Style="{StaticResource ToggleSwitch}"/>
                 <CheckBox x:Name="ShiftTapCheck" Margin="0,4,0,0" Style="{StaticResource ToggleSwitch}"/>
+                <CheckBox x:Name="FocusedCheck" Margin="0,4,0,0" Style="{StaticResource ToggleSwitch}"/>
                 <CheckBox x:Name="VerboseCheck" Margin="0,4,0,0" Style="{StaticResource ToggleSwitch}"
                           Checked="OnVerboseChanged" Unchecked="OnVerboseChanged"/>
                 <TextBlock x:Name="ArmingHintLabel" Margin="0,8,0,0" Style="{StaticResource MutedText}"/>

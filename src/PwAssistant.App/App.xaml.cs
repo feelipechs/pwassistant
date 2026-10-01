@@ -63,7 +63,12 @@ public partial class App : Application
         services.AddSingleton<ISecretProtector, DpapiSecretProtector>();
         services.AddSingleton<IAccountStore, JsonFileAccountStore>();
         services.AddSingleton<IWindowResolver, WindowResolver>();
-        services.AddSingleton<IInputStrategy, PostMessageBackgroundStrategy>();
+        services.AddSingleton<PostMessageBackgroundStrategy>();
+        services.AddSingleton<IInputStrategy>(sp => new FocusedInputStrategy(
+            sp.GetRequiredService<PostMessageBackgroundStrategy>(),
+            sp.GetRequiredService<AppState>(),
+            sp.GetRequiredService<IWindowResolver>(),
+            sp.GetRequiredService<FileLogger>()));
         services.AddSingleton<MouseHook>();
         services.AddSingleton<KeyboardHook>();
         services.AddSingleton<SyncService>();
@@ -105,10 +110,10 @@ public partial class App : Application
 
         // Per-message fire trace (verbose flag in Settings, off by default).
         // Timestamp-correlates with the job lines from PresetFireLog.
-        if (_provider.GetRequiredService<IInputStrategy>() is PostMessageBackgroundStrategy background)
+        if (_provider.GetRequiredService<IInputStrategy>() is FocusedInputStrategy focused)
         {
             AppState state = _provider.GetRequiredService<AppState>();
-            background.Traced += trace =>
+            focused.Traced += trace =>
             {
                 if (state.VerboseFireLog)
                     log.Info($"  [trace] hwnd=0x{trace.Hwnd:X} {trace.Tag} msg=0x{trace.Message:X} ok={(trace.Ok ? 1 : 0)} win32={trace.Win32Error}");

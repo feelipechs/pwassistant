@@ -128,6 +128,7 @@
   <data name="DeleteTabConfirm" xml:space="preserve"><value>EXCLUIR A TAB {0}? AS CONTAS VOLTAM PARA TODAS.</value></data>
   <data name="OrphanAccountHint" xml:space="preserve"><value>MEMBRO ORIGINAL NÃO DISPONÍVEL NO GRUPO.</value></data>
   <data name="VerboseFireLog" xml:space="preserve"><value>LOG DETALHADO DE DISPARO</value></data>
+  <data name="FocusedDispatch" xml:space="preserve"><value>FOCAR JANELAS AO DISPARAR</value></data>
   <data name="OpenAll" xml:space="preserve"><value>ABRIR TODAS</value></data>
   <data name="CloseAll" xml:space="preserve"><value>FECHAR TODAS</value></data>
   <data name="ToastAdded" xml:space="preserve"><value>{0} ADICIONADO</value></data>
