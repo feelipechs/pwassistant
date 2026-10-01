@@ -14,9 +14,12 @@ if (args.Length == 0 || args[0] is "-h" or "--help")
 {
     Console.WriteLine("""
         PwAssistant.Probe — M1/M3 validation console (run on Windows, game WITHOUT focus).
-          probe key --pid <pid> --key F1 [--countdown 3] [--no-hygiene]
+          probe key --pid <pid> --key F1 [--countdown 3] [--no-hygiene] [--hold <ms>]
           probe click --pid <pid> --x <cx> --y <cy> [--countdown 3] [--no-hygiene]
           probe preset --pid <pid1> --pid <pid2> --x <cx> --y <cy> [--countdown 3] [--no-hygiene]
+
+        --hold <ms>: KEYDOWN hold before KEYUP (default 50). Frame-sampling
+        probe for background keys: 50 vs 400 discriminates a throttled pump.
           probe sync --pid <pid1> --pid <pid2> [--no-hygiene]
 
         Client-area pixel coords for click. Observe the game visually.
@@ -32,9 +35,15 @@ if (args.Length == 0 || args[0] is "-h" or "--help")
 var options = Parse(args);
 int countdown = options.TryGetValue("countdown", out string? cdText) && int.TryParse(cdText, out int cd) ? cd : 3;
 bool hygiene = !options.ContainsKey("no-hygiene");
+int holdMs = options.TryGetValue("hold", out string? holdText) && int.TryParse(holdText, out int hold) ? hold : 50;
+if (holdMs is < 0 or > 2000)
+{
+    Console.Error.WriteLine("--hold must be 0..2000 ms.");
+    return 2;
+}
 
 var resolver = new WindowResolver();
-IInputStrategy strategy = new PostMessageBackgroundStrategy(applyHygiene: hygiene);
+IInputStrategy strategy = new PostMessageBackgroundStrategy(new WinApiTiming(KeyHoldMs: holdMs), applyHygiene: hygiene);
 
 switch (args[0].ToLowerInvariant())
 {

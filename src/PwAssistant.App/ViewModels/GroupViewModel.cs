@@ -570,7 +570,7 @@ public sealed partial class GroupViewModel : ObservableObject
             PresetFireLog.Log(_log, _resolver, preset, result, "manual", id =>
                 byId.TryGetValue(id, out Account? a)
                     ? ((string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role), a.ProcessId)
-                    : ("?", null));
+                    : ("?", null), _state.VerboseFireLog);
         }
         catch (OperationCanceledException)
         {
@@ -733,6 +733,7 @@ public sealed partial class GroupViewModel : ObservableObject
         RefreshMiniRows();
         Refresh();
         HotkeysChanged?.Invoke();
+        _state.NotifyHotkeysChanged();
         ToastService.Show(AppStrings.ToastSaved(preset.Name));
     }
 
@@ -749,6 +750,7 @@ public sealed partial class GroupViewModel : ObservableObject
         DeletePresetCore(preset);
         await _state.SaveAsync();
         HotkeysChanged?.Invoke();
+        _state.NotifyHotkeysChanged();
         ToastService.Show(AppStrings.ToastRemoved(presetName));
     }
 

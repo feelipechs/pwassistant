@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace PwAssistant.WinApi;
 
@@ -83,6 +84,20 @@ internal static class NativeMethods
     internal static extern IntPtr GetForegroundWindow();
 
     [DllImport("user32.dll")]
+    internal static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO info);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern IntPtr SendMessageTimeoutW(
+        IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam,
+        uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern int GetClassNameW(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern int GetWindowTextW(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+    [DllImport("user32.dll")]
     internal static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
 
     [DllImport("user32.dll")]
@@ -145,6 +160,20 @@ internal static class NativeMethods
     {
         public int X;
         public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct GUITHREADINFO
+    {
+        public int cbSize;
+        public int flags;
+        public IntPtr hwndActive;
+        public IntPtr hwndFocus;
+        public IntPtr hwndCapture;
+        public IntPtr hwndMenuOwner;
+        public IntPtr hwndMoveSize;
+        public IntPtr hwndCaret;
+        public RECT rcCaret;
     }
 
     [StructLayout(LayoutKind.Sequential)]

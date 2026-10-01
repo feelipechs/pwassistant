@@ -87,20 +87,34 @@ visível quando ele QUER trocar), sem ação simultânea — e o Windows
 pisca, a tela não troca, e o segundo plano executa mesmo assim. Conclusão: o
 segredo não está no foco — está nas mensagens. Nossa higiene `WA_INACTIVE`
 pós-envio é a suspeita nº 1 dos skips: dizemos ao jogo "você está inativo"
-após cada ação.
+após cada ação. Rebaixada a co-fator em 2026-10-01 (2ª opinião): na A/B
+as duas contas recebem o mesmo fluxo e o resultado acompanha só o
+foreground — conteúdo não pode ser o discriminador fg=1/fg=0.
+
+Hipótese líder para teclas (2ª opinião, 2026-10-01): **amostragem por
+frame** — client em background a poucos fps + `DOWN→UP` de 20–50 ms some
+entre dois frames. Prediz: hold longo (400 ms) corrige sem foco; delay
+entre ações não ajuda (não mexe no hold); Helper sem `UP` funciona
+(`DOWN` persiste até ser amostrado). Experimento 2×2 no Probe
+(`--hold 50/400` × `--no-hygiene` ou não, 10 disparos/célula, conta em
+bg): só coluna 400 ms corrige = frame-sampling; só linha sem higiene =
+higiene; nada corrige = estado real do SO (H1). `PresetFireLog` verboso
+lista ainda todos os matches do PID (classe+título) contra a hipótese
+"janela errada com ok=1". Timeout efetivo ~1 ms neste PC (registro
+200000): lock nunca engaja aqui — suspeitos Helper/launcher no startup;
+protocolo SPI_GET antes/depois de abrir o Helper.
 
 `CleanDispatch` (sessão, default off, checkbox "RECEITA LIMPA (TESTE)"):
-uma chamada real de `SetForegroundWindow` por conta, sem forçar e sem
-input junto — a receita do Helper lida à risca: negada (flash-only,
-`setfg=0`) sem o direito de foreground é o caso background; concedida
-(`setfg=1`, troca visível) com ele, ex. logo após o clique no Disparar
-(confirmado no teste 2026-10-01: botão concede, hotkey/loop não).
-Envios nus (`MOVE → DOWN → UP` colados; tecla `DOWN → UP` com scan code
-próprio — desvio consciente do `lParam=0` / sem-`UP` dele), gap de 50 ms
-entre contas. Sem prime falso, sem higiene. Restore do foreground
-anterior só se o lote realmente moveu o foco. Verbose registra o
-resultado por conta (`[fg] setfg=1/0`) — o instrumento do A/B botão
-(com grant) vs. hotkey/loop (sem grant).
+estrutura R2 do binário — clicks nunca tocam o foreground; toda tecla
+recebe uma chamada real de `SetForegroundWindow`, sem forçar e sem input
+junto (negada + flash-only sem o grant é o caso background; concedida +
+troca com ele). Envios nus (`MOVE → DOWN → UP` colados; tecla `DOWN →
+UP` com scan code próprio — desvio consciente do `lParam=0` / sem-`UP`
+dele, reavaliar se o hold-400 falhar). Gap de 50 ms entre contas só nas
+teclas. Sem prime falso, sem higiene. Restore do foreground anterior só
+se o lote realmente moveu o foco. Verbose por envio (`[fg]`/`[bg]`):
+grant, `gui`/`focus` do thread-alvo (`GetGUIThreadInfo` — mensagem falsa
+nunca muda essas APIs) e `pumpMs` (`WM_NULL` via `SendMessageTimeout`).
 
 ## `MacroExecutor` — semântica
 

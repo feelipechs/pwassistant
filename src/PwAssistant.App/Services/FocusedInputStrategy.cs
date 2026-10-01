@@ -9,14 +9,14 @@ namespace PwAssistant.App.Services;
 /// Dispatch decorator (Fase 4b + clean recipe, 2026-10-01): two opt-in
 /// session/persisted modes over the legacy T1/C4 background recipe.
 /// Focused mode (persisted): real foreground per account via
-/// BringToFront + restore at batch end. Clean mode (session): one real,
-/// unforced SetForegroundWindow per account with NO accompanying input —
-/// the Helper's recipe read faithfully: denied (flash-only) without the
-/// foreground grant is the background case; granted (visible switch) with
-/// it, e.g. after the Fire button click. Result logged as setfg=1/0.
-/// Either way the sends are bare (no fake priming, no WA_INACTIVE hygiene,
-/// suspect #1 for background skips). Sends stay PostMessage (no SendInput,
-/// no injection).
+/// BringToFront + restore at batch end. Clean mode (session): Helper
+/// structure (R2) — clicks never touch the foreground; every key gets one
+/// real, unforced SetForegroundWindow with NO accompanying input (denied +
+/// flash-only without the grant is the background case; granted + switch
+/// with it). Either way the sends are bare (no fake priming, no WA_INACTIVE
+/// hygiene). Verbose per-send line carries the discriminators (grant result,
+/// target thread gui active/focus, pump round-trip). Sends stay PostMessage
+/// (no SendInput, no injection).
 /// </summary>
 public sealed class FocusedInputStrategy : IInputStrategy
 {
@@ -58,6 +58,7 @@ public sealed class FocusedInputStrategy : IInputStrategy
             () => Clean
                 ? _inner.SendKeyCleanAsync(target, virtualKey, cancellationToken)
                 : _inner.SendKeyAsync(target, virtualKey, cancellationToken),
+            touchForeground: Enabled || Clean,
             cancellationToken);
 
     public Task SendUiClickAsync(
@@ -67,35 +68,64 @@ public sealed class FocusedInputStrategy : IInputStrategy
             () => Clean
                 ? _inner.SendUiClickCleanAsync(target, relativeX, relativeY, button, cancellationToken)
                 : _inner.SendUiClickAsync(target, relativeX, relativeY, button, cancellationToken),
+            // Helper structure (R2): clicks never touch the foreground;
+            // only keys do. Forced mode keeps focusing both (unchanged).
+            touchForeground: Enabled,
             cancellationToken);
 
-    private async Task SendWithFocusAsync(IWindowTarget target, Func<Task> send, CancellationToken cancellationToken)
+    private async Task SendWithFocusAsync(
+        IWindowTarget target, Func<Task> send, bool touchForeground,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(target);
-        if (target.WindowHandle != IntPtr.Zero && target.WindowHandle != _lastHwnd)
+        // Forced mode focuses once per account; clean keys call per action
+        // (the binary primes every key, consecutive ones included).
+        bool touch = touchForeground && target.WindowHandle != IntPtr.Zero
+            && (Enabled ? target.WindowHandle != _lastHwnd : true);
+        bool moved = false;
+        if (touch)
         {
             if (Enabled)
             {
-                if (!WindowFocus.BringToFront(target.WindowHandle))
+                moved = WindowFocus.BringToFront(target.WindowHandle);
+                if (!moved)
                     _log.Warn($"Focused dispatch: could not foreground hwnd=0x{target.WindowHandle:X}.");
-                _lastHwnd = target.WindowHandle;
                 await Task.Delay(FocusSettleMs, cancellationToken).ConfigureAwait(false);
             }
-            else if (Clean)
+            else
             {
                 // One real, unforced SetForegroundWindow, no input alongside.
                 // Blocked (taskbar flashes, setfg=0) is the expected
                 // background case; granted (setfg=1) visibly switches.
-                bool granted = WindowFocus.TrySetSoft(target.WindowHandle);
-                if (granted)
+                moved = WindowFocus.TrySetSoft(target.WindowHandle);
+                if (moved)
                     _batchMovedForeground = true;
-                if (_state.VerboseFireLog)
-                    _log.Info($"  [fg] hwnd=0x{target.WindowHandle:X} setfg={(granted ? 1 : 0)}");
-                _lastHwnd = target.WindowHandle;
                 await Task.Delay(CleanSettleMs, cancellationToken).ConfigureAwait(false);
             }
+            _lastHwnd = target.WindowHandle;
         }
+        if (_state.VerboseFireLog && (Enabled || Clean))
+            LogProbe(target.WindowHandle, moved, touch);
         await send().ConfigureAwait(false);
+    }
+
+    /// <summary>Per-send discriminator line (verbose only): grant result +
+    /// the target thread's own active/focus view + pump round-trip.</summary>
+    private void LogProbe(IntPtr hwnd, bool moved, bool touched)
+    {
+        try
+        {
+            GuiState gui = WindowDiagnostics.GetGuiState(hwnd);
+            int pumpMs = WindowDiagnostics.ProbePumpMs(hwnd);
+            string tag = touched ? "fg" : "bg";
+            string grant = touched ? $" setfg={(moved ? 1 : 0)}" : string.Empty;
+            _log.Info($"  [{tag}] hwnd=0x{hwnd:X}{grant}"
+                + $" gui=0x{gui.ActiveWindow:X} focus=0x{gui.FocusWindow:X} pumpMs={pumpMs}");
+        }
+        catch
+        {
+            // Diagnostics never break dispatch.
+        }
     }
 
     public void BeginBatch()

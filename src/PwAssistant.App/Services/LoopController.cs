@@ -165,7 +165,7 @@ public sealed class LoopController : IDisposable
         PresetFireLog.Log(_log, _resolver, preset, result, "loop", id =>
             byId.TryGetValue(id, out Account? a)
                 ? ((string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role), a.ProcessId)
-                : ("?", null));
+                : ("?", null), _state.VerboseFireLog);
     }
 
     public void Dispose()

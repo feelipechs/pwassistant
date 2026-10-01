@@ -57,6 +57,7 @@ public partial class MainWindow : Window
             VersionLabel.Visibility = Visibility.Visible;
         }
         SourceInitialized += OnSourceInitialized;
+        _state.HotkeysChanged += RefreshPresetHotkeys;
         MaximizeClamp.Attach(this);
         ToastService.BalloonSink = (title, message) => _tray.ShowBalloon(title, message);
         _tray.OpenRequested += (_, _) => RestoreFromBackground();
@@ -150,6 +151,7 @@ public partial class MainWindow : Window
                 (uint modifiers, uint vk) = ParseHotkey(preset.Hotkey!);
                 Preset captured = preset;
                 _hotkeys.Register(modifiers, vk, () => FireFromHotkey(captured));
+                _log.Info($"Hotkey registered '{preset.Hotkey}' for preset {preset.Name}.");
             }
             catch (Exception ex)
             {
@@ -184,7 +186,7 @@ public partial class MainWindow : Window
             PresetFireLog.Log(_log, _resolver, preset, result, "hotkey", id =>
                 byId.TryGetValue(id, out Account? a)
                     ? ((string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role), a.ProcessId)
-                    : ("?", null));
+                    : ("?", null), _state.VerboseFireLog);
         }
         catch (Exception ex)
         {

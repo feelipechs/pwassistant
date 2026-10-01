@@ -25,6 +25,11 @@ public sealed class AppState
     /// <summary>Session-only clean recipe (Helper mirror, Settings toggle, never persisted).</summary>
     public bool CleanDispatch { get; set; }
 
+    /// <summary>Raised after preset mutations so global hotkeys re-register live.</summary>
+    public event Action? HotkeysChanged;
+
+    public void NotifyHotkeysChanged() => HotkeysChanged?.Invoke();
+
     public AppState(IAccountStore store, IWindowResolver resolver, string filePath)
     {
         _store = store;

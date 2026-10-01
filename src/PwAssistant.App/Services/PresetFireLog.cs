@@ -17,7 +17,7 @@ public static class PresetFireLog
     public static void Log(
         FileLogger log, IWindowResolver resolver, Preset preset,
         PresetExecutionResult result, string origin,
-        Func<Guid, (string Name, int? Pid)> accountInfo)
+        Func<Guid, (string Name, int? Pid)> accountInfo, bool verbose = false)
     {
         string job = result.JobId.ToString("N")[..8];
         if (result.Canceled)
@@ -53,6 +53,11 @@ public static class PresetFireLog
                 + $" min={(WindowFocus.IsMinimized(hwnd) ? 1 : 0)}"
                 + $" fg={(hwnd != IntPtr.Zero && hwnd == foreground ? 1 : 0)}"
                 + $" {outcome}");
+            if (verbose && !account.Skipped && pid.HasValue)
+            {
+                IReadOnlyList<string> matches = WindowDiagnostics.DescribeWindows(pid.Value);
+                log.Info($"  [job={job}] {name} matches({matches.Count}): {string.Join("; ", matches)}");
+            }
         }
 
         if (skipped > 0)
