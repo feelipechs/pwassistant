@@ -112,6 +112,14 @@ public sealed class FocusedInputStrategy : IInputStrategy
         {
             // Best effort: restore is a courtesy, never load-bearing.
         }
+        // Grant-diagnosis context (verbose only): who holds the foreground
+        // as the batch starts, plus our own debugger/elevation state.
+        if (_state.VerboseFireLog)
+        {
+            string owner = WindowFocus.GetOwnerProcessName(_batchPreviousForeground) ?? "-";
+            _log.Info($"  [batch] prev=0x{_batchPreviousForeground:X} owner={owner}" +
+                $" dbg={(System.Diagnostics.Debugger.IsAttached ? 1 : 0)} admin={(IsElevated() ? 1 : 0)}");
+        }
     }
 
     public void EndBatch()
@@ -134,6 +142,22 @@ public sealed class FocusedInputStrategy : IInputStrategy
         {
             _batchPreviousForeground = IntPtr.Zero;
             _batchMovedForeground = false;
+        }
+    }
+
+    /// <summary>Read-only self check for the grant-diagnosis line.
+    /// False on any error (unknown reads as non-elevated, never as granted).</summary>
+    private static bool IsElevated()
+    {
+        try
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            return new System.Security.Principal.WindowsPrincipal(identity)
+                .IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+        catch
+        {
+            return false;
         }
     }
 }

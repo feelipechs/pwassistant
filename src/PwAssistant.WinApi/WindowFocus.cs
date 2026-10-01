@@ -86,6 +86,26 @@ public static class WindowFocus
         }
     }
 
+    /// <summary>
+    /// Best-effort owner process name of a window (grant diagnostics).
+    /// Never throws; null when unknown.
+    /// </summary>
+    public static string? GetOwnerProcessName(IntPtr windowHandle)
+    {
+        try
+        {
+            if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))
+                return null;
+            NativeMethods.GetWindowThreadProcessId(windowHandle, out uint pid);
+            using System.Diagnostics.Process proc = System.Diagnostics.Process.GetProcessById((int)pid);
+            return proc.ProcessName;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public static bool BringToFront(IntPtr windowHandle)
     {
         if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))
