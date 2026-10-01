@@ -116,6 +116,16 @@ se o lote realmente moveu o foco. Verbose por envio (`[fg]`/`[bg]`):
 grant, `gui`/`focus` do thread-alvo (`GetGUIThreadInfo` — mensagem falsa
 nunca muda essas APIs) e `pumpMs` (`WM_NULL` via `SendMessageTimeout`).
 
+Variante pura (`PureBackgroundKeys`, sessão, default off, exige Clean):
+teclas sem **nenhuma** chamada de foco — `KEYDOWN lParam=0` e nada mais,
+espelho exato do binário. Sem chamada não há o que o lock conceda:
+troca estruturalmente impossível (linha `[pure]` no verbose). Risco
+tecla-presa: `DOWN` sem `UP` trava a tecla até qualquer `UP` do mesmo
+VK — testar só em toggle, recovery = um tap físico. Célula nunca
+testada antes (sem-chamada + exato). `matches[0]` blindado: com vários
+top-levels visíveis no PID (jogo + `Internet Explorer_Hidden` do
+cash-shop), prefere a classe `ElementClient Window` em vez da posição Z.
+
 ## `MacroExecutor` — semântica
 
 - Entrada: lista ordenada de `(IWindowTarget, Action)` + `ExecutionMode`

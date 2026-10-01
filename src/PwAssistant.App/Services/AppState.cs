@@ -25,6 +25,9 @@ public sealed class AppState
     /// <summary>Session-only clean recipe (Helper mirror, Settings toggle, never persisted).</summary>
     public bool CleanDispatch { get; set; }
 
+    /// <summary>Session-only pure background keys (exact mirror, no focus call; needs Clean).</summary>
+    public bool PureBackgroundKeys { get; set; }
+
     /// <summary>Raised after preset mutations so global hotkeys re-register live.</summary>
     public event Action? HotkeysChanged;
 

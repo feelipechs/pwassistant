@@ -13,7 +13,9 @@ namespace PwAssistant.App.Services;
 /// structure (R2) — clicks never touch the foreground; every key gets one
 /// real, unforced SetForegroundWindow with NO accompanying input (denied +
 /// flash-only without the grant is the background case; granted + switch
-/// with it). Either way the sends are bare (no fake priming, no WA_INACTIVE
+/// with it). Pure-keys variant (session): exact binary mirror — KEYDOWN
+/// lParam=0, no UP, and no focus call at all, so no switch is structurally
+/// possible. Either way the sends are bare (no fake priming, no WA_INACTIVE
 /// hygiene). Verbose per-send line carries the discriminators (grant result,
 /// target thread gui active/focus, pump round-trip). Sends stay PostMessage
 /// (no SendInput, no injection).
@@ -52,14 +54,21 @@ public sealed class FocusedInputStrategy : IInputStrategy
 
     public bool Enabled => _state.Data.FocusedDispatch;
     private bool Clean => _state.CleanDispatch;
+    /// <summary>Pure background keys: exact binary mirror, no focus call at
+    /// all. Only meaningful with Clean on (falls back to legacy otherwise).</summary>
+    private bool PureKeys => Clean && _state.PureBackgroundKeys;
 
-    public Task SendKeyAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default) =>
-        SendWithFocusAsync(target,
+    public Task SendKeyAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default)
+    {
+        if (PureKeys)
+            return SendPureKeyAsync(target, virtualKey, cancellationToken);
+        return SendWithFocusAsync(target,
             () => Clean
                 ? _inner.SendKeyCleanAsync(target, virtualKey, cancellationToken)
                 : _inner.SendKeyAsync(target, virtualKey, cancellationToken),
             touchForeground: Enabled || Clean,
             cancellationToken);
+    }
 
     public Task SendUiClickAsync(
         IWindowTarget target, double relativeX, double relativeY,
@@ -72,6 +81,16 @@ public sealed class FocusedInputStrategy : IInputStrategy
             // only keys do. Forced mode keeps focusing both (unchanged).
             touchForeground: Enabled,
             cancellationToken);
+
+    /// <summary>Pure path: straight to the exact send, no focus call,
+    /// no gap, no restore. Nothing exists here for the lock to grant.</summary>
+    private async Task SendPureKeyAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        if (_state.VerboseFireLog && target.WindowHandle != IntPtr.Zero)
+            LogProbe("pure", target.WindowHandle, null);
+        await _inner.SendKeyPureAsync(target, virtualKey, cancellationToken).ConfigureAwait(false);
+    }
 
     private async Task SendWithFocusAsync(
         IWindowTarget target, Func<Task> send, bool touchForeground,
@@ -105,20 +124,19 @@ public sealed class FocusedInputStrategy : IInputStrategy
             _lastHwnd = target.WindowHandle;
         }
         if (_state.VerboseFireLog && (Enabled || Clean))
-            LogProbe(target.WindowHandle, moved, touch);
+            LogProbe(touch ? "fg" : "bg", target.WindowHandle, touch ? moved : (bool?)null);
         await send().ConfigureAwait(false);
     }
 
     /// <summary>Per-send discriminator line (verbose only): grant result +
     /// the target thread's own active/focus view + pump round-trip.</summary>
-    private void LogProbe(IntPtr hwnd, bool moved, bool touched)
+    private void LogProbe(string tag, IntPtr hwnd, bool? granted)
     {
         try
         {
             GuiState gui = WindowDiagnostics.GetGuiState(hwnd);
             int pumpMs = WindowDiagnostics.ProbePumpMs(hwnd);
-            string tag = touched ? "fg" : "bg";
-            string grant = touched ? $" setfg={(moved ? 1 : 0)}" : string.Empty;
+            string grant = granted.HasValue ? $" setfg={(granted.Value ? 1 : 0)}" : string.Empty;
             _log.Info($"  [{tag}] hwnd=0x{hwnd:X}{grant}"
                 + $" gui=0x{gui.ActiveWindow:X} focus=0x{gui.FocusWindow:X} pumpMs={pumpMs}");
         }

@@ -130,6 +130,7 @@
   <data name="VerboseFireLog" xml:space="preserve"><value>VERBOSE FIRE LOG</value></data>
   <data name="FocusedDispatch" xml:space="preserve"><value>FOCUS WINDOWS WHEN FIRING</value></data>
   <data name="CleanDispatch" xml:space="preserve"><value>CLEAN RECIPE (TEST)</value></data>
+  <data name="PureBackgroundKeys" xml:space="preserve"><value>PURE BACKGROUND KEYS (TEST)</value></data>
   <data name="OpenAll" xml:space="preserve"><value>OPEN ALL</value></data>
   <data name="CloseAll" xml:space="preserve"><value>CLOSE ALL</value></data>
   <data name="ToastAdded" xml:space="preserve"><value>{0} ADDED</value></data>

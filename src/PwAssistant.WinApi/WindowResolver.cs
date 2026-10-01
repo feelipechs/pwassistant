@@ -1,3 +1,4 @@
+using System.Text;
 using PwAssistant.Core.Input;
 
 namespace PwAssistant.WinApi;
@@ -9,6 +10,10 @@ namespace PwAssistant.WinApi;
 /// </summary>
 public sealed class WindowResolver : IWindowResolver
 {
+    /// <summary>Game window class: preferred when a PID owns several
+    /// visible top-levels (e.g. the embedded IE host of the cash-shop).</summary>
+    private const string GameWindowClass = "ElementClient Window";
+
     public IntPtr ResolveWindow(int processId)
     {
         var matches = new List<IntPtr>();
@@ -21,7 +26,28 @@ public sealed class WindowResolver : IWindowResolver
             return true;
         }, IntPtr.Zero);
 
-        return matches.Count > 0 ? matches[0] : IntPtr.Zero;
+        if (matches.Count == 0)
+            return IntPtr.Zero;
+        if (matches.Count == 1)
+            return matches[0];
+
+        // Several visible top-levels (game + embedded browser host):
+        // prefer the game class instead of blind Z-order position.
+        foreach (IntPtr hwnd in matches)
+        {
+            try
+            {
+                var cls = new StringBuilder(256);
+                if (NativeMethods.GetClassNameW(hwnd, cls, cls.Capacity) > 0
+                    && cls.ToString() == GameWindowClass)
+                    return hwnd;
+            }
+            catch
+            {
+                // One unreadable window never breaks resolution.
+            }
+        }
+        return matches[0];
     }
 
     public bool IsWindowAlive(IntPtr windowHandle) =>

@@ -106,11 +106,30 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
     }
 
     /// <summary>
-    /// Clean recipe (Helper mirror, 2026-10-01): bare DOWN/UP with proper
-    /// scan code — no fake ACTIVATE/SETFOCUS priming, no WA_INACTIVE
-    /// hygiene. The prime is a real (possibly lock-blocked) SetForegroundWindow
-    /// call made by the caller, never a posted fake. Deviates from the
-    /// Helper only in keeping UP + real lParam (no stuck keys).
+    /// Pure background key (Helper binary mirror, exact): KEYDOWN with
+    /// lParam=0 and NOTHING else — no scan code, no hold, no KEYUP, no
+    /// prime, no hygiene. The caller makes no foreground call either.
+    /// SAFETY: a DOWN without UP latches the key in the game until any UP
+    /// for the same VK arrives; recovery is one physical tap of the key.
+    /// Test only on toggle skills first (mount/buffs), never on movement.
+    /// </summary>
+    public Task SendKeyPureAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        IntPtr hwnd = RequireHandle(target);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        Post(hwnd, WinApiMessages.WM_KEYDOWN, (IntPtr)virtualKey, IntPtr.Zero, "KEYDOWN");
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Clean key: bare DOWN/UP with proper scan code — no fake
+    /// ACTIVATE/SETFOCUS priming, no WA_INACTIVE hygiene. The prime is a
+    /// real (possibly lock-blocked) SetForegroundWindow call made by the
+    /// caller, never a posted fake. Safer superset of the Helper (keeps UP
+    /// + real lParam so keys never latch); exact mirror lives in
+    /// <see cref="SendKeyPureAsync"/>.
     /// </summary>
     public async Task SendKeyCleanAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default)
     {
