@@ -7,6 +7,7 @@
 - Settings enxutas: numpad, shift-tap, log (experimentais + forced removidos c/ código).
 - Sender smoke + parser harden; publish validado (App 147 MB + Sender 64 MB); vpk pack 1.2.0 OK (delta 29 MB); Releases limpos (~270 MB).
 - Incidentes fechados: `.dll` ausente (LocateExe agora só-exe + stderr no erro); App.xaml.cs stale no C3 (pego em revisão, C10 corrige, builds validam a árvore exata).
+- Latência (plano A): lote só-click pula SFW+settle (`setfg=-` no log) + warmup de sender ~10 s pós-startup; daemon estacionado fica p/ depois de medir no SEGUIR.
 - Clicks R2 sem foco; legado prime-falso executa sem trocar; Helper 2/2 bg aqui.
 - Descobertas lei nº 5: latch do último input; timeout volátil (`~1 ms`↔`INT_MAX`, registro intacto); fronteira de processo = mecanismo; 3 variantes Helper; sync one-shot; mouse-move não transfere; mini inocente + B4 default-ON é confound.
 ## Pronto (código, pendente de jogo)
