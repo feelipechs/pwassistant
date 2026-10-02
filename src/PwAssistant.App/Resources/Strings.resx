@@ -30,7 +30,6 @@
   <data name="SyncInclude" xml:space="preserve"><value>INCLUDE IN SYNC</value></data>
   <data name="FocusSwitch" xml:space="preserve"><value>SWITCH WINDOWS</value></data>
   <data name="FocusConfig" xml:space="preserve"><value>WINDOW SWITCHING KEYS</value></data>
-  <data name="CycleKey" xml:space="preserve"><value>CYCLE KEY</value></data>
   <data name="NumpadSelect" xml:space="preserve"><value>NUMPAD SELECTION</value></data>
   <data name="ShiftTapToggle" xml:space="preserve"><value>SHIFT-TAP TOGGLE</value></data>
   <data name="Settings" xml:space="preserve"><value>SETTINGS</value></data>
@@ -128,9 +127,6 @@
   <data name="DeleteTabConfirm" xml:space="preserve"><value>DELETE TAB {0}? ITS ACCOUNTS STAY IN ALL.</value></data>
   <data name="OrphanAccountHint" xml:space="preserve"><value>ORIGINAL MEMBER NOT AVAILABLE IN GROUP.</value></data>
   <data name="VerboseFireLog" xml:space="preserve"><value>VERBOSE FIRE LOG</value></data>
-  <data name="FocusedDispatch" xml:space="preserve"><value>FOCUS WINDOWS WHEN FIRING</value></data>
-  <data name="CleanDispatch" xml:space="preserve"><value>CLEAN RECIPE (TEST)</value></data>
-  <data name="PureBackgroundKeys" xml:space="preserve"><value>PURE BACKGROUND KEYS (TEST)</value></data>
   <data name="OpenAll" xml:space="preserve"><value>OPEN ALL</value></data>
   <data name="CloseAll" xml:space="preserve"><value>CLOSE ALL</value></data>
   <data name="ToastAdded" xml:space="preserve"><value>{0} ADDED</value></data>

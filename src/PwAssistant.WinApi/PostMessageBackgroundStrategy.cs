@@ -25,10 +25,7 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
     private readonly WinApiTiming _timing;
     private readonly bool _applyHygiene;
 
-    /// <summary>Clean-recipe timings (Helper mirror): no priming, no hold,
-    /// UP glued right after DOWN. Never zeroed.</summary>
-    private const int CleanSettleMs = 50;
-    private const int CleanKeyHoldMs = 20;
+    /// <summary>Sender click gap (MOVE, gap, DOWN/UP glued). Never zeroed.</summary>
     private const int CleanClickGapMs = 20;
 
     /// <summary>Raised once per posted message (diagnostics; null when nobody listens).</summary>
@@ -127,45 +124,7 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
     }
 
     /// <summary>
-    /// Pure background key (Helper binary mirror, exact): KEYDOWN with
-    /// lParam=0 and NOTHING else — no scan code, no hold, no KEYUP, no
-    /// prime, no hygiene. The caller makes no foreground call either.
-    /// SAFETY: a DOWN without UP latches the key in the game until any UP
-    /// for the same VK arrives; recovery is one physical tap of the key.
-    /// Test only on toggle skills first (mount/buffs), never on movement.
-    /// </summary>
-    public Task SendKeyPureAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(target);
-        IntPtr hwnd = RequireHandle(target);
-        cancellationToken.ThrowIfCancellationRequested();
-
-        Post(hwnd, WinApiMessages.WM_KEYDOWN, (IntPtr)virtualKey, IntPtr.Zero, "KEYDOWN");
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Clean key: bare DOWN/UP with proper scan code — no fake
-    /// ACTIVATE/SETFOCUS priming, no WA_INACTIVE hygiene. The prime is a
-    /// real (possibly lock-blocked) SetForegroundWindow call made by the
-    /// caller, never a posted fake. Safer superset of the Helper (keeps UP
-    /// + real lParam so keys never latch); exact mirror lives in
-    /// <see cref="SendKeyPureAsync"/>.
-    /// </summary>
-    public async Task SendKeyCleanAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(target);
-        IntPtr hwnd = RequireHandle(target);
-
-        uint scan = NativeMethods.MapVirtualKeyW((uint)virtualKey, WinApiMessages.MAPVK_VK_TO_VSC);
-
-        Post(hwnd, WinApiMessages.WM_KEYDOWN, (IntPtr)virtualKey, WinApiMessages.MakeKeyDownLParam(scan), "KEYDOWN");
-        await Task.Delay(CleanKeyHoldMs, cancellationToken).ConfigureAwait(false);
-        Post(hwnd, WinApiMessages.WM_KEYUP, (IntPtr)virtualKey, WinApiMessages.MakeKeyUpLParam(scan), "KEYUP");
-    }
-
-    /// <summary>
-    /// Clean click (Helper mirror): MOVE, gap, DOWN, UP glued. No HITTEST,
+    /// Clean click (sender path): MOVE, gap, DOWN, UP glued. No HITTEST,
     /// no SETCURSOR, no hold, no hygiene. Client-area coords like legacy.
     /// </summary>
     public async Task SendUiClickCleanAsync(

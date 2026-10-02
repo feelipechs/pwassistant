@@ -36,7 +36,6 @@ public static class Strings
     public static string SyncInclude => Get(nameof(SyncInclude));
     public static string FocusSwitch => Get(nameof(FocusSwitch));
     public static string FocusConfig => Get(nameof(FocusConfig));
-    public static string CycleKey => Get(nameof(CycleKey));
     public static string NumpadSelect => Get(nameof(NumpadSelect));
     public static string ShiftTapToggle => Get(nameof(ShiftTapToggle));
     public static string Settings => Get(nameof(Settings));
@@ -148,9 +147,6 @@ public static class Strings
         string.Format(Get(nameof(RowWithoutAccount)), line);
     public static string OrphanAccountHint => Get(nameof(OrphanAccountHint));
     public static string VerboseFireLog => Get(nameof(VerboseFireLog));
-    public static string FocusedDispatch => Get(nameof(FocusedDispatch));
-    public static string CleanDispatch => Get(nameof(CleanDispatch));
-    public static string PureBackgroundKeys => Get(nameof(PureBackgroundKeys));
     public static string OpenAll => Get(nameof(OpenAll));
     public static string CloseAll => Get(nameof(CloseAll));
     public static string ToastAdded(string name) =>

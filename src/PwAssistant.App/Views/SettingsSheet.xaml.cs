@@ -8,35 +8,24 @@ using PwAssistant.Core.Sync;
 namespace PwAssistant.App.Views;
 
 /// <summary>In-window settings sheet (replaces the SettingsWindow):
-/// edits a draft, Save persists, dismiss discards. Cycle key is
-/// press-to-record; the sheet ESC yields while recording.</summary>
+/// edits a draft, Save persists, dismiss discards.</summary>
 public partial class SettingsSheet : UserControl
 {
     private TaskCompletionSource<bool>? _tcs;
     private AppState? _state;
 
-    private int _originalCycleKey;
     private bool _originalNumpad;
     private bool _originalShiftTap;
-    private bool _originalFocused;
-
-    private int _draftCycleKey;
-    private bool _recordingCycleKey;
 
     public SettingsSheet()
     {
         InitializeComponent();
         FocusConfigLabel.Text = Strings.FocusConfig;
-        CycleKeyCaption.Text = Strings.CycleKey;
         NumpadCheck.Content = Strings.NumpadSelect;
         ShiftTapCheck.Content = Strings.ShiftTapToggle;
-        FocusedCheck.Content = Strings.FocusedDispatch;
         VerboseCheck.Content = Strings.VerboseFireLog;
-        CleanCheck.Content = Strings.CleanDispatch;
-        PureCheck.Content = Strings.PureBackgroundKeys;
         ArmingHintLabel.Text = Strings.ArmingHint;
         SaveButton.Content = Strings.Save;
-        RecordCycleButton.Content = Strings.RecordHotkey;
         CloseButton.Content = Strings.Close;
     }
 
@@ -46,18 +35,12 @@ public partial class SettingsSheet : UserControl
             _tcs.TrySetResult(false);
         _state = state;
         _state.Data.FocusSettings ??= new FocusSettings();
-        _originalCycleKey = _draftCycleKey = _state.Data.FocusSettings.CycleKey;
         _originalNumpad = _state.Data.FocusSettings.NumpadEnabled;
         _originalShiftTap = _state.Data.FocusSettings.ShiftTapEnabled;
-        _originalFocused = _state.Data.FocusedDispatch;
-        UpdateCycleLabel();
         NumpadCheck.IsChecked = _originalNumpad;
         ShiftTapCheck.IsChecked = _originalShiftTap;
-        FocusedCheck.IsChecked = _originalFocused;
-        // Session-only diagnostics flags: applied live, outside Save/Discard.
+        // Session-only diagnostics flag: applied live, outside Save/Discard.
         VerboseCheck.IsChecked = _state.VerboseFireLog;
-        CleanCheck.IsChecked = _state.CleanDispatch;
-        PureCheck.IsChecked = _state.PureBackgroundKeys;
         Visibility = Visibility.Visible;
         _tcs = new TaskCompletionSource<bool>();
         Dispatcher.InvokeAsync(() => CloseButton.Focus());
@@ -72,83 +55,11 @@ public partial class SettingsSheet : UserControl
         tcs?.TrySetResult(saved);
     }
 
-    public static string CycleKeyLabel(int code) => code switch
-    {
-        0xC0 => "`",
-        0x13 => "Pause",
-        0x20 => "SPACE",
-        0x0D => "ENTER",
-        0x09 => "TAB",
-        >= 0x70 and <= 0x7B => "F" + (code - 0x70 + 1),
-        >= 0x41 and <= 0x5A => ((char)code).ToString(),
-        >= 0x30 and <= 0x39 => ((char)code).ToString(),
-        >= 0x60 and <= 0x69 => "Num" + (code - 0x60),
-        _ => $"0x{code:X}",
-    };
-
-    private void OnRecordCycle(object sender, RoutedEventArgs e)
-    {
-        if (_recordingCycleKey)
-        {
-            DisarmCycleRecorder();
-            return;
-        }
-        _recordingCycleKey = true;
-        RecordCycleButton.Content = Strings.PressKeys;
-        CycleKeyBox.BorderBrush = (System.Windows.Media.Brush)FindResource("Brush.Ring");
-        PreviewKeyDown += OnCycleRecordKey;
-        RecordCycleButton.Focus();
-    }
-
-    private void DisarmCycleRecorder()
-    {
-        _recordingCycleKey = false;
-        PreviewKeyDown -= OnCycleRecordKey;
-        CycleKeyBox.BorderBrush = (System.Windows.Media.Brush)FindResource("Brush.Input");
-        RecordCycleButton.Content = Strings.RecordHotkey;
-        RecordCycleButton.Focus();
-    }
-
-    private void OnCycleRecordKey(object sender, KeyEventArgs e)
-    {
-        if (!_recordingCycleKey) return;
-        if (e.Key == Key.Escape)
-        {
-            DisarmCycleRecorder();
-            e.Handled = true;
-            return;
-        }
-        if (e.Key is Key.Back or Key.Delete)
-        {
-            _draftCycleKey = FocusSettings.DefaultCycleKey;
-            UpdateCycleLabel();
-            DisarmCycleRecorder();
-            e.Handled = true;
-            return;
-        }
-
-        Key pressed = e.Key == Key.System ? e.SystemKey : e.Key;
-        int code = KeyInterop.VirtualKeyFromKey(pressed);
-        if (code == 0)
-        {
-            e.Handled = true;
-            return;
-        }
-        _draftCycleKey = code;
-        UpdateCycleLabel();
-        DisarmCycleRecorder();
-        e.Handled = true;
-    }
-
-    private void UpdateCycleLabel() => CycleKeyValueLabel.Text = CycleKeyLabel(_draftCycleKey);
-
     private async void OnSave(object sender, RoutedEventArgs e)
     {
         if (_state?.Data.FocusSettings is null) return;
-        _state.Data.FocusSettings.CycleKey = _draftCycleKey;
         _state.Data.FocusSettings.NumpadEnabled = NumpadCheck.IsChecked == true;
         _state.Data.FocusSettings.ShiftTapEnabled = ShiftTapCheck.IsChecked == true;
-        _state.Data.FocusedDispatch = FocusedCheck.IsChecked == true;
         // Report saved only after the disk write confirms.
         if (await SaveAsync())
             Finish(true);
@@ -175,18 +86,6 @@ public partial class SettingsSheet : UserControl
             _state.VerboseFireLog = VerboseCheck.IsChecked == true;
     }
 
-    private void OnCleanChanged(object sender, RoutedEventArgs e)
-    {
-        if (_state is not null)
-            _state.CleanDispatch = CleanCheck.IsChecked == true;
-    }
-
-    private void OnPureChanged(object sender, RoutedEventArgs e)
-    {
-        if (_state is not null)
-            _state.PureBackgroundKeys = PureCheck.IsChecked == true;
-    }
-
     private void OnClose(object sender, RoutedEventArgs e) => Discard();
 
     private void Discard()
@@ -194,10 +93,8 @@ public partial class SettingsSheet : UserControl
         // Restore the snapshot (never partially persisted).
         if (_state?.Data.FocusSettings is not null)
         {
-            _state.Data.FocusSettings.CycleKey = _originalCycleKey;
             _state.Data.FocusSettings.NumpadEnabled = _originalNumpad;
             _state.Data.FocusSettings.ShiftTapEnabled = _originalShiftTap;
-            _state.Data.FocusedDispatch = _originalFocused;
         }
         Finish(false);
     }
@@ -210,7 +107,6 @@ public partial class SettingsSheet : UserControl
 
     private void OnSheetKeyDown(object sender, KeyEventArgs e)
     {
-        if (_recordingCycleKey) return;
         if (e.Key == Key.Escape)
         {
             e.Handled = true;

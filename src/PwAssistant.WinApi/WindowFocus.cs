@@ -89,26 +89,6 @@ public static class WindowFocus
     }
 
     /// <summary>
-    /// Best-effort owner process name of a window (grant diagnostics).
-    /// Never throws; null when unknown.
-    /// </summary>
-    public static string? GetOwnerProcessName(IntPtr windowHandle)
-    {
-        try
-        {
-            if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))
-                return null;
-            NativeMethods.GetWindowThreadProcessId(windowHandle, out uint pid);
-            using System.Diagnostics.Process proc = System.Diagnostics.Process.GetProcessById((int)pid);
-            return proc.ProcessName;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    /// <summary>
     /// Restores a minimized window (no-op otherwise). The Helper does this
     /// before every send (SW_RESTORE): a minimized client accepts posts
     /// with ok=1 yet ignores them. Never throws; reports whether it acted.

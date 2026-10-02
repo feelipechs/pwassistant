@@ -16,10 +16,6 @@ public sealed class AppData
     public List<AccountTab> Tabs { get; set; } = new();
     public FocusSettings FocusSettings { get; set; } = new();
 
-    /// <summary>Focused dispatch mode (Fase 4b): real foreground per account.
-    /// Default off (validated background default preserved).</summary>
-    public bool FocusedDispatch { get; set; }
-
     /// <summary>Last server selected in the shell (restored on launch).</summary>
     public Guid? LastSelectedServerId { get; set; }
 }

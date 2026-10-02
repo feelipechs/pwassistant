@@ -67,64 +67,46 @@ Fallback documentado (não implementar até haver prova de necessidade):
 `ForegroundSwapSendInputStrategy` (`AttachThreadInput` + `SendInput` + restaura
 foco). Driver kernel e injeção estão **descartados em definitivo**.
 
-## Disparo com foco (modo opt-in, desde 2026-10-01)
+## Modos removidos (2026-10-02; histórico abaixo, código removido)
 
-`FocusedInputStrategy` (decorator em `App.Services` sobre o
-`PostMessageBackgroundStrategy`): com a chave global ligada, traz cada janela
-à frente de verdade (`WindowFocus.BringToFront`, receita do B4) antes dos envios
-daquela conta e restaura o foreground anterior no fim do lote (`finally`, até sob
-cancel). Envios continuam `PostMessage` T1/C4 — sem `SendInput`, sem injeção.
-Chave: `AppData.FocusedDispatch` (default off), checkbox no Settings. Vale para
-botão, hotkey e loop. Efeito colateral assumido: flicker visível durante o lote
-(taskbar pisca como no PW Helper — sinal de pedido real de foreground).
+Foco forçado (`FocusedDispatch` + `BringToFront` + restore), receita limpa
+(`CleanDispatch`: SFW real por tecla + envios nus) e teclas puras
+(`PureBackgroundKeys`: `KEYDOWN lParam=0` sem `UP` nem chamada) saíram da
+Settings e do código — viraram peso morto após o worker (paridade validada
+9 contas). Troca explícita continua disponível via B4 (`FocusController`,
+hotkeys backtick/shift/numpad). Registro histórico preservado:
 
-## Receita limpa (modo teste de sessão, desde 2026-10-01)
+## Disparo com foco (modo opt-in, 2026-10-01 → removido 2026-10-02)
 
-Resposta do dev do PW Helper (confirmada): ele chama o `SetForegroundWindow`
-**real e sozinho por conta** — sem Ctrl (a "tecla reservada" só força a troca
-visível quando ele QUER trocar), sem ação simultânea — e o Windows
-**bloqueia** a troca (foreground-lock: "não é natural, não-humano"). A taskbar
-pisca, a tela não troca, e o segundo plano executa mesmo assim. Conclusão: o
-segredo não está no foco — está nas mensagens. Nossa higiene `WA_INACTIVE`
-pós-envio é a suspeita nº 1 dos skips: dizemos ao jogo "você está inativo"
-após cada ação. Rebaixada a co-fator em 2026-10-01 (2ª opinião): na A/B
-as duas contas recebem o mesmo fluxo e o resultado acompanha só o
-foreground — conteúdo não pode ser o discriminador fg=1/fg=0.
+### Histórico: foco forçado (2026-10-01 → removido)
 
-Hipótese líder para teclas (2ª opinião, 2026-10-01): **amostragem por
-frame** — client em background a poucos fps + `DOWN→UP` de 20–50 ms some
-entre dois frames. Prediz: hold longo (400 ms) corrige sem foco; delay
-entre ações não ajuda (não mexe no hold); Helper sem `UP` funciona
-(`DOWN` persiste até ser amostrado). Experimento 2×2 no Probe
-(`--hold 50/400` × `--no-hygiene` ou não, 10 disparos/célula, conta em
-bg): só coluna 400 ms corrige = frame-sampling; só linha sem higiene =
-higiene; nada corrige = estado real do SO (H1). `PresetFireLog` verboso
-lista ainda todos os matches do PID (classe+título) contra a hipótese
-"janela errada com ok=1". Timeout efetivo ~1 ms neste PC (registro
-200000): lock nunca engaja aqui — suspeitos Helper/launcher no startup;
-protocolo SPI_GET antes/depois de abrir o Helper.
+Era: `BringToFront` real por conta + restore do foreground anterior no
+fim do lote (`finally`, até sob cancel), envios `PostMessage` T1/C4.
+Efeito assumido: flicker visível (taskbar pisca = pedido real).
+Removido porque o worker entrega fundo sem trocar; troca explícita
+ficou só no B4.
 
-`CleanDispatch` (sessão, default off, checkbox "RECEITA LIMPA (TESTE)"):
-estrutura R2 do binário — clicks nunca tocam o foreground; toda tecla
-recebe uma chamada real de `SetForegroundWindow`, sem forçar e sem input
-junto (negada + flash-only sem o grant é o caso background; concedida +
-troca com ele). Envios nus (`MOVE → DOWN → UP` colados; tecla `DOWN →
-UP` com scan code próprio — desvio consciente do `lParam=0` / sem-`UP`
-dele, reavaliar se o hold-400 falhar). Gap de 50 ms entre contas só nas
-teclas. Sem prime falso, sem higiene. Restore do foreground anterior só
-se o lote realmente moveu o foco. Verbose por envio (`[fg]`/`[bg]`):
-grant, `gui`/`focus` do thread-alvo (`GetGUIThreadInfo` — mensagem falsa
-nunca muda essas APIs) e `pumpMs` (`WM_NULL` via `SendMessageTimeout`).
+### Histórico: receita limpa + pura (2026-10-01 → removido)
 
-Variante pura (`PureBackgroundKeys`, sessão, default off, exige Clean):
-teclas sem **nenhuma** chamada de foco — `KEYDOWN lParam=0` e nada mais,
-espelho exato do binário. Sem chamada não há o que o lock conceda:
-troca estruturalmente impossível (linha `[pure]` no verbose). Risco
-tecla-presa: `DOWN` sem `UP` trava a tecla até qualquer `UP` do mesmo
-VK — testar só em toggle, recovery = um tap físico. Célula nunca
-testada antes (sem-chamada + exato). `matches[0]` blindado: com vários
-top-levels visíveis no PID (jogo + `Internet Explorer_Hidden` do
-cash-shop), prefere a classe `ElementClient Window` em vez da posição Z.
+Dev do PW Helper (confirmado): `SetForegroundWindow` real e sozinho por
+conta, sem Ctrl (a "tecla reservada" só força quando ele QUER trocar),
+sem ação simultânea — bloqueado vira flash + fundo. Higiene `WA_INACTIVE`
+pós-envio: suspeita nº 1, rebaixada a co-fator (A/B acompanha só o
+foreground). Hipótese frame-sampling p/ teclas (client bg a poucos fps +
+`DOWN→UP` curto some entre frames; Helper sem `UP` persiste até amostrar)
+nunca precisou de prova isolada: o worker executa 9/9. Timeout efetivo
+volátil neste PC (`~1 ms` ↔ `INT_MAX`, registro 200000) — medido por
+disparo, nunca cacheado.
+
+### Vigente (não confundir com os modos acima)
+
+- `matches[0]` blindado por classe `ElementClient Window` (há
+  `Internet Explorer_Hidden` do cash-shop no mesmo PID).
+- Clicks nus `MOVE → 20 ms → DOWN → UP` vivem no sender
+  (`SendUiClickCleanAsync`); teclas `DOWN/scan/50 ms/UP`
+  (`SendKeyDirectAsync`). Sem prime falso, sem higiene, sem restore.
+- `[mode]` hoje: `worker|legacy-anomaly` + `timeoutMs`; verbose por
+  envio (`[s]`) vem do sender.
 
 ## Disparo via worker (default desde 2026-10-02)
 
