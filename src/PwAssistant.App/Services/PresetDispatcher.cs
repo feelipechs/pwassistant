@@ -39,7 +39,7 @@ public sealed class PresetDispatcher
         }
         finally
         {
-            focused.EndBatch();
+            await focused.EndBatchAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 

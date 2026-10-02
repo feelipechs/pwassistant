@@ -7,9 +7,15 @@ Guia do mantenedor. Versão vem da tag (`vX.Y.Z`); `packId PwAssistant`
 
 ```powershell
 dotnet publish src/PwAssistant.App -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ./publish
+dotnet publish src/PwAssistant.Sender -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ./publish
 Remove-Item "publish\*.pdb"
 dnx vpk@1.0.1 pack --packId PwAssistant --packVersion X.Y.Z --packDir ./publish --mainExe PwAssistant.App.exe
 ```
+
+O sender (`PwAssistant.Sender.exe`) é obrigatório ao lado do app
+(um exe único, self-contained): sem ele, todo disparo falha com erro
+explícito por conta (nunca silencioso). A linha de publish dele vem
+depois da do app e remove o pdb junto.
 
 O `vpk` verifica `VelopackApp.Run()` no `Main()` customizado, gera o
 delta contra a versão anterior presente em `Releases/` e cria o

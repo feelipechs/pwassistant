@@ -68,7 +68,11 @@ public partial class App : Application
             sp.GetRequiredService<PostMessageBackgroundStrategy>(),
             sp.GetRequiredService<AppState>(),
             sp.GetRequiredService<IWindowResolver>(),
-            sp.GetRequiredService<FileLogger>()));
+            sp.GetRequiredService<FileLogger>(),
+            id => WorkerSenderRunner.ResolvePid(sp.GetRequiredService<AppState>(), id),
+            WorkerSenderRunner.Create(
+                sp.GetRequiredService<FileLogger>(),
+                sp.GetRequiredService<AppState>())));
         services.AddSingleton<MouseHook>();
         services.AddSingleton<KeyboardHook>();
         services.AddSingleton<SyncService>();

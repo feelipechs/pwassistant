@@ -126,6 +126,59 @@ testada antes (sem-chamada + exato). `matches[0]` blindado: com vários
 top-levels visíveis no PID (jogo + `Internet Explorer_Hidden` do
 cash-shop), prefere a classe `ElementClient Window` em vez da posição Z.
 
+## Disparo via worker (default desde 2026-10-02)
+
+Descobertas que fecharam a investigação (todas com prova em log):
+
+- **Latch do último input:** o Windows pergunta *quem* recebeu o último
+  input, não *quando* — e segura a resposta até chegar input novo.
+  Clicar no nosso botão/hotkey concede todos os SFWs seguintes,
+  indefinidamente, em qualquer timeout (provado: 7 descargas de loop
+  `setfg=1` com 7 s sem input e timeout em `INT_MAX`). O protocolo
+  "mãos fora" garantia a concessão; bare mouse-move não transfere
+  (mensagem sintetizada, log 12:35 prova `setfg=1`).
+- **Timeout volátil:** runtime oscilou `~1 ms → INT_MAX` entre sessões,
+  registro intacto em 200000. Algum programa reescreve em runtime
+  (suspeitos com motivo: launcher zerando p/ trazer o jogo à frente;
+  Helper travando no máximo p/ fundo universal). Amostrado por disparo
+  (`[mode]`, nunca cacheado).
+- **Fronteira de processo É o mecanismo:** o Helper distribui daemons
+  estacionados sem args + IPC via stdin (`<pid>\n` no focus-daemon,
+  `windowWaitMs:20000` no sync do startup) + anti-tamper
+  (`BINARY_HASHES` no asar, sem FFI no JS). O worker nunca recebe input
+  → negado sob timeout normal → fundo. Três variantes mapeadas nos
+  binários: `play-preset-background` (SFW sozinho, DOWN lParam=0 sem UP,
+  click sem MOVE — a silenciosa), `play-preset`/`v2` (+CTRL próprio,
+  forçadas; v2 com lParam real + UP + MOVE). Sync de foco em thread
+  one-shot no startup (rajadas ACTIVE/INACTIVE falsas por estado real).
+
+Desenho nosso (paridade, sem copiar binário): `PwAssistant.Sender.exe`
+spawnado por conta por disparo (stdin JSON `SenderWorkload`,
+stdout `[s]/[trace]/RESULT`, exit 0/1/2/3 — contrato em
+`Core/Input/SenderContract.cs`). Sender: resolve HWND (classe
+preferida), `SW_RESTORE` se minimizado, SFW sozinho, 50 ms, envios nus
+(tecla DOWN/scan/50 ms/UP; click MOVE→20 ms→DOWN→UP), sem higiene, sem
+restore. App: `FocusedInputStrategy` acumula por conta
+(`WorkerBatch`, ordem exata incl. sleeps via `SleepAsync`) e descarrega
+por `AccountAction` (`FlushAsync` — falha vira skip-with-error daquela
+conta, sem plumbing novo). Sem chamadas reais no app em modo worker
+(nem restore — o restore vinha do nosso processo latched e puxava o
+foco de volta sozinho; só o modo forçado restaura). Sem gap extra
+entre contas (custo do spawn já espaça). PID desconhecido: fallback
+legado imediato. `SyncController` (mirror ao vivo, fora de batch)
+nunca bufferiza. Timeout < 5 s (anomalia: tudo-concede) → legado
+in-process sem chamada (única opção sem troca). Linha `[mode]` sempre
+no log: `forced|clean|worker|legacy-anomaly + timeoutMs`.
+
+Lock experimental (desde 2026-10-02, em validação): `LockSetForegroundWindow`
+no `BeginBatch` (só worker) + unlock no `finally` do `EndBatchAsync`,
+com refcount (`Interlocked`) p/ fires sobrepostos e linha `[lock] ok
+win32` no log. Tese: negação estrutural (imune a latch/timeout), mas
+duas incógnitas — (1) se vale p/ o processo filho, (2) se negado-por-lock
+suprime até o flash e o engine ignora (como o puro). Falhar = comportamento
+de hoje (segue degradado, nunca aborta). Nunca no modo forçado (quebraria
+o `BringToFront` opt-in).
+
 ## `MacroExecutor` — semântica
 
 - Entrada: lista ordenada de `(IWindowTarget, Action)` + `ExecutionMode`

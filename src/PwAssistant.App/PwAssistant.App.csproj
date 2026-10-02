@@ -48,6 +48,18 @@
   <ItemGroup>
     <ProjectReference Include="..\PwAssistant.Core\PwAssistant.Core.csproj" />
     <ProjectReference Include="..\PwAssistant.WinApi\PwAssistant.WinApi.csproj" />
+    <!-- Build order only (no assembly reference): the worker exe is spawned,
+         never linked. The AfterBuild copy below stages it next to the app. -->
+    <ProjectReference Include="..\PwAssistant.Sender\PwAssistant.Sender.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <!-- Dev loop: the sender needs its exe AND its managed dll next to the
+       app (a framework apphost without its dll dies with a host error —
+       seen live as exit 0x8000809A). The build tree lives outside the repo
+       (Directory.Build.props), hence the TEMP path. Release publish is a
+       separate self-contained single-file step (doc/release.md). -->
+  <Target Name="CopySenderWorker" AfterTargets="AfterBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Copy SourceFiles="$(TEMP)/pwassistant-build/bin/PwAssistant.Sender/$(Configuration)/net8.0/PwAssistant.Sender.exe;$(TEMP)/pwassistant-build/bin/PwAssistant.Sender/$(Configuration)/net8.0/PwAssistant.Sender.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>
