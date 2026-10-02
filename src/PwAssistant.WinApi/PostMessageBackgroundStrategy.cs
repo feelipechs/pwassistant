@@ -105,6 +105,27 @@ public sealed class PostMessageBackgroundStrategy : IInputStrategy
         Post(hwnd, WinApiMessages.WM_ACTIVATEAPP, IntPtr.Zero, IntPtr.Zero, "HYGIENE-ACTIVATEAPP");
     }
 
+    /// <summary>Key hold for the worker-path direct send (Helper-v2 shape).</summary>
+    private const int DirectKeyHoldMs = 50;
+
+    /// <summary>
+    /// Direct key (worker path, Helper-v2 shape): bare DOWN/UP with proper
+    /// scan code — no fake priming, no hygiene, no hold games. The caller
+    /// (a separate input-less sender process) owns the activation step
+    /// (restore + lone SetForegroundWindow + settle), never this method.
+    /// </summary>
+    public async Task SendKeyDirectAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        IntPtr hwnd = RequireHandle(target);
+
+        uint scan = NativeMethods.MapVirtualKeyW((uint)virtualKey, WinApiMessages.MAPVK_VK_TO_VSC);
+
+        Post(hwnd, WinApiMessages.WM_KEYDOWN, (IntPtr)virtualKey, WinApiMessages.MakeKeyDownLParam(scan), "KEYDOWN");
+        await Task.Delay(DirectKeyHoldMs, cancellationToken).ConfigureAwait(false);
+        Post(hwnd, WinApiMessages.WM_KEYUP, (IntPtr)virtualKey, WinApiMessages.MakeKeyUpLParam(scan), "KEYUP");
+    }
+
     /// <summary>
     /// Pure background key (Helper binary mirror, exact): KEYDOWN with
     /// lParam=0 and NOTHING else — no scan code, no hold, no KEYUP, no

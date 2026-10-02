@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace PwAssistant.WinApi;
 
 /// <summary>
@@ -103,6 +105,65 @@ public static class WindowFocus
         catch
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Restores a minimized window (no-op otherwise). The Helper does this
+    /// before every send (SW_RESTORE): a minimized client accepts posts
+    /// with ok=1 yet ignores them. Never throws; reports whether it acted.
+    /// </summary>
+    public static bool RestoreIfMinimized(IntPtr windowHandle)
+    {
+        try
+        {
+            if (windowHandle == IntPtr.Zero || !NativeMethods.IsWindow(windowHandle))
+                return false;
+            if (!NativeMethods.IsIconic(windowHandle))
+                return false;
+            return NativeMethods.ShowWindow(windowHandle, SW_RESTORE);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// System-wide foreground lock (LSFW_LOCK): while held, SetForegroundWindow
+    /// calls fail instead of switching — including, in principle, our own
+    /// sender child (untested: the matrix decides). Best-effort and brief by
+    /// contract: the caller unlocks in a finally (the OS also releases on
+    /// user Alt/click, but nobody counts on that). Never throws; reports the
+    /// raw Win32 result for the [lock] log line.
+    /// </summary>
+    public static bool TryLockForeground(out int win32Error)
+    {
+        win32Error = 0;
+        try
+        {
+            bool ok = NativeMethods.LockSetForegroundWindow(1);
+            if (!ok)
+                win32Error = Marshal.GetLastWin32Error();
+            return ok;
+        }
+        catch
+        {
+            win32Error = Marshal.GetLastWin32Error();
+            return false;
+        }
+    }
+
+    /// <summary>Releases <see cref="TryLockForeground"/>. Never throws.</summary>
+    public static void UnlockForeground()
+    {
+        try
+        {
+            NativeMethods.LockSetForegroundWindow(2);
+        }
+        catch
+        {
+            // Best effort by contract.
         }
     }
 

@@ -102,6 +102,37 @@ public static class WindowDiagnostics
         return lines;
     }
 
+    /// <summary>
+    /// Effective ForegroundLockTimeout in ms (runtime value, NOT the
+    /// registry). Volatile by design: any process may rewrite it via
+    /// SPI_SETFOREGROUNDLOCKTIMEOUT without persisting, so the registry
+    /// (stock 200000) proves nothing about this session. uint.MaxValue
+    /// when unreadable (fail-closed: treated as maximum protection).
+    /// </summary>
+    public static uint GetForegroundLockTimeoutMs()
+    {
+        try
+        {
+            uint timeout = 0;
+            if (NativeMethods.SystemParametersInfo(0x2000, 0, ref timeout, 0))
+                return timeout;
+            return uint.MaxValue;
+        }
+        catch
+        {
+            return uint.MaxValue;
+        }
+    }
+
+    /// <summary>
+    /// True when the lock is effectively disabled (any process may steal
+    /// the foreground): every SetForegroundWindow is granted, every
+    /// dispatch visibly switches. Seen in the wild (~1 ms with a stock
+    /// 200000 registry); cause unknown, suspected launcher/helper
+    /// startup write. Threshold 5 s keeps a wide margin from stock.
+    /// </summary>
+    public static bool IsForegroundLockDisabled(uint timeoutMs) => timeoutMs < 5000;
+
     private static string Truncate(string value, int max = 48)
     {
         string flat = value.Replace('\r', ' ').Replace('\n', ' ');

@@ -80,6 +80,10 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     internal static extern bool SetForegroundWindow(IntPtr hWnd);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool LockSetForegroundWindow(uint uLockCode);
+
     [DllImport("user32.dll")]
     internal static extern IntPtr GetForegroundWindow();
 
@@ -102,6 +106,10 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    internal static extern bool SystemParametersInfo(
+        uint uiAction, uint uiParam, ref uint pvParam, uint fuWinIni);
 
     [DllImport("user32.dll")]
     internal static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
