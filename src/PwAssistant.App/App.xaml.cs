@@ -64,14 +64,15 @@ public partial class App : Application
         services.AddSingleton<IAccountStore, JsonFileAccountStore>();
         services.AddSingleton<IWindowResolver, WindowResolver>();
         services.AddSingleton<PostMessageBackgroundStrategy>();
+        services.AddSingleton<SenderRunner>(sp => WorkerSenderRunner.Create(
+            sp.GetRequiredService<FileLogger>(),
+            sp.GetRequiredService<AppState>()));
         services.AddSingleton<IInputStrategy>(sp => new FocusedInputStrategy(
             sp.GetRequiredService<PostMessageBackgroundStrategy>(),
             sp.GetRequiredService<AppState>(),
             sp.GetRequiredService<FileLogger>(),
             id => WorkerSenderRunner.ResolvePid(sp.GetRequiredService<AppState>(), id),
-            WorkerSenderRunner.Create(
-                sp.GetRequiredService<FileLogger>(),
-                sp.GetRequiredService<AppState>())));
+            sp.GetRequiredService<SenderRunner>()));
         services.AddSingleton<MouseHook>();
         services.AddSingleton<KeyboardHook>();
         services.AddSingleton<SyncService>();
@@ -239,10 +240,43 @@ public partial class App : Application
             await main.Dispatcher.InvokeAsync(main.RegisterPresetHotkeys).Task.ConfigureAwait(false);
             // Observed fire-and-forget: the updater logs and never throws.
             _ = _provider?.GetService<AppUpdater>()?.CheckAndPromptAsync();
+            // Sender pre-warm (delayed past startup): pays process + CLR +
+            // JIT + disk/AV cache once per session with a pid-0 no-op
+            // (resolves nothing, touches no window, exits 2). First real
+            // fires then skip the cold-start stall. Never breaks startup.
+            _ = WarmupSenderAsync();
         }
         catch (Exception ex)
         {
             _provider?.GetService<FileLogger>()?.Error($"Startup init failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Best-effort sender warmup ~10 s after startup (lets first paint and
+    /// user settle first). A pid-0 workload is used on purpose: resolution
+    /// fails before any window is touched (no focus call, no send), so the
+    /// only effect is a warm process/JIT/disk cache. Always logs one line
+    /// so a missing/slow warmup is visible instead of mysterious.
+    /// </summary>
+    private async Task WarmupSenderAsync()
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            SenderRunner? runner = _provider?.GetService<SenderRunner>();
+            FileLogger? log = _provider?.GetService<FileLogger>();
+            if (runner is null || log is null)
+                return;
+            var workload = new SenderWorkload { ProcessId = 0, Verbose = false };
+            _ = await runner(workload, CancellationToken.None).ConfigureAwait(false);
+            // Any result (even pid-0 no-window) proves a sender process ran
+            // end to end: process, CLR, JIT and disk/AV caches are now warm.
+            log.Info("  [sender] warmup done");
+        }
+        catch (Exception ex)
+        {
+            _provider?.GetService<FileLogger>()?.Warn($"Sender warmup failed (first fire pays cold start): {ex.Message}");
         }
     }
 

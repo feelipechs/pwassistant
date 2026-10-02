@@ -80,15 +80,31 @@ try
         Console.WriteLine($"  [sender] hwnd=0x{hwnd:X} restored-minimized");
 
     IntPtr prev = resolver.GetForegroundWindow();
-    bool granted = WindowFocus.TrySetSoft(hwnd);
-    GuiState gui = WindowDiagnostics.GetGuiState(hwnd);
-    int pumpMs = WindowDiagnostics.ProbePumpMs(hwnd);
-    Console.WriteLine($"  [s] hwnd=0x{hwnd:X} setfg={(granted ? 1 : 0)}"
-        + $" gui=0x{gui.ActiveWindow:X} focus=0x{gui.FocusWindow:X} pumpMs={pumpMs}");
+    // Click-only batches skip the focus call AND the settle: clicks never
+    // needed activation (R2 validated), so skipping is both faster (~50 ms+
+    // per account) and structurally switch-free — nothing exists here for
+    // the lock to grant, on any machine, under any timeout.
+    bool granted = false;
+    GuiState gui;
+    int pumpMs;
+    if (workload.HasKeys)
+    {
+        granted = WindowFocus.TrySetSoft(hwnd);
+        gui = WindowDiagnostics.GetGuiState(hwnd);
+        pumpMs = WindowDiagnostics.ProbePumpMs(hwnd);
+        Console.WriteLine($"  [s] hwnd=0x{hwnd:X} setfg={(granted ? 1 : 0)}"
+            + $" gui=0x{gui.ActiveWindow:X} focus=0x{gui.FocusWindow:X} pumpMs={pumpMs}");
+        await Task.Delay(SettleMs);
+    }
+    else
+    {
+        gui = WindowDiagnostics.GetGuiState(hwnd);
+        pumpMs = WindowDiagnostics.ProbePumpMs(hwnd);
+        Console.WriteLine($"  [s] hwnd=0x{hwnd:X} setfg=-"
+            + $" gui=0x{gui.ActiveWindow:X} focus=0x{gui.FocusWindow:X} pumpMs={pumpMs}");
+    }
     if (verbose)
         Console.WriteLine($"  [sender] prev=0x{prev:X} pid={workload.ProcessId}");
-
-    await Task.Delay(SettleMs);
 
     var target = new DirectTarget(hwnd);
     int sent = 0;

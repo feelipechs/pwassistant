@@ -105,8 +105,12 @@ disparo, nunca cacheado.
 - Clicks nus `MOVE → 20 ms → DOWN → UP` vivem no sender
   (`SendUiClickCleanAsync`); teclas `DOWN/scan/50 ms/UP`
   (`SendKeyDirectAsync`). Sem prime falso, sem higiene, sem restore.
+- Lotes só-de-click pulam SFW + settle no sender: clicks nunca precisaram
+  de ativação (R2), então não há o que o lock conceda — sem troca
+  estrutural + ~50 ms economizados por conta. Warmup de um sender
+  (pid 0, sem efeito) ~10 s após o startup paga CLR/JIT/disco de uma vez.
 - `[mode]` hoje: `worker|legacy-anomaly` + `timeoutMs`; verbose por
-  envio (`[s]`) vem do sender.
+  envio (`[s]`) vem do sender (`setfg=-` = chamada pulada).
 
 ## Disparo via worker (default desde 2026-10-02)
 

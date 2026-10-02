@@ -33,6 +33,15 @@ public sealed class SenderWorkload
     public int ProcessId { get; set; }
     public bool Verbose { get; set; }
     public List<SenderAction> Actions { get; set; } = new();
+
+    /// <summary>
+    /// True when any action needs key-level activation (a real key press).
+    /// Click-only batches skip the lone SetForegroundWindow entirely:
+    /// clicks never needed activation (R2), so there is nothing for the
+    /// lock to grant — structurally switch-free on any machine.
+    /// </summary>
+    public bool HasKeys =>
+        Actions.Any(a => string.Equals(a.Kind, "key", StringComparison.OrdinalIgnoreCase));
 }
 
 /// <summary>Sender outcome: exit code + stdout lines mapped to counts.</summary>

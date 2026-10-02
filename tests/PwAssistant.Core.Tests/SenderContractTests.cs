@@ -87,6 +87,21 @@ public sealed class SenderContractTests
     }
 
     [Fact]
+    public void HasKeys_DetectsKeyActionsCaseInsensitively()
+    {
+        Assert.True(new SenderWorkload { Actions = { SenderAction.Key(113) } }.HasKeys);
+        Assert.True(new SenderWorkload
+        {
+            Actions = { SenderAction.Click(0.5, 0.5, "left"), new SenderAction { Kind = "KEY", VirtualKey = 114 } }
+        }.HasKeys);
+        Assert.False(new SenderWorkload
+        {
+            Actions = { SenderAction.Click(0.5, 0.5, "left"), SenderAction.Sleep(100) }
+        }.HasKeys);
+        Assert.False(new SenderWorkload().HasKeys);
+    }
+
+    [Fact]
     public void ParseOutput_IgnoresDiagnosticsAndToleratesOrder()
     {
         SenderResult result = SenderCodec.ParseOutput(0, new[]
