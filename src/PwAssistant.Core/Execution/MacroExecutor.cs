@@ -66,7 +66,7 @@ public sealed class MacroExecutor
         try
         {
             if (accountAction.Action.DelayBeforeMs > 0)
-                await Task.Delay(accountAction.Action.DelayBeforeMs, cancellationToken).ConfigureAwait(false);
+                await _strategy.SleepAsync(target, accountAction.Action.DelayBeforeMs, cancellationToken).ConfigureAwait(false);
 
             int times = accountAction.Action.Repeat?.NormalizedTimes ?? 1;
             int interval = accountAction.Action.Repeat?.NormalizedIntervalMs ?? 0;
@@ -75,10 +75,14 @@ public sealed class MacroExecutor
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (i > 0 && interval > 0)
-                    await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+                    await _strategy.SleepAsync(target, interval, cancellationToken).ConfigureAwait(false);
 
                 await SendOnceAsync(target, accountAction.Action, cancellationToken).ConfigureAwait(false);
             }
+
+            // Batching strategies flush here so a flush failure attributes
+            // to THIS account through the skip-with-error path below.
+            await _strategy.FlushAsync(target, cancellationToken).ConfigureAwait(false);
 
             return new AccountExecutionResult(accountAction.AccountId, Skipped: false, WindowHandle: target.WindowHandle);
         }

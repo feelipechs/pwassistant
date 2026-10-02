@@ -20,6 +20,23 @@ public interface IInputStrategy
     Task SendUiClickAsync(
         IWindowTarget target, double relativeX, double relativeY,
         MouseButton button = MouseButton.Left, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Ordered wait scoped to one account's sequence, so batching
+    /// strategies can keep delays (DelayBeforeMs, repeat intervals) inside
+    /// the batch in exact order instead of collapsing them. Default is the
+    /// legacy behavior: wait in-process.
+    /// </summary>
+    Task SleepAsync(IWindowTarget target, int millisecondsDelay, CancellationToken cancellationToken = default) =>
+        Task.Delay(millisecondsDelay, cancellationToken);
+
+    /// <summary>
+    /// Flush one account's buffered actions (no-op unless the strategy
+    /// batches). Throwing here attributes the failure to that account
+    /// through the normal skip-with-error path.
+    /// </summary>
+    Task FlushAsync(IWindowTarget target, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
 }
 
 /// <summary>Resolves the live top-level game window for a process id.</summary>
