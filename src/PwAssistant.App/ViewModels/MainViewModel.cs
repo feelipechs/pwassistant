@@ -251,6 +251,28 @@ public sealed partial class MainViewModel : ObservableObject
                 StatusMessage = ex.Message;
             }
         }
+        // STA thread (COM shortcut APIs require it): scrubs launch-credential
+        // residue from .lnk files (an interrupted Play may have left secrets
+        // on disk). Runs on a dedicated background STA thread — never the UI
+        // thread, never the MTA pool. Only the log lines below stay on UI.
+        int cleansed = 0;
+        string? cleanseError = null;
+        var cleanseDone = new TaskCompletionSource<(int Count, string? Error)>();
+        var cleanseThread = new Thread(() =>
+        {
+            try
+            {
+                cleanseDone.SetResult((_launcher.CleanseAllShortcuts(_state.Data.Servers), null));
+            }
+            catch (Exception ex)
+            {
+                cleanseDone.SetResult((0, ex.Message));
+            }
+        });
+        cleanseThread.SetApartmentState(ApartmentState.STA);
+        cleanseThread.IsBackground = true;
+        cleanseThread.Start();
+        (cleansed, cleanseError) = await cleanseDone.Task.ConfigureAwait(false);
         App.Current.Dispatcher.Invoke(() =>
         {
             Servers.Clear();
@@ -259,18 +281,10 @@ public sealed partial class MainViewModel : ObservableObject
             // Last used wins; nothing preselected on first run (raw by rule).
             SelectedServer = Servers.FirstOrDefault(s => s.Model.Id == _state.Data.LastSelectedServerId);
             RefreshServerRows();
-            // STA thread: scrubs launch-credential residue from .lnk files
-            // (an interrupted Play may have left secrets on disk).
-            try
-            {
-                int cleansed = _launcher.CleanseAllShortcuts(_state.Data.Servers);
-                if (cleansed > 0)
-                    _log.Info($"Cleansed {cleansed} client shortcuts.");
-            }
-            catch (Exception ex)
-            {
-                _log.Warn($"Shortcut cleanse failed: {ex.Message}");
-            }
+            if (cleansed > 0)
+                _log.Info($"Cleansed {cleansed} client shortcuts.");
+            if (cleanseError is not null)
+                _log.Warn($"Shortcut cleanse failed: {cleanseError}.");
         });
     }
 

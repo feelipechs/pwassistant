@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -238,6 +239,8 @@ public sealed partial class GroupViewModel : ObservableObject
         _state.Data.FocusSettings ??= new FocusSettings();
         _focus.Settings = _state.Data.FocusSettings;
         RebuildAll();
+        // Instant paint from cache; the scan lands right after (~100 ms).
+        _ = RefreshIfOnlineChangedAsync();
     }
 
     partial void OnActiveCardChanged(GroupCard? value)
@@ -302,7 +305,8 @@ public sealed partial class GroupViewModel : ObservableObject
     /// <summary>Rebuilds cards, pool and the active selection (Mini/sync path).</summary>
     public void RebuildAll()
     {
-        _state.RefreshOnlineStatus();
+        // Cache-only by design (no process scan): freshness comes from the
+        // background scan (RefreshOnlineStatusAsync). Keeps open/Activated fast.
         var byId = _state.Data.Servers
             .SelectMany(s => s.Accounts)
             .ToDictionary(a => a.Id);
@@ -341,27 +345,54 @@ public sealed partial class GroupViewModel : ObservableObject
         .Select(a => a.Id)
         .ToHashSet();
 
-    /// <summary>Recompute members/online/presets (also the Activated refresh).</summary>
-    public void Refresh() => Rebuild(SelectedGroup);
+    /// <summary>Recompute members/online/presets from cache (fast; the
+    /// background scan corrects staleness right after).</summary>
+    public void Refresh()
+    {
+        Rebuild(SelectedGroup);
+        _ = RefreshIfOnlineChangedAsync();
+    }
 
     /// <summary>
     /// Event-oriented grid refresh: re-resolves online status and rebuilds
-    /// only when the visible online set changed (cheap to poll on a timer).
-    /// Must run on the UI thread (touches bound collections).
-    /// Returns true when a rebuild happened.
+    /// only when the visible online set changed. The process/window scan
+    /// runs on the pool (never the UI thread); only the compare + rebuild
+    /// stay on UI (bound collections). Reentrancy-guarded: the 2 s cadence
+    /// skips while a scan is in flight. Must be called from the UI thread
+    /// (ConfigureAwait(true) marshals the apply back to it).
     /// </summary>
-    public bool RefreshIfOnlineChanged()
+    public async Task RefreshIfOnlineChangedAsync()
     {
-        if (SuppressAutoRefresh) return false;
-        _state.RefreshOnlineStatus();
-        HashSet<Guid> live = OnlineIds();
-        if (live.SetEquals(_onlineSnapshot)) return false;
-        // Deaths first: keep the focus hierarchy before rebuilding.
-        foreach (Guid dead in _onlineSnapshot.Where(id => !live.Contains(id)).ToList())
-            _focus.RemoveAccount(dead);
-        RebuildAll();
-        return true;
+        if (SuppressAutoRefresh) return;
+        if (Interlocked.CompareExchange(ref _scanInflight, 1, 0) != 0) return;
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            Dictionary<Guid, (int? ProcessId, IntPtr WindowHandle)> snapshot =
+                await Task.Run(() => _state.ComputeOnlineSnapshot()).ConfigureAwait(true);
+            sw.Stop();
+            if (sw.ElapsedMilliseconds > 50 && _state.VerboseFireLog)
+                _log.Info($"  [scan] online snapshot {sw.ElapsedMilliseconds} ms");
+            _state.ApplyOnlineSnapshot(snapshot);
+            HashSet<Guid> live = OnlineIds();
+            if (live.SetEquals(_onlineSnapshot)) return;
+            // Deaths first: keep the focus hierarchy before rebuilding.
+            foreach (Guid dead in _onlineSnapshot.Where(id => !live.Contains(id)).ToList())
+                _focus.RemoveAccount(dead);
+            RebuildAll();
+        }
+        catch (Exception ex)
+        {
+            // Timers and Activated handlers must never die from a scan.
+            _log.Warn($"Background online scan failed: {ex.Message}");
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _scanInflight, 0);
+        }
     }
+
+    private int _scanInflight;
 
     private void Rebuild(Group? value)
     {
@@ -370,7 +401,7 @@ public sealed partial class GroupViewModel : ObservableObject
         Members.Clear();
         if (value is null) return;
 
-        _state.RefreshOnlineStatus();
+        // Cache-only (no scan): RebuildAll/Refresh kick the background scan.
         var accountsById = _state.Data.Servers
             .SelectMany(s => s.Accounts)
             .ToDictionary(a => a.Id);

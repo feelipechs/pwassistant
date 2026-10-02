@@ -73,11 +73,21 @@ public sealed class AppState
     /// <summary>Re-resolve PID → HWND for every tracked account (never cached).</summary>
     public void RefreshOnlineStatus()
     {
+        ApplyOnlineSnapshot(ComputeOnlineSnapshot());
+    }
+
+    /// <summary>
+    /// Pool-safe snapshot of live PIDs/handles: enumerates processes and
+    /// windows WITHOUT touching the model, so the UI thread never does it.
+    /// </summary>
+    public Dictionary<Guid, (int? ProcessId, IntPtr WindowHandle)> ComputeOnlineSnapshot()
+    {
+        var snapshot = new Dictionary<Guid, (int? ProcessId, IntPtr WindowHandle)>();
         foreach (Account account in Data.Servers.SelectMany(s => s.Accounts))
         {
             if (account.ProcessId is null)
             {
-                account.WindowHandle = IntPtr.Zero;
+                snapshot[account.Id] = (null, IntPtr.Zero);
                 continue;
             }
 
@@ -87,12 +97,30 @@ public sealed class AppState
             }
             catch (ArgumentException)
             {
-                account.ProcessId = null;
-                account.WindowHandle = IntPtr.Zero;
+                snapshot[account.Id] = (null, IntPtr.Zero);
                 continue;
             }
 
-            account.WindowHandle = _resolver.ResolveWindow(account.ProcessId.Value);
+            snapshot[account.Id] = (account.ProcessId, _resolver.ResolveWindow(account.ProcessId.Value));
+        }
+        return snapshot;
+    }
+
+    /// <summary>
+    /// Applies a snapshot on the calling thread (UI thread for bound state).
+    /// Accounts missing from the snapshot (added mid-scan) are left alone,
+    /// never blanked.
+    /// </summary>
+    public void ApplyOnlineSnapshot(Dictionary<Guid, (int? ProcessId, IntPtr WindowHandle)> snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        foreach (Account account in Data.Servers.SelectMany(s => s.Accounts))
+        {
+            if (snapshot.TryGetValue(account.Id, out var live))
+            {
+                account.ProcessId = live.ProcessId;
+                account.WindowHandle = live.WindowHandle;
+            }
         }
     }
 

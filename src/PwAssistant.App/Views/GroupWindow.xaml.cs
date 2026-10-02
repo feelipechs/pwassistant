@@ -41,7 +41,7 @@ public partial class GroupWindow : Window
         _onlinePoller = new System.Windows.Threading.DispatcherTimer(
             TimeSpan.FromSeconds(2),
             System.Windows.Threading.DispatcherPriority.Background,
-            (_, _) => ViewModel.RefreshIfOnlineChanged(),
+            (_, _) => { _ = ViewModel.RefreshIfOnlineChangedAsync(); },
             Dispatcher);
         _onlinePoller.Start();
         Closed += (_, _) => _onlinePoller.Stop();

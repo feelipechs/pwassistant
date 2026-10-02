@@ -104,7 +104,7 @@ public partial class MiniWindow : Window
     {
         TrackActiveMember();
         if (++_tickCount % 8 == 0)
-            ViewModel.RefreshIfOnlineChanged();
+            _ = ViewModel.RefreshIfOnlineChangedAsync();
     }
 
     /// <summary>Highlights the member owning the foreground window.</summary>
