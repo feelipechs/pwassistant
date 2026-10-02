@@ -142,7 +142,7 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 - **Worker dispatch (2026-10-02, Windows):** ✅ 9 contas em fundo sem troca
   (negado `setfg=0` + flash + `fired=9 skipped=0`; `pumpMs` saudável) +
   lock `LockSetForegroundWindow` com refcount + UI sem scan síncrono
-  (snapshot no pool + apply na UI). Commits `6d9bc5e..0f4ad57`.
+  (snapshot no pool + apply na UI). Commits `6d9bc5e..1db84fd`.
 
 ## Convenções de marco
 

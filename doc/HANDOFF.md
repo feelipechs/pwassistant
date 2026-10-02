@@ -1,4 +1,4 @@
-# HANDOFF — estado em 2026-10-02, base 55a3ea9
+# HANDOFF — estado em 2026-10-02, base 3fdb8e4
 ## Pronto (validado)
 - Build 0 erros/0 warnings; testes 89/89 (79 antigos + 10 novos).
 - Sender smoke: `--help`→0, arg ruim→3, pid 0→exit 2 + ERROR + RESULT;
