@@ -21,21 +21,19 @@ public static class WorkerSenderRunner
     public const string ExeFileName = "PwAssistant.Sender.exe";
 
     /// <summary>
-    /// Sender next to the app (copied there by the build). Both the apphost
-    /// exe AND its managed dll are required: a framework apphost without
-    /// its dll dies instantly with a host error (seen: 0x8000809A).
+    /// Sender next to the app (copied there by dev builds, published
+    /// self-contained single-file for release). Only the exe is required:
+    /// single-file publish has no managed dll next to it (bundled inside),
+    /// so demanding one breaks every installed copy. Launch failures
+    /// surface through stderr instead (see Create).
     /// </summary>
     public static string LocateExe()
     {
         string dir = AppContext.BaseDirectory;
         string exe = Path.Combine(dir, ExeFileName);
-        string dll = Path.Combine(dir, Path.GetFileNameWithoutExtension(ExeFileName) + ".dll");
         if (!File.Exists(exe))
             throw new FileNotFoundException(
                 $"Sender worker not found at {exe}. Build the solution so it is copied next to the app.", exe);
-        if (!File.Exists(dll))
-            throw new FileNotFoundException(
-                $"Sender worker dll missing at {dll}. Build the solution so it is copied next to the app.", dll);
         return exe;
     }
 
