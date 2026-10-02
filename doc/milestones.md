@@ -139,6 +139,10 @@ atualizar este arquivo (data + resultado) e commitar separadamente.
 - **Rename (2026-09-25):** repo `ditto` → `pwassistant`, `packId` →
   `PwAssistant`, `FeedUrl` + remote atualizados. Instalação 1.0.0
   antiga desinstalada antes; repack pendente.
+- **Worker dispatch (2026-10-02, Windows):** ✅ 9 contas em fundo sem troca
+  (negado `setfg=0` + flash + `fired=9 skipped=0`; `pumpMs` saudável) +
+  lock `LockSetForegroundWindow` com refcount + UI sem scan síncrono
+  (snapshot no pool + apply na UI). Commits `6d9bc5e..0f4ad57`.
 
 ## Convenções de marco
 
