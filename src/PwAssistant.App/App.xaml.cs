@@ -67,7 +67,6 @@ public partial class App : Application
         services.AddSingleton<IInputStrategy>(sp => new FocusedInputStrategy(
             sp.GetRequiredService<PostMessageBackgroundStrategy>(),
             sp.GetRequiredService<AppState>(),
-            sp.GetRequiredService<IWindowResolver>(),
             sp.GetRequiredService<FileLogger>(),
             id => WorkerSenderRunner.ResolvePid(sp.GetRequiredService<AppState>(), id),
             WorkerSenderRunner.Create(
