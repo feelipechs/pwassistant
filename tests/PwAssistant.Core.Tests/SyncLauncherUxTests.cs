@@ -12,15 +12,15 @@ public sealed class SyncServiceTests
     public void DisabledService_CapturesNothing()
     {
         var sync = new SyncService();
-        Assert.Null(sync.CaptureMasterClick(100, 100, 800, 600, isLeftButton: true));
+        Assert.Null(sync.CaptureMasterClick(100, 100, 800, 600));
     }
 
     [Fact]
-    public void NonLeftButton_CapturesNothing()
+    public void CapturesRegardlessOfButton()
     {
         var sync = new SyncService();
         sync.SetEnabled(true);
-        Assert.Null(sync.CaptureMasterClick(100, 100, 800, 600, isLeftButton: false));
+        Assert.NotNull(sync.CaptureMasterClick(100, 100, 800, 600));
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class SyncServiceTests
     {
         var sync = new SyncService();
         sync.SetEnabled(true);
-        Assert.Null(sync.CaptureMasterClick(900, 100, 800, 600, isLeftButton: true));
+        Assert.Null(sync.CaptureMasterClick(900, 100, 800, 600));
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public sealed class SyncServiceTests
         var sync = new SyncService();
         sync.SetEnabled(true);
 
-        RelativePosition? fraction = sync.CaptureMasterClick(200, 150, 800, 600, isLeftButton: true);
+        RelativePosition? fraction = sync.CaptureMasterClick(200, 150, 800, 600);
         Assert.NotNull(fraction);
 
         (int x, int y) = SyncService.ToReplicaPixels(fraction, 1024, 768);

@@ -235,7 +235,7 @@ switch (args[0].ToLowerInvariant())
                         continue;
 
                     RelativePosition? fraction = sync.CaptureMasterClick(
-                        client.X, client.Y, size.Width, size.Height, isLeftButton: true);
+                        client.X, client.Y, size.Width, size.Height);
                     if (fraction is null)
                         return;
 

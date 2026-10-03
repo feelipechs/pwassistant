@@ -37,12 +37,13 @@ public sealed class SyncService
 
     /// <summary>
     /// Master pixel click → fraction. Returns null when the click must NOT
-    /// replicate (service off, non-left button, outside client area).
+    /// replicate (service off, outside client area). Both buttons replicate;
+    /// which button is preserved end to end (hook → replica posts).
     /// </summary>
     public RelativePosition? CaptureMasterClick(
-        int clickX, int clickY, int clientWidth, int clientHeight, bool isLeftButton)
+        int clickX, int clickY, int clientWidth, int clientHeight)
     {
-        if (!Enabled || !isLeftButton)
+        if (!Enabled)
             return null;
         if (clientWidth <= 0 || clientHeight <= 0)
             return null;

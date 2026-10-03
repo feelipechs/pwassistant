@@ -47,8 +47,8 @@ normativa; em caso de conflito com código, o código deve ser corrigido
 ## Modo Grupo e Sync Click
 
 - Grid do grupo mostra **apenas contas online** (cruzamento `AccountId → Hwnd`).
-- Sync Click (quando implementado, M4): master = janela em foco; só botão
-  esquerdo; só dentro de janela de jogo registrada; réplica em UI-clicks.
+- Sync Click (quando implementado, M4): master = janela em foco; botões
+  esquerdo e direito; só dentro de janela de jogo registrada; réplica em UI-clicks.
   Clicks no chão 3D **não replicam** (limitação do v1, documentada ao usuário
   se exposta em UI).
 - Hotkey global de preset: via `RegisterHotKey`; disparo fora de foco do app.

@@ -10,8 +10,9 @@ namespace PwAssistant.App.Services;
 
 /// <summary>
 /// Sync Click wiring (M4): physical master click → fraction → fan-out as
-/// UI clicks on every other synced online account. Only the left button,
-/// only inside a registered game window, only while enabled.
+/// UI clicks on every other synced online account. Both buttons (the button
+/// travels with the click); only inside a registered game window, only
+/// while enabled.
 /// </summary>
 public sealed class SyncController : IDisposable
 {
@@ -205,7 +206,7 @@ public sealed class SyncController : IDisposable
         MouseButton button)
     {
         RelativePosition? fraction = _sync.CaptureMasterClick(
-            clientX, clientY, clientWidth, clientHeight, isLeftButton: button == MouseButton.Left);
+            clientX, clientY, clientWidth, clientHeight);
         if (fraction is null) return;
 
         foreach (Account replica in online.Where(a => a.Id != master.Id && _sync.IsSynced(a.Id)))
