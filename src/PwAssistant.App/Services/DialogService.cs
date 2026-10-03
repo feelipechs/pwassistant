@@ -44,6 +44,15 @@ public sealed class DialogService : IDialogService
 
     public void ShowGroupWindow()
     {
+        // Hide-cache: reuse the parked instance when one exists (instant
+        // reopen, editor state preserved); Activated→Refresh repaints it.
+        // Single group window by design (Mini retargets, never stacks).
+        GroupWindow? existing = Application.Current.Windows.OfType<GroupWindow>().FirstOrDefault();
+        if (existing is not null)
+        {
+            existing.Show();
+            return;
+        }
         var window = (GroupWindow)_services.GetService(typeof(GroupWindow))!;
         window.Show();
     }

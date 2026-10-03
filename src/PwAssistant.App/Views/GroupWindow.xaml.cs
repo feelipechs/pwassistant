@@ -41,10 +41,19 @@ public partial class GroupWindow : Window
         _onlinePoller = new System.Windows.Threading.DispatcherTimer(
             TimeSpan.FromSeconds(2),
             System.Windows.Threading.DispatcherPriority.Background,
-            (_, _) => { _ = ViewModel.RefreshIfOnlineChangedAsync(); },
+            (_, _) => { if (IsVisible) { _ = ViewModel.RefreshIfOnlineChangedAsync(); } },
             Dispatcher);
         _onlinePoller.Start();
         Closed += (_, _) => _onlinePoller.Stop();
+        // Hide-cache like Mini: reopening reuses the instance (editor drafts
+        // survive hidden, same as the tab-ask flow preserving them; explicit
+        // Save/Discard unchanged). Shutdown closes for real.
+        Closing += (_, e) =>
+        {
+            if (Dispatcher.HasShutdownStarted) return;
+            e.Cancel = true;
+            Hide();
+        };
     }
 
     /// <summary>In-window confirm sheet (no extra window).</summary>

@@ -49,6 +49,16 @@ public partial class MiniWindow : Window
         _activeTracker.Start();
         Closed += (_, _) => _activeTracker.Stop();
         Closed += (_, _) => SwitchModesOff();
+        // Hide-cache: reopening reuses this instance (no XAML/layout rebuild,
+        // no retarget cost). Modes still stop on hide (nothing runs headless);
+        // real app shutdown closes for real (guard below).
+        Closing += (_, e) =>
+        {
+            if (Dispatcher.HasShutdownStarted) return;
+            e.Cancel = true;
+            SwitchModesOff();
+            Hide();
+        };
         ViewModel.Loops.Changed += OnLoopsChanged;
         Closed += (_, _) => ViewModel.Loops.Changed -= OnLoopsChanged;
         ViewModel.Loops.Progressed += OnLoopProgressed;
@@ -102,6 +112,7 @@ public partial class MiniWindow : Window
     /// </summary>
     private void OnTrackerTick()
     {
+        if (!IsVisible) return;
         TrackActiveMember();
         if (++_tickCount % 8 == 0)
             _ = ViewModel.RefreshIfOnlineChangedAsync();
