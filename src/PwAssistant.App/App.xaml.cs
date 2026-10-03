@@ -31,9 +31,27 @@ public partial class App : Application
     private static void Main(string[] args)
     {
         VelopackApp.Build().Run();
-        var app = new App();
-        app.InitializeComponent();
-        app.Run();
+        // Single instance AFTER the Velopack lifecycle commands above (those
+        // must never hit this gate). Updater restarts can briefly overlap the
+        // exiting copy, so a failed first attempt waits ~10 s before giving up.
+        SingleInstance? instance = SingleInstance.TryAcquire(@"Local\PwAssistant.SingleInstance");
+        DateTimeOffset started = DateTimeOffset.UtcNow;
+        while (instance is null && DateTimeOffset.UtcNow - started < TimeSpan.FromSeconds(10))
+        {
+            Thread.Sleep(500);
+            instance = SingleInstance.TryAcquire(@"Local\PwAssistant.SingleInstance");
+        }
+        if (instance is null)
+        {
+            MessageBox.Show("O PwAssistant já está em execução.", "PwAssistant");
+            return;
+        }
+        using (instance)
+        {
+            var app = new App();
+            app.InitializeComponent();
+            app.Run();
+        }
     }
 
     protected override void OnStartup(StartupEventArgs e)
