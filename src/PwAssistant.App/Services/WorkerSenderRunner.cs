@@ -47,21 +47,38 @@ public static class WorkerSenderRunner
         return null;
     }
 
-    public static SenderRunner Create(FileLogger log, AppState state)
+    /// <summary>Shared stdout merge: everything when verbose, failures only otherwise.</summary>
+    public static void LogOutput(FileLogger log, bool verbose, List<string> output, SenderResult result)
     {
         ArgumentNullException.ThrowIfNull(log);
-        ArgumentNullException.ThrowIfNull(state);
-        return async (workload, cancellationToken) =>
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(result);
+        if (verbose)
+            foreach (string line in output)
+                log.Info(line);
+        else if (!result.Ok)
+            foreach (string line in output)
+                log.Warn(line);
+    }
+
+    /// <summary>
+    /// One spawn per flush (the pre-daemon path, kept as fallback when the
+    /// daemon cannot start). Same wire, same parsing, same logging.
+    /// </summary>
+    public static async Task<SenderResult> RunOneShotAsync(
+        SenderWorkload workload, bool verbose, FileLogger log, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(workload);
+        ArgumentNullException.ThrowIfNull(log);
+        string exe;
+        try
         {
-            string exe;
-            try
-            {
-                exe = LocateExe();
-            }
-            catch (Exception ex)
-            {
-                return new SenderResult { Error = ex.Message, Failed = 1 };
-            }
+            exe = LocateExe();
+        }
+        catch (Exception ex)
+        {
+            return new SenderResult { Error = ex.Message, Failed = 1 };
+        }
 
             var psi = new ProcessStartInfo(exe)
             {
@@ -139,14 +156,7 @@ public static class WorkerSenderRunner
                     : string.Concat(result.Error, " | ", tail);
             }
 
-            bool verbose = workload.Verbose || state.VerboseFireLog;
-            if (verbose)
-                foreach (string line in output)
-                    log.Info(line);
-            else if (!result.Ok)
-                foreach (string line in output)
-                    log.Warn(line);
+            LogOutput(log, verbose, output, result);
             return result;
-        };
     }
 }

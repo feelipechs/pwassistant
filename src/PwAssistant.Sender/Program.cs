@@ -2,14 +2,15 @@ using PwAssistant.Core.Input;
 using PwAssistant.Core.Models;
 using PwAssistant.WinApi;
 
-// Separate sender process: one invocation per account per fire. Workload
-// (JSON) arrives on stdin, diagnostics go to stdout, the outcome is the
-// trailing RESULT line plus the exit code. This process never receives
-// user input (no window, no hooks, no hotkeys), so its lone
-// SetForegroundWindow is denied on normal machines: taskbar flashes,
-// the screen never switches, the game still accepts the input (the
-// Helper's background case). On lock-disabled machines the same call is
-// granted and visibly switches — identical to the Helper there too.
+// Separate sender process: one invocation per account per fire — or, with
+// --daemon, one process per app session reading newline-delimited workloads
+// until stdin EOF. Workload (JSON) arrives on stdin, diagnostics go to
+// stdout, the outcome is the trailing RESULT line plus the exit code. This
+// process never receives user input (no window, no hooks, no hotkeys), so
+// its lone SetForegroundWindow is denied on normal machines: taskbar
+// flashes, the screen never switches, the game still accepts the input
+// (the Helper's background case). On lock-disabled machines the same call
+// is granted and visibly switches — identical to the Helper there too.
 //
 // Exit codes mirror SenderExitCodes: 0 ok, 1 send error, 2 no window,
 // 3 bad usage. stdout parsing lives in SenderCodec (unit-tested).
@@ -27,6 +28,7 @@ if (args.Any(a => a is "-h" or "--help"))
     Console.WriteLine("""
         PwAssistant.Sender — per-account dispatch worker (spawned by the app, never run by hand).
           sender [--verbose] < workload.json
+          sender --daemon [--verbose]   (newline-delimited workloads on stdin until EOF; one RESULT per line)
         Stdin: {"ProcessId":1234,"Verbose":true,"Actions":[{"Kind":"key","VirtualKey":113},{"Kind":"click","X":0.5,"Y":0.5,"Button":"left"},{"Kind":"sleep","Ms":250}]}
         Stdout: per-send [s]/[trace] lines, then "RESULT sent=N failed=M". Exit code: 0 ok, 1 send error, 2 no window, 3 bad usage.
         """);
@@ -34,10 +36,13 @@ if (args.Any(a => a is "-h" or "--help"))
 }
 
 bool verboseArg = false;
+bool daemonArg = false;
 foreach (string arg in args)
 {
     if (arg is "--verbose" or "-v")
         verboseArg = true;
+    else if (arg == "--daemon")
+        daemonArg = true;
     else
     {
         Console.Error.WriteLine($"Unknown argument '{arg}'. See --help.");
@@ -45,19 +50,41 @@ foreach (string arg in args)
     }
 }
 
+if (daemonArg)
+{
+    // Long-lived: each stdin line is an independent workload. Flush after
+    // every RESULT is load-bearing (stdout is buffered; the app reader
+    // waits for the RESULT line). Never dies on a bad workload — the
+    // RESULT line carries the failure and the loop continues. EOF exits 0.
+    string? line;
+    while ((line = await Console.In.ReadLineAsync()) is not null)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+            continue;
+        _ = await ExecuteAsync(line, verboseArg);
+        await Console.Out.FlushAsync();
+    }
+    return SenderExitCodes.Ok;
+}
+
+return await ExecuteAsync(await Console.In.ReadToEndAsync(), verboseArg);
+
+async Task<int> ExecuteAsync(string json, bool verboseFlag)
+{
 SenderWorkload workload;
 try
 {
-    string json = await Console.In.ReadToEndAsync();
     workload = SenderCodec.FromJson(json);
 }
 catch (Exception ex) when (ex is ArgumentException || ex is System.Text.Json.JsonException)
 {
     Console.Error.WriteLine($"Bad workload: {ex.Message}");
+    Console.WriteLine("RESULT sent=0 failed=1");
+    await Console.Out.FlushAsync();
     return SenderExitCodes.BadUsage;
 }
 
-bool verbose = verboseArg || workload.Verbose;
+bool verbose = verboseFlag || workload.Verbose;
 var resolver = new WindowResolver();
 IntPtr hwnd = resolver.ResolveWindow(workload.ProcessId);
 if (hwnd == IntPtr.Zero)
@@ -68,11 +95,11 @@ if (hwnd == IntPtr.Zero)
 }
 
 var strategy = new PostMessageBackgroundStrategy();
-if (verbose)
-{
-    strategy.Traced += trace => Console.WriteLine(
-        $"  [trace] hwnd=0x{trace.Hwnd:X} {trace.Tag} msg=0x{trace.Message:X} ok={(trace.Ok ? 1 : 0)} win32={trace.Win32Error}");
-}
+// Unconditional: trace volume is small (a few lines per send), the app
+// discards non-verbose lines, and per-workload subscriptions would leak
+// across daemon iterations.
+strategy.Traced += trace => Console.WriteLine(
+    $"  [trace] hwnd=0x{trace.Hwnd:X} {trace.Tag} msg=0x{trace.Message:X} ok={(trace.Ok ? 1 : 0)} win32={trace.Win32Error}");
 
 try
 {
@@ -147,8 +174,10 @@ catch (Exception ex)
     // so), but a worker must never dump a stack where RESULT is parsed.
     Console.WriteLine($"ERROR {ex.Message}");
     Console.WriteLine("RESULT sent=0 failed=1");
+    await Console.Out.FlushAsync();
     return SenderExitCodes.SendError;
 }
+} // ExecuteAsync
 
 static MouseButton ParseButton(string? button) => button?.ToLowerInvariant() switch
 {

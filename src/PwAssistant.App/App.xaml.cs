@@ -64,9 +64,16 @@ public partial class App : Application
         services.AddSingleton<IAccountStore, JsonFileAccountStore>();
         services.AddSingleton<IWindowResolver, WindowResolver>();
         services.AddSingleton<PostMessageBackgroundStrategy>();
-        services.AddSingleton<SenderRunner>(sp => WorkerSenderRunner.Create(
-            sp.GetRequiredService<FileLogger>(),
-            sp.GetRequiredService<AppState>()));
+        // Parked sender daemon (one process per session) + per-flush routing.
+        // Disposed automatically with the provider at app exit.
+        services.AddSingleton<SenderDaemon>();
+        services.AddSingleton<SenderRunner>(sp =>
+        {
+            var daemon = sp.GetRequiredService<SenderDaemon>();
+            var state = sp.GetRequiredService<AppState>();
+            return (workload, cancellationToken) => daemon.RunAsync(
+                workload, workload.Verbose || state.VerboseFireLog, cancellationToken);
+        });
         services.AddSingleton<IInputStrategy>(sp => new FocusedInputStrategy(
             sp.GetRequiredService<PostMessageBackgroundStrategy>(),
             sp.GetRequiredService<AppState>(),
