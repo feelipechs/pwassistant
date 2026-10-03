@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PwAssistant.Avalonia.Views.ConfirmSheet"
+             IsVisible="False">
+  <Grid x:Name="Dimmer" Background="#80000000"
+        PointerPressed="OnDimmerDown" KeyDown="OnSheetKeyDown" Focusable="True">
+    <Border Width="380" MaxWidth="420" HorizontalAlignment="Center" VerticalAlignment="Center"
+            Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="1" CornerRadius="8" Padding="16,12">
+      <StackPanel>
+        <TextBlock x:Name="TitleLabel" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                   Foreground="{DynamicResource Brush.Foreground}" />
+        <TextBlock x:Name="MessageLabel" TextWrapping="Wrap" Margin="0,6,0,0"
+                   FontSize="{StaticResource Font.Size.Sm}"
+                   Foreground="{DynamicResource Brush.MutedForeground}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0" Spacing="8">
+          <Button x:Name="CancelButton" Click="OnCancel" MinWidth="110" Classes="outline" />
+          <Button x:Name="ConfirmButton" Click="OnConfirm" MinWidth="110" Classes="primary" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

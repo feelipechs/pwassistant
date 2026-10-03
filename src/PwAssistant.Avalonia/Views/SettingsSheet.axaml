@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PwAssistant.Avalonia.Views.SettingsSheet"
+             IsVisible="False">
+  <Grid x:Name="Dimmer" Background="#80000000"
+        PointerPressed="OnDimmerDown" KeyDown="OnSheetKeyDown" Focusable="True">
+    <Border Width="380" MaxWidth="420" HorizontalAlignment="Center" VerticalAlignment="Center"
+            Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="1" CornerRadius="8" Padding="16,12">
+      <StackPanel>
+        <TextBlock x:Name="FocusConfigLabel" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                   Foreground="{DynamicResource Brush.Foreground}" />
+        <CheckBox x:Name="NumpadCheck" Margin="0,8,0,0" />
+        <CheckBox x:Name="ShiftTapCheck" Margin="0,4,0,0" />
+        <CheckBox x:Name="VerboseCheck" Margin="0,4,0,0"
+                  IsCheckedChanged="OnVerboseChanged" />
+        <TextBlock x:Name="ArmingHintLabel" Margin="0,8,0,0"
+                   FontSize="{StaticResource Font.Size.Sm}"
+                   Foreground="{DynamicResource Brush.MutedForeground}" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0" Spacing="8">
+          <Button x:Name="CloseButton" Click="OnClose" MinWidth="90" Classes="outline" />
+          <Button x:Name="SaveButton" Click="OnSave" MinWidth="110" Classes="primary" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

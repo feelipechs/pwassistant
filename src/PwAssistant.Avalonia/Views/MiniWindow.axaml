@@ -1,0 +1,135 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PwAssistant.Avalonia.ViewModels"
+        xmlns:views="using:PwAssistant.Avalonia.Views"
+        xmlns:res="using:PwAssistant.Avalonia.Resources"
+        xmlns:conv="using:Avalonia.Data.Converters"
+        x:Class="PwAssistant.Avalonia.Views.MiniWindow"
+        x:DataType="vm:GroupViewModel"
+        Title="PwAssistant Mini" Height="420" Width="300" MinWidth="260" MinHeight="300"
+        Topmost="True" ShowInTaskbar="False" CanResize="True"
+        Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Foreground}">
+  <Window.Resources>
+    <views:OnlineOnlyConverter x:Key="OnlineOnly" />
+  </Window.Resources>
+  <Border Margin="8" Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+          BorderThickness="1" CornerRadius="8" Padding="8">
+    <Grid>
+      <DockPanel>
+        <!-- Native frame (caption + actions are the OS ones). -->
+        <TextBlock Text="{Binding StatusMessage}" DockPanel.Dock="Bottom" Margin="0,6,0,0"
+                   FontSize="{StaticResource Font.Size.Sm}"
+                   Foreground="{DynamicResource Brush.MutedForeground}"
+                   TextWrapping="Wrap" />
+        <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,8,0,4"
+                   FontSize="{StaticResource Font.Size.Md}" FontWeight="SemiBold"
+                   Foreground="{DynamicResource Brush.Foreground}" TextTrimming="CharacterEllipsis"
+                   Text="{Binding MiniGroupTitle}" />
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+            <ToggleSwitch x:Name="SyncCheck" Margin="0" Focusable="False" Classes="Small"
+                          IsChecked="{Binding SyncEnabled}" />
+            <TextBlock x:Name="SyncLabel" Margin="2,0,0,0" VerticalAlignment="Center"
+                       FontSize="{StaticResource Font.Size.Xs}"
+                       Foreground="{DynamicResource Brush.MutedForeground}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <ToggleSwitch x:Name="FocusCheck" Margin="0" Focusable="False" Classes="Small"
+                          IsChecked="{Binding FocusEnabled}" />
+            <TextBlock x:Name="FocusLabel" Margin="2,0,0,0" VerticalAlignment="Center"
+                       FontSize="{StaticResource Font.Size.Xs}"
+                       Foreground="{DynamicResource Brush.MutedForeground}" />
+          </StackPanel>
+        </Grid>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <ListBox x:Name="MiniMembersList" Grid.Column="0" MinHeight="120" ItemsSource="{Binding Members}"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:MemberOption">
+                <!-- Offline members collapse (WPF hid them via container style). -->
+                <Grid IsVisible="{Binding Account.Status, Converter={StaticResource OnlineOnly}}">
+                  <Border Background="{DynamicResource Brush.Raised}" BorderBrush="{DynamicResource Brush.Border}"
+                          BorderThickness="1" CornerRadius="8" Padding="3" Margin="0,0,0,2"
+                          IsVisible="{Binding !IsActive}">
+                    <StackPanel Orientation="Horizontal">
+                      <CheckBox IsChecked="{Binding IsSyncIncluded}" Focusable="False"
+                                VerticalAlignment="Center" Margin="0,0,4,0"
+                                ToolTip.Tip="{x:Static res:Strings.SyncInclude}"
+                                Command="{Binding $parent[Window].DataContext.ToggleSyncExclusionCommand}"
+                                CommandParameter="{Binding}" />
+                      <Image Width="16" Height="16" Margin="0,0,6,0"
+                             Source="{Binding ClassImagePath, Converter={x:Static views:ClassImageConverter.Instance}}"
+                             IsVisible="{Binding ClassImagePath, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />
+                      <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CharacterName}" />
+                    </StackPanel>
+                  </Border>
+                  <Border Background="{DynamicResource Brush.RaisedHover}" BorderBrush="{DynamicResource Brush.Ring}"
+                          BorderThickness="1" CornerRadius="8" Padding="3" Margin="0,0,0,2"
+                          IsVisible="{Binding IsActive}">
+                    <StackPanel Orientation="Horizontal">
+                      <CheckBox IsChecked="{Binding IsSyncIncluded}" Focusable="False"
+                                VerticalAlignment="Center" Margin="0,0,4,0"
+                                ToolTip.Tip="{x:Static res:Strings.SyncInclude}"
+                                Command="{Binding $parent[Window].DataContext.ToggleSyncExclusionCommand}"
+                                CommandParameter="{Binding}" />
+                      <Image Width="16" Height="16" Margin="0,0,6,0"
+                             Source="{Binding ClassImagePath, Converter={x:Static views:ClassImageConverter.Instance}}"
+                             IsVisible="{Binding ClassImagePath, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />
+                      <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource Brush.Primary}"
+                                 TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CharacterName}" />
+                    </StackPanel>
+                  </Border>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding MiniRows}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:MiniPresetRow">
+                  <Grid Margin="0,0,2,2">
+                    <Border Background="{DynamicResource Brush.Raised}" BorderBrush="{DynamicResource Brush.Border}"
+                            BorderThickness="1" CornerRadius="6" Padding="2">
+                      <DockPanel VerticalAlignment="Center">
+                        <ToggleSwitch IsChecked="{Binding IsLooping, Mode=OneWay}" Focusable="False"
+                                      Classes="Small"
+                                      DockPanel.Dock="Right" Margin="0" VerticalAlignment="Center"
+                                      Command="{Binding $parent[Window].DataContext.ToggleLoopCommand}"
+                                      CommandParameter="{Binding}" />
+                        <Button Content="{Binding DisplayFireText}" Focusable="False"
+                                FontSize="9" MinHeight="16" Padding="4,0" Margin="0"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                ClickMode="Release" Classes="ghost"
+                                Command="{Binding $parent[Window].DataContext.FirePresetCommand}"
+                                CommandParameter="{Binding Preset}" />
+                      </DockPanel>
+                    </Border>
+                    <!-- Firing highlight (WPF blinked this border via Storyboard; static here). -->
+                    <Border BorderBrush="{DynamicResource Brush.Primary}" BorderThickness="1" CornerRadius="8"
+                            IsVisible="{Binding IsFiring}" IsHitTestVisible="False" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </DockPanel>
+    </Grid>
+  </Border>
+</Window>

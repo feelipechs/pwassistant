@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PwAssistant.Avalonia.ViewModels"
+             xmlns:models="using:PwAssistant.Core.Models"
+             x:Class="PwAssistant.Avalonia.Views.PresetListControl"
+             x:DataType="vm:GroupViewModel">
+  <Grid>
+    <DockPanel Margin="16,12,16,12">
+      <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+        <Button x:Name="NewPresetButton" Content="&#xE710;" Command="{Binding AddPresetCommand}"
+                DockPanel.Dock="Right" FontFamily="Segoe MDL2 Assets" Classes="icon" />
+        <TextBlock x:Name="PresetsLabel" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                   Foreground="{DynamicResource Brush.Foreground}" VerticalAlignment="Center" />
+      </DockPanel>
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Presets}"
+                      DragDrop.AllowDrop="True"
+                      DragDrop.DragOver="OnPresetDragOver"
+                      DragDrop.Drop="OnPresetDrop"
+                      PointerPressed="OnPresetPointerPressed"
+                      PointerMoved="OnPresetPointerMoved"
+                      PointerReleased="OnPresetPointerReleased">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="models:Preset">
+              <Border Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+                      BorderThickness="1" CornerRadius="6" Padding="4" Margin="0,0,0,3" Cursor="SizeAll">
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="&#xE70F;"
+                            Command="{Binding $parent[UserControl].DataContext.EditPresetCommand}"
+                            CommandParameter="{Binding}"
+                            Classes="icon" FontFamily="Segoe MDL2 Assets" Width="24" Height="24" FontSize="12" />
+                    <Button Content="&#xE8C8;"
+                            Command="{Binding $parent[UserControl].DataContext.DuplicatePresetCommand}"
+                            CommandParameter="{Binding}"
+                            Classes="icon" FontFamily="Segoe MDL2 Assets" Width="24" Height="24" FontSize="12" />
+                    <Button Content="&#xE74D;"
+                            Command="{Binding $parent[UserControl].DataContext.DeletePresetCommand}"
+                            CommandParameter="{Binding}"
+                            Classes="icon" FontFamily="Segoe MDL2 Assets" Width="24" Height="24" FontSize="12" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                             FontSize="11"
+                             Foreground="{DynamicResource Brush.Foreground}"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" />
+                </DockPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </DockPanel>
+    <!-- Drag ghost host: above content, hit-test invisible. -->
+    <Canvas x:Name="GhostLayer" IsHitTestVisible="False" />
+  </Grid>
+</UserControl>

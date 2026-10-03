@@ -1,0 +1,103 @@
+<!-- shadcn tokens for Avalonia (F1). Hexes mirror ShadcnPalette.cs by hand:
+     same names as WPF Brush.* so views port 1:1. Accents are applied at
+     runtime by ThemeManager (app-level overrides), never here. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="Brush.Background">#0A0A0A</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Card">#171717</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Raised">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.RaisedHover">#303030</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Foreground">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Primary">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.PrimaryHover">#E5E5E5</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.PrimaryForeground">#171717</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.MutedForeground">#A3A3A3</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Input">#737373</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Border">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Ring">#D4D4D4</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Destructive">#F87171</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.DestructiveSolid">#C62828</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.OnDestructiveSolid">#FFFFFF</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Success">#4ADE80</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Warning">#FBBF24</SolidColorBrush>
+      <!-- Semi overrides (monochrome shadcn; accents stay on our own keys).
+           Documented Semi customization path: same key, app-level wins. -->
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedDefaultBackground">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedPointeroverBackground">#E5E5E5</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedPressedBackground">#E5E5E5</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedDisabledBackground">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerUnCheckedDefaultBackground">#A3A3A3</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerUnCheckedPointeroverBackground">#737373</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerUnCheckedPressedBackground">#A3A3A3</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchIndicatorBackground">#171717</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDefaultBackground">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDefaultBorderBrush">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPointeroverBackground">#E5E5E5</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPointeroverBorderBrush">#E5E5E5</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPressedBackground">#E5E5E5</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPressedBorderBrush">#E5E5E5</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDisabledBackground">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDisabledBorderBrush">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxGlyphFill">#171717</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxDefaultBorderBrush">#737373</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxPointeroverBorderBrush">#D4D4D4</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxDefaultDisabledBackground">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxDefaultDisabledBorderBrush">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemSelectedBackground">#303030</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemSelectedPointeroverBackground">#303030</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemPointeroverBackground">#262626</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemPressedBackground">#303030</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemSelectedForeground">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemPointeroverForeground">#FAFAFA</SolidColorBrush>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="Brush.Background">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Card">#FFFFFF</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Raised">#F4F4F5</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.RaisedHover">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Foreground">#0A0A0A</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Primary">#18181B</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.PrimaryHover">#27272A</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.PrimaryForeground">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.MutedForeground">#52525B</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Input">#737373</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Border">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Ring">#18181B</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Destructive">#DC2626</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.DestructiveSolid">#B91C1C</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.OnDestructiveSolid">#FFFFFF</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Success">#15803D</SolidColorBrush>
+      <SolidColorBrush x:Key="Brush.Warning">#B45309</SolidColorBrush>
+      <!-- Semi overrides (monochrome shadcn; accents stay on our own keys). -->
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedDefaultBackground">#18181B</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedPointeroverBackground">#27272A</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedPressedBackground">#27272A</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerCheckedDisabledBackground">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerUnCheckedDefaultBackground">#737373</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerUnCheckedPointeroverBackground">#52525B</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchContainerUnCheckedPressedBackground">#737373</SolidColorBrush>
+      <SolidColorBrush x:Key="ToggleSwitchIndicatorBackground">#FFFFFF</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDefaultBackground">#18181B</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDefaultBorderBrush">#18181B</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPointeroverBackground">#27272A</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPointeroverBorderBrush">#27272A</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPressedBackground">#27272A</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedPressedBorderBrush">#27272A</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDisabledBackground">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxCheckedDisabledBorderBrush">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxGlyphFill">#FAFAFA</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxDefaultBorderBrush">#737373</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxPointeroverBorderBrush">#18181B</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxDefaultDisabledBackground">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="CheckBoxDefaultDisabledBorderBrush">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemSelectedBackground">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemSelectedPointeroverBackground">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemPointeroverBackground">#F4F4F5</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemPressedBackground">#E4E4E7</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemSelectedForeground">#0A0A0A</SolidColorBrush>
+      <SolidColorBrush x:Key="ListBoxItemPointeroverForeground">#0A0A0A</SolidColorBrush>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

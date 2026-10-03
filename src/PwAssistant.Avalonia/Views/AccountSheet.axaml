@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:PwAssistant.Core.Models"
+             x:Class="PwAssistant.Avalonia.Views.AccountSheet"
+             IsVisible="False">
+  <Grid x:Name="Dimmer" Background="#80000000"
+        PointerPressed="OnDimmerDown" KeyDown="OnSheetKeyDown" Focusable="True">
+    <Border Width="380" MaxWidth="420" HorizontalAlignment="Center" VerticalAlignment="Center"
+            Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="1" CornerRadius="8" Padding="16,12">
+      <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="480">
+        <StackPanel>
+          <TextBlock x:Name="LoginLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,0,0,2" />
+          <TextBox x:Name="LoginBox" />
+          <TextBlock x:Name="PasswordLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2" />
+          <TextBox x:Name="PasswordBox" PasswordChar="•" />
+          <TextBlock x:Name="RoleLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2" />
+          <TextBox x:Name="RoleBox" />
+          <TextBlock x:Name="NicknameLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2" />
+          <TextBox x:Name="NicknameBox" />
+          <CheckBox x:Name="SameAsRoleCheck" Margin="0,8,0,0" />
+          <TextBlock x:Name="ClassLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2" />
+          <ComboBox x:Name="ClassBox">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="models:ClassInfo">
+                <TextBlock Text="{Binding Display}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+            <ComboBox.SelectionBoxItemTemplate>
+              <DataTemplate x:DataType="models:ClassInfo">
+                <TextBlock Text="{Binding Display}" />
+              </DataTemplate>
+            </ComboBox.SelectionBoxItemTemplate>
+          </ComboBox>
+          <TextBlock x:Name="TagLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2" />
+          <ComboBox x:Name="TagBox" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0" Spacing="8">
+            <Button x:Name="CancelButton" Click="OnCancel" Classes="outline" />
+            <Button x:Name="SaveButton" Click="OnSave" MinWidth="110" Classes="primary" />
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

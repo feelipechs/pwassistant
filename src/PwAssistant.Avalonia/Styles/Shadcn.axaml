@@ -1,0 +1,175 @@
+<!-- Global shadcn control styles (Avalonia port of the WPF Styles/*.xaml set).
+     Semi/Ursa render the base; these classes + control styles enforce the
+     monochrome palette everywhere (no blue selection, no green toggle) and
+     the compact type scale. Referenced from App.axaml (after Semi/Ursa). -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Compact type scale: all interactive text defaults to Sm (12). -->
+  <Style Selector="Button">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="TextBox">
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="ComboBox">
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="CheckBox">
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="RadioButton">
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="ToggleSwitch">
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <!-- Focused inputs get the Ring border instead of the Semi accent. -->
+  <Style Selector="TextBox:focus">
+    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Ring}" />
+  </Style>
+  <Style Selector="ComboBox:focus">
+    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Ring}" />
+  </Style>
+
+  <!-- Primary: solid shadcn button (inverts on hover like WPF). -->
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource Brush.Primary}" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.PrimaryForeground}" />
+    <Setter Property="Padding" Value="12,6" />
+  </Style>
+  <Style Selector="Button.primary:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Brush.PrimaryHover}" />
+  </Style>
+
+  <!-- Icon: transparent glyph button (MDL2 set per-button via FontFamily). -->
+  <Style Selector="Button.icon">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.MutedForeground}" />
+    <Setter Property="Padding" Value="4" />
+    <!-- Literal (not {StaticResource IconFont}): app-level Styles cannot see
+         Application.Resources at load; windows resolve it fine locally. -->
+    <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+  </Style>
+  <Style Selector="Button.icon:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Brush.RaisedHover}" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+  </Style>
+  <!-- Caption close: red hover like a native caption button. -->
+  <Style Selector="Button.icon.close:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Brush.DestructiveSolid}" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.OnDestructiveSolid}" />
+  </Style>
+
+  <!-- Outline: bordered ghost button. -->
+  <Style Selector="Button.outline">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="12,6" />
+  </Style>
+  <Style Selector="Button.outline:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Brush.RaisedHover}" />
+  </Style>
+
+  <!-- Ghost: borderless menu/row button (popup menus, preset rows). -->
+  <Style Selector="Button.ghost">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Padding" Value="10,8" />
+  </Style>
+  <Style Selector="Button.ghost:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Brush.RaisedHover}" />
+  </Style>
+
+  <!-- TabToggle: pill radio without the indicator circle (WPF TabToggle). -->
+  <Style Selector="RadioButton.tabtoggle">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.MutedForeground}" />
+    <Setter Property="Padding" Value="10,4" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                CornerRadius="6"
+                Padding="{TemplateBinding Padding}">
+          <ContentPresenter Content="{TemplateBinding Content}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="RadioButton.tabtoggle:pointerover">
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+  </Style>
+  <Style Selector="RadioButton.tabtoggle:checked">
+    <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+  </Style>
+
+  <!-- ToggleSwitch: Semi template with monochrome resources (see ShadcnTokens)
+       and no On/Off text (labels live beside the switch). -->
+  <Style Selector="ToggleSwitch">
+    <Setter Property="OnContent" Value="{x:Null}" />
+    <Setter Property="OffContent" Value="{x:Null}" />
+  </Style>
+  <Style Selector="ToggleSwitch:disabled">
+    <Setter Property="Opacity" Value="0.5" />
+  </Style>
+
+  <!-- CheckBox: Semi template with monochrome resources (see ShadcnTokens). -->
+  <Style Selector="CheckBox:disabled">
+    <Setter Property="Opacity" Value="0.6" />
+  </Style>
+
+  <!-- Selected rows: RaisedHover + Ring edge, never the Semi blue. -->
+  <Style Selector="ListBoxItem:selected">
+    <Setter Property="Background" Value="{DynamicResource Brush.RaisedHover}" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+  </Style>
+  <Style Selector="ListBoxItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+  </Style>
+
+  <!-- Cards / inputs / text roles (shared by windows + sheets). -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource Brush.Card}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+  <Style Selector="Border.minicard">
+    <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="8,6" />
+    <Setter Property="Margin" Value="0,0,0,4" />
+  </Style>
+  <Style Selector="Border.inputbox">
+    <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="Margin" Value="0,4,0,0" />
+  </Style>
+  <Style Selector="TextBlock.section">
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground}" />
+  </Style>
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource Brush.MutedForeground}" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="TextBlock.statustext">
+    <Setter Property="Foreground" Value="{DynamicResource Brush.MutedForeground}" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+</Styles>

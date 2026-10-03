@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="using:PwAssistant.Avalonia.Resources"
+             xmlns:vm="using:PwAssistant.Avalonia.ViewModels"
+             xmlns:models="using:PwAssistant.Core.Models"
+             x:Class="PwAssistant.Avalonia.Views.FormationsSheet"
+             IsVisible="False">
+  <Grid x:Name="Dimmer" Background="#80000000"
+        PointerPressed="OnDimmerDown" KeyDown="OnSheetKeyDown" Focusable="True">
+    <Border Width="380" MaxWidth="420" HorizontalAlignment="Center" VerticalAlignment="Center"
+            Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="1" CornerRadius="8" Padding="16,12">
+      <StackPanel>
+        <TextBlock x:Name="FormationsLabel" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                   Foreground="{DynamicResource Brush.Foreground}" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320" Margin="0,8,0,0">
+          <ItemsControl ItemsSource="{Binding Formations}" x:DataType="vm:GroupViewModel">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="models:Formation">
+                <Border Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+                        BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6">
+                  <StackPanel>
+                    <DockPanel>
+                      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                        <Button Content="&#xE73E;" Click="OnLoadFormationClick"
+                                FontFamily="Segoe MDL2 Assets" Classes="icon"
+                                ToolTip.Tip="{x:Static res:Strings.LoadFormation}"
+                                Width="24" Height="24" FontSize="12" />
+                        <Button Content="&#xE70F;" Click="OnRenameFormationClick"
+                                FontFamily="Segoe MDL2 Assets" Classes="icon"
+                                ToolTip.Tip="{x:Static res:Strings.Rename}"
+                                Width="24" Height="24" FontSize="12" />
+                        <Button Content="&#xE74D;" Click="OnDeleteFormationClick"
+                                FontFamily="Segoe MDL2 Assets" Classes="icon"
+                                ToolTip.Tip="{x:Static res:Strings.Delete}"
+                                Width="24" Height="24" FontSize="12" />
+                      </StackPanel>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                  Background="Transparent" Cursor="Hand"
+                                  PointerPressed="OnExpandFormationDown">
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource Brush.Foreground}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ExpandGlyph" Text="&#xE76C;" VerticalAlignment="Center"
+                                   FontFamily="Segoe MDL2 Assets" FontSize="12" Margin="6,0,0,0"
+                                   Foreground="{DynamicResource Brush.MutedForeground}" />
+                      </StackPanel>
+                    </DockPanel>
+                    <ItemsControl x:Name="MemberNames" IsVisible="False" Margin="0,6,0,0">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                          <TextBlock Text="{Binding}" FontSize="{StaticResource Font.Size.Sm}"
+                                     Foreground="{DynamicResource Brush.MutedForeground}" />
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

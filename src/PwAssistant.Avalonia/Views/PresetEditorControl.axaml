@@ -1,0 +1,147 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:PwAssistant.Avalonia.Views"
+             xmlns:res="using:PwAssistant.Avalonia.Resources"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             x:Class="PwAssistant.Avalonia.Views.PresetEditorControl"
+             x:DataType="views:PresetEditorControl">
+  <Grid>
+    <DockPanel Margin="16,12,16,12">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0" Spacing="8">
+        <Button Content="{x:Static res:Strings.CancelDialog}" Click="OnCancel" MinWidth="110" Classes="outline" />
+        <Button Content="{x:Static res:Strings.Save}" Click="OnSave" MinWidth="110" Classes="primary" />
+      </StackPanel>
+      <Border DockPanel.Dock="Top" Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
+              BorderThickness="1" CornerRadius="8" Padding="12">
+        <StackPanel>
+          <WrapPanel Orientation="Horizontal">
+            <TextBlock x:Name="NameCaption" VerticalAlignment="Center" Margin="0,0,8,0"
+                       Foreground="{DynamicResource Brush.MutedForeground}" />
+            <TextBox x:Name="NameBox" Width="160" Margin="0,0,16,4" />
+            <TextBlock x:Name="HotkeyCaption" VerticalAlignment="Center" Margin="0,0,8,0"
+                       Foreground="{DynamicResource Brush.MutedForeground}" />
+            <Button x:Name="RecordHotkeyButton" Click="OnRecordHotkey" Margin="0,0,8,4" MinWidth="110" Classes="outline" />
+            <Border x:Name="HotkeyBox" Background="{DynamicResource Brush.Background}"
+                    BorderBrush="{DynamicResource Brush.Input}" BorderThickness="1" CornerRadius="6"
+                    Padding="10,4" VerticalAlignment="Center" MinWidth="120" Margin="0,0,0,4">
+              <TextBlock x:Name="HotkeyValueLabel" VerticalAlignment="Center"
+                         Foreground="{DynamicResource Brush.Primary}" FontWeight="SemiBold" />
+            </Border>
+          </WrapPanel>
+          <TextBlock x:Name="HotkeyHintLabel" Margin="0,6,0,0"
+                     FontSize="{StaticResource Font.Size.Sm}"
+                     Foreground="{DynamicResource Brush.MutedForeground}" />
+          <DockPanel Margin="0,8,0,0" LastChildFill="False">
+            <StackPanel x:Name="BulkActions" DockPanel.Dock="Left" Orientation="Horizontal" IsVisible="False">
+              <Button Content="&#xE8C8;" Click="OnDuplicateSelected" Margin="0,0,8,0"
+                      FontFamily="Segoe MDL2 Assets" Classes="icon"
+                      ToolTip.Tip="{x:Static res:Strings.Duplicate}" />
+              <Button Content="&#xE74D;" Click="OnRemoveSelected" Margin="0,0,8,0"
+                      FontFamily="Segoe MDL2 Assets" Classes="icon"
+                      ToolTip.Tip="{x:Static res:Strings.Delete}" />
+              <TextBlock x:Name="SelectedCountLabel" VerticalAlignment="Center" Margin="0,0,8,0"
+                         FontSize="{StaticResource Font.Size.Sm}"
+                         Foreground="{DynamicResource Brush.MutedForeground}" />
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+              <Button x:Name="ImportPresetButton" Content="&#xE8B5;" Click="OnImportPreset" Margin="0,0,8,0"
+                      FontFamily="Segoe MDL2 Assets" Classes="icon"
+                      ToolTip.Tip="{x:Static res:Strings.ImportPreset}" />
+              <Button x:Name="ExportPresetButton" Content="&#xE8B6;" Click="OnExportPreset"
+                      FontFamily="Segoe MDL2 Assets" Classes="icon"
+                      ToolTip.Tip="{x:Static res:Strings.ExportPreset}" />
+            </StackPanel>
+          </DockPanel>
+        </StackPanel>
+      </Border>
+      <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0" LastChildFill="False">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <Button x:Name="AddCommandButton" Content="&#xE765;" Click="OnAddCommand"
+                  FontFamily="Segoe MDL2 Assets" Classes="icon" />
+          <Button x:Name="AddClickButton" Content="&#xE962;" Click="OnAddClick"
+                  FontFamily="Segoe MDL2 Assets" Classes="icon" />
+        </StackPanel>
+      </DockPanel>
+      <TextBlock x:Name="ErrorLabel" DockPanel.Dock="Top" Margin="0,4,0,0" FontSize="11" HorizontalAlignment="Right"
+                 Foreground="{DynamicResource Brush.Destructive}" />
+      <ListBox x:Name="ActionList" DragDrop.AllowDrop="True" SelectionMode="Multiple"
+               SelectionChanged="OnActionSelectionChanged"
+               PointerPressed="OnRowPointerPressed"
+               PointerMoved="OnRowPointerMoved"
+               PointerReleased="OnRowPointerReleased"
+               DragDrop.DragOver="OnRowDragOver"
+               DragDrop.Drop="OnRowDrop">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="views:PresetActionRow">
+            <DockPanel>
+              <CheckBox DockPanel.Dock="Left" Focusable="False" VerticalAlignment="Center" Margin="0,0,8,0"
+                        IsChecked="{Binding $parent[ListBoxItem].IsSelected, Mode=TwoWay}" />
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Click="OnDuplicateRow" Margin="0,0,4,0" ToolTip.Tip="{x:Static res:Strings.Duplicate}"
+                        FontFamily="Segoe MDL2 Assets" Width="24" Height="24" FontSize="12" Classes="icon">&#xE8C8;</Button>
+                <Button Click="OnRemoveRow" ToolTip.Tip="{x:Static res:Strings.Delete}"
+                        FontFamily="Segoe MDL2 Assets" Width="24" Height="24" FontSize="12" Classes="icon">&#xE74D;</Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal">
+                <ComboBox Width="150" Margin="0,0,8,0"
+                          ItemsSource="{Binding $parent[views:PresetEditorControl].MemberAccounts}"
+                          SelectedItem="{Binding SelectedAccount, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" Margin="0,0,6,0"
+                               Source="{Binding ClassImagePath, Converter={x:Static views:ClassImageConverter.Instance}}"
+                               IsVisible="{Binding ClassImagePath, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" />
+                        <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Text="&#xE7BA;" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="14"
+                           FontFamily="Segoe MDL2 Assets"
+                           Foreground="{DynamicResource Brush.Warning}"
+                           ToolTip.Tip="{x:Static res:Strings.OrphanAccountHint}"
+                           IsVisible="{Binding HasMissingAccount}" />
+                <ComboBox x:Name="RowKeyBox" Width="80" Margin="36,0,8,0"
+                          IsVisible="{Binding IsKeyRow}"
+                          ItemsSource="{Binding $parent[views:PresetEditorControl].AvailableKeys}"
+                          SelectedItem="{Binding Key, Mode=TwoWay}" />
+                <Button x:Name="RowCaptureButton" Click="OnCaptureRow" Margin="0,0,8,0"
+                        IsVisible="{Binding IsClickRow}"
+                        ToolTip.Tip="{Binding PositionTooltip}"
+                         FontFamily="Segoe MDL2 Assets" Width="28" Height="28" Classes="icon">&#xEB44;</Button>
+                <ComboBox x:Name="RowButtonBox" Width="80" Margin="0,0,8,0"
+                          IsVisible="{Binding IsClickRow}"
+                          ItemsSource="{Binding $parent[views:PresetEditorControl].MouseButtonOptions}"
+                          SelectedValue="{Binding Button, Mode=TwoWay}"
+                          SelectedValueBinding="{Binding Value}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Label}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBox Width="60" Margin="0,0,4,0" ToolTip.Tip="{x:Static res:Strings.DelayMs}"
+                         Text="{Binding DelayBeforeMs, Mode=TwoWay}" />
+                <TextBlock Text="ms" VerticalAlignment="Center" Margin="0,0,8,0"
+                           FontSize="{StaticResource Font.Size.Sm}"
+                           Foreground="{DynamicResource Brush.MutedForeground}" />
+              </StackPanel>
+            </DockPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+    <!-- Empty state: no preset loaded. -->
+    <Border x:Name="EmptyState" Background="{DynamicResource Brush.Background}" IsVisible="True">
+      <TextBlock x:Name="EmptyHintLabel" HorizontalAlignment="Center" VerticalAlignment="Center"
+                 FontSize="{StaticResource Font.Size.Sm}"
+                 Foreground="{DynamicResource Brush.MutedForeground}"
+                 TextWrapping="Wrap" TextAlignment="Center" Margin="24,0" />
+    </Border>
+    <!-- Drag ghost host: above content, hit-test invisible. -->
+    <Canvas x:Name="GhostLayer" IsHitTestVisible="False" />
+    <views:ConfirmSheet x:Name="ConfirmSheetHost" IsVisible="False" />
+  </Grid>
+</UserControl>

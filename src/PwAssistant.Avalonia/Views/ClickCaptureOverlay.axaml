@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="PwAssistant.Avalonia.Views.ClickCaptureOverlay"
+        Title="ClickCapture"
+        WindowDecorations="None" WindowState="Normal"
+        Topmost="True" ShowInTaskbar="False" CanResize="False"
+        Background="#22000000" Cursor="Cross"
+        Width="100" Height="100">
+  <Grid>
+    <TextBlock x:Name="HintLabel" HorizontalAlignment="Center" VerticalAlignment="Top"
+               Margin="0,40,0,0" FontSize="16" Foreground="White" />
+  </Grid>
+</Window>

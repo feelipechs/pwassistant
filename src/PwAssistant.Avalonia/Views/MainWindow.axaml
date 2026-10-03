@@ -1,0 +1,276 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PwAssistant.Avalonia.ViewModels"
+        xmlns:views="using:PwAssistant.Avalonia.Views"
+        xmlns:conv="using:Avalonia.Data.Converters"
+        x:Class="PwAssistant.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="PwAssistant" Height="660" Width="1100" MinHeight="480" MinWidth="800"
+        Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Foreground}"
+        FontFamily="{StaticResource Font.Family}">
+  <Window.Styles>
+    <!-- Window-specific only (shared button/input/tab styles live in Styles/Shadcn.axaml). -->
+    <Style Selector="Border.squarecard">
+      <Setter Property="Background" Value="{DynamicResource Brush.Card}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="12" />
+      <Setter Property="Width" Value="250" />
+      <Setter Property="Margin" Value="0,0,12,12" />
+    </Style>
+    <!-- Row actions appear on hover/selection (replaces DataTemplate.Triggers) -->
+    <Style Selector="StackPanel.rowactions">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover StackPanel.rowactions">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="ListBoxItem:selected StackPanel.rowactions">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <!-- Spinning play glyph while launching (replaces the WPF Storyboard) -->
+    <Style Selector="TextBlock.playglyph-spinning">
+      <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="Infinite">
+          <KeyFrame Cue="0%">
+            <Setter Property="RotateTransform.Angle" Value="0" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="RotateTransform.Angle" Value="360" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </Window.Styles>
+
+  <Grid>
+  <DockPanel>
+    <!-- Native frame (caption + actions are the OS ones). -->
+    <!-- Sidebar: servers -->
+    <Border DockPanel.Dock="Left" Width="264" Background="{DynamicResource Brush.Card}"
+            BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,1,0" Padding="12">
+      <DockPanel>
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Brush.Border}"
+                BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="VersionLabel" Grid.Column="0" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Brush.MutedForeground}"
+                       FontSize="{StaticResource Font.Size.Sm}" IsVisible="False"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+              <Button x:Name="RefreshButton" Content="&#xE72C;" Command="{Binding RefreshStatusCommand}"
+                      Classes="icon"/>
+              <Button x:Name="SettingsButton" Content="&#xE713;" Click="OnOpenSettings"
+                      Classes="icon"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+          <Button x:Name="AddServerButton" Content="&#xE710;" Command="{Binding AddServerCommand}"
+                  DockPanel.Dock="Right" Classes="icon"/>
+          <Border Width="8" Height="28" CornerRadius="4" Margin="0,0,8,0"
+                  Background="{DynamicResource Brush.Primary}"/>
+          <TextBlock x:Name="ServersLabel" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                     Foreground="{DynamicResource Brush.Foreground}" VerticalAlignment="Center"/>
+        </DockPanel>
+        <ListBox x:Name="ServerList"
+                 ItemsSource="{Binding Servers}"
+                 SelectedItem="{Binding SelectedServer}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ServerRow">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Sm}"
+                             Foreground="{DynamicResource Brush.Foreground}"
+                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                  <views:StatusIndicator Kind="{Binding DisplayStatus}" Label="{Binding StatsText}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Classes="rowactions"
+                            VerticalAlignment="Center">
+                  <Button Content="&#xE70F;"
+                          Command="{Binding $parent[Window].DataContext.EditServerCommand}"
+                          CommandParameter="{Binding}"
+                          Classes="icon" Width="24" Height="24" FontSize="12"/>
+                  <Button Content="&#xE74D;"
+                          Command="{Binding $parent[Window].DataContext.DeleteServerCommand}"
+                          CommandParameter="{Binding}"
+                          Classes="icon" Width="24" Height="24" FontSize="12"/>
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+    <!-- Main area -->
+    <Grid Margin="16,12,16,12">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      <DockPanel Grid.Row="0" Margin="0,0,0,4">
+        <TextBlock x:Name="AccountsHeaderLabel" FontSize="{StaticResource Font.Size.Lg}" FontWeight="SemiBold"
+                   Foreground="{DynamicResource Brush.Foreground}"
+                   Text="{Binding AccountsHeader}" VerticalAlignment="Center"/>
+        <Button x:Name="GroupModeButton" Content="Group" Command="{Binding OpenGroupModeCommand}"
+                DockPanel.Dock="Right" Classes="primary"/>
+        <TextBlock Text="{Binding StatusMessage}" Classes="statustext"
+                   DockPanel.Dock="Right" Margin="0,0,12,0"/>
+      </DockPanel>
+      <!-- Tab strip cluster ... account add pinned right -->
+      <DockPanel Grid.Row="1" Margin="0,0,0,8">
+        <Button x:Name="AddAccountButton" Content="&#xE710;" Command="{Binding AddAccountCommand}"
+                DockPanel.Dock="Right" Classes="primary"/>
+        <Border Width="1" Margin="8,2" Background="{DynamicResource Brush.Border}"
+                DockPanel.Dock="Right"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <ItemsControl x:Name="TabStrip" ItemsSource="{Binding TabItems}" VerticalAlignment="Center">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal"/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:TabItem">
+                <RadioButton Content="{Binding Title}" GroupName="AccountTabs"
+                             Classes="tabtoggle" MinHeight="28" VerticalAlignment="Center"
+                             IsChecked="{Binding IsSelected, Mode=OneWay}"
+                             Command="{Binding $parent[Window].DataContext.SelectTabCommand}"
+                             CommandParameter="{Binding}"/>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Button x:Name="AddTabButton" Content="&#xE710;" Command="{Binding AddTabCommand}"
+                  Classes="icon" Height="28" Width="28" VerticalAlignment="Center"/>
+        </StackPanel>
+      </DockPanel>
+      <!-- Tag context row: title + actions left, bulk open/close right.
+           Visible only with a tab selected; collapses to zero on "All". -->
+      <DockPanel Grid.Row="2" Margin="0,0,0,8" LastChildFill="False"
+                 IsVisible="{Binding IsTabSelected}">
+        <Button Content="{Binding BulkActionText}" Command="{Binding OpenCloseAllInTabCommand}"
+                DockPanel.Dock="Right" Classes="outline" MinWidth="110"/>
+        <TextBlock Text="{Binding SelectedTab.Name}" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                   Foreground="{DynamicResource Brush.Foreground}" VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SelectedTab.Name}"/>
+        <Button x:Name="RenameTabButton" Content="&#xE70F;"
+                Command="{Binding RenameTabCommand}" CommandParameter="{Binding SelectedTab}"
+                Classes="icon" Margin="8,0,0,0"/>
+        <Button x:Name="DeleteTabButton" Content="&#xE74D;"
+                Command="{Binding DeleteTabCommand}" CommandParameter="{Binding SelectedTab}"
+                Classes="icon"/>
+      </DockPanel>
+      <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+        <ItemsControl x:Name="AccountCards" ItemsSource="{Binding Accounts}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:AccountCard">
+              <Border Classes="squarecard">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="&#xE711;"
+                            Command="{Binding $parent[Window].DataContext.RemoveFromTabCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding $parent[Window].DataContext.IsTabSelected}"
+                            Width="24" Height="24" FontSize="12" Classes="icon"/>
+                    <Button Content="&#xE70F;"
+                            Command="{Binding $parent[Window].DataContext.EditAccountCommand}"
+                            CommandParameter="{Binding}"
+                            Classes="icon" Width="24" Height="24" FontSize="12"/>
+                    <Button Content="&#xE74D;"
+                            Command="{Binding $parent[Window].DataContext.DeleteAccountCommand}"
+                            CommandParameter="{Binding}"
+                            Classes="icon" Width="24" Height="24" FontSize="12"/>
+                  </StackPanel>
+                  <Image Width="56" Height="56" Margin="0,2,0,6"
+                         HorizontalAlignment="Center"
+                         Source="{Binding ClassImagePath, Converter={x:Static views:ClassImageConverter.Instance}}"
+                         ToolTip.Tip="{Binding ClassBadgeText}"
+                         IsVisible="{Binding ClassImagePath, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+                  <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                             Foreground="{DynamicResource Brush.Foreground}"
+                             HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayName}"/>
+                  <views:StatusIndicator Kind="{Binding DisplayStatus}" Label="{Binding StatusText}"
+                                         HorizontalAlignment="Center" Margin="0,2,0,8"/>
+                  <Button FontFamily="{StaticResource IconFont}" FontSize="{StaticResource Font.Size.Lg}"
+                          ToolTip.Tip="{Binding PlayText}"
+                          Command="{Binding $parent[Window].DataContext.PlayCommand}"
+                          CommandParameter="{Binding}"
+                          Classes="primary"
+                          HorizontalAlignment="Stretch" MinHeight="{StaticResource Size.Control}">
+                    <TextBlock Text="{Binding PlayGlyph}" RenderTransformOrigin="0.5,0.5"
+                               IsVisible="{Binding !IsLaunching}">
+                      <TextBlock.RenderTransform>
+                        <RotateTransform/>
+                      </TextBlock.RenderTransform>
+                    </TextBlock>
+                  </Button>
+                  <TextBlock Text="{Binding PlayGlyph}" FontFamily="{StaticResource IconFont}"
+                             HorizontalAlignment="Center" IsVisible="{Binding IsLaunching}"
+                             Classes="playglyph-spinning" RenderTransformOrigin="0.5,0.5">
+                    <TextBlock.RenderTransform>
+                      <RotateTransform/>
+                    </TextBlock.RenderTransform>
+                  </TextBlock>
+                  <Border Height="1" Margin="0,8" Background="{DynamicResource Brush.Border}"/>
+                  <Border Classes="inputbox">
+                    <DockPanel>
+                      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="&#xE8C8;"
+                                Command="{Binding $parent[Window].DataContext.CopyLoginCommand}"
+                                CommandParameter="{Binding}"
+                                Classes="icon" Width="24" Height="24" FontSize="12"/>
+                      </StackPanel>
+                      <TextBlock Text="{Binding Model.Login}" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource Brush.MutedForeground}" FontSize="{StaticResource Font.Size.Sm}"
+                                 TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Model.Login}"/>
+                    </DockPanel>
+                  </Border>
+                  <Border Classes="inputbox">
+                    <DockPanel>
+                      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="&#xE7B3;"
+                                ToolTip.Tip="{Binding PasswordToggleHint}"
+                                Command="{Binding $parent[Window].DataContext.TogglePasswordVisibilityCommand}"
+                                CommandParameter="{Binding}"
+                                Classes="icon" Width="24" Height="24" FontSize="12"/>
+                        <Button Content="&#xE8C8;"
+                                Command="{Binding $parent[Window].DataContext.CopyPasswordCommand}"
+                                CommandParameter="{Binding}"
+                                Classes="icon" Width="24" Height="24" FontSize="12"/>
+                      </StackPanel>
+                      <TextBlock Text="{Binding PasswordDisplay}" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource Brush.MutedForeground}" FontSize="{StaticResource Font.Size.Sm}"
+                                 TextTrimming="CharacterEllipsis"/>
+                    </DockPanel>
+                  </Border>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+  </DockPanel>
+    <views:ConfirmSheet x:Name="ConfirmSheetHost" IsVisible="False"/>
+    <views:PromptSheet x:Name="PromptSheetHost" IsVisible="False"/>
+    <views:ServerSheet x:Name="ServerSheetHost" IsVisible="False"/>
+    <views:AccountSheet x:Name="AccountSheetHost" IsVisible="False"/>
+    <views:SettingsSheet x:Name="SettingsSheetHost" IsVisible="False"/>
+    <views:ToastHost Margin="16,16,0,0"/>
+  </Grid>
+</Window>

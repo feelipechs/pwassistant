@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PwAssistant.Avalonia</RootNamespace>
+    <ApplicationIcon>Resources\App.ico</ApplicationIcon>
+    <!-- Spike F0: Avalonia UI shell (Windows-only: WinApi/HWND stay). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Windows/controls are DI-constructed (no parameterless ctor): only the
+         compiled XAML loader is ever used, never the runtime loader. -->
+    <NoWarn>$(NoWarn);AVLN3001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+    <PackageReference Include="Semi.Avalonia" Version="12.1.0.1" />
+    <PackageReference Include="Irihi.Ursa" Version="2.2.0" />
+    <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="2.2.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Velopack" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\Classes\*.png" />
+    <AvaloniaResource Include="Resources\AppIcon.png" />
+    <AvaloniaResource Include="Resources\App.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Classes\*.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PwAssistant.Core\PwAssistant.Core.csproj" />
+    <ProjectReference Include="..\PwAssistant.WinApi\PwAssistant.WinApi.csproj" />
+    <!-- Build order only (no assembly reference): the worker exe is spawned,
+         never linked. The AfterBuild copy below stages it next to the app. -->
+    <ProjectReference Include="..\PwAssistant.Sender\PwAssistant.Sender.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Dev loop: the sender needs its exe AND its managed dll next to the
+       app (a framework apphost without its dll dies with a host error —
+       seen live as exit 0x8000809A). The build tree lives outside the repo
+       (Directory.Build.props), hence the TEMP path. Skipped when the sender
+       wasn't built in this pass (e.g. App publish: the release flow
+       publishes the sender explicitly — doc/release.md). -->
+  <Target Name="CopySenderWorker" AfterTargets="AfterBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Copy SourceFiles="$(TEMP)/pwassistant-build/bin/PwAssistant.Sender/$(Configuration)/net8.0/PwAssistant.Sender.exe;$(TEMP)/pwassistant-build/bin/PwAssistant.Sender/$(Configuration)/net8.0/PwAssistant.Sender.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('$(TEMP)/pwassistant-build/bin/PwAssistant.Sender/$(Configuration)/net8.0/PwAssistant.Sender.exe')" />
+  </Target>
+
+</Project>

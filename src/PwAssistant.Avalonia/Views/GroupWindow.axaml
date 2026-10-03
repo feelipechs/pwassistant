@@ -1,0 +1,179 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="using:PwAssistant.Avalonia.Resources"
+        xmlns:vm="using:PwAssistant.Avalonia.ViewModels"
+        xmlns:views="using:PwAssistant.Avalonia.Views"
+        xmlns:conv="using:Avalonia.Data.Converters"
+        x:Class="PwAssistant.Avalonia.Views.GroupWindow"
+        x:DataType="vm:GroupViewModel"
+        Title="Modo Grupo" Height="640" Width="920"
+        Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Foreground}"
+        FontFamily="{StaticResource Font.Family}">
+  <Window.Styles>
+    <!-- Shared control styles live in Styles/Shadcn.axaml; nothing window-specific here. -->
+  </Window.Styles>
+
+  <Grid>
+    <!-- Native frame (caption + actions are the OS ones). -->
+    <DockPanel x:Name="RootDock" Margin="16,12,16,12">
+      <TextBlock Text="{Binding StatusMessage}" DockPanel.Dock="Bottom" Classes="statustext"
+                 Margin="0,8,0,0" TextWrapping="Wrap"/>
+      <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+        <TextBlock x:Name="TitleLabel" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource Brush.Foreground}" VerticalAlignment="Center"/>
+      </DockPanel>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="260"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <!-- Pool: ungrouped characters, drag source; the whole column
+             is the "ungrouped" drop target (AllowDrop lives here, not
+             only on the items list, so empty space works too). -->
+        <Border x:Name="PoolBorder" Grid.Column="0" Classes="card" Margin="0,0,6,0"
+                DragDrop.AllowDrop="True" DragDrop.DragOver="OnPoolDragOver" DragDrop.Drop="OnPoolDrop">
+          <DockPanel>
+            <TextBlock x:Name="PoolLabel" DockPanel.Dock="Top" Classes="section"/>
+            <TextBlock DockPanel.Dock="Bottom" Classes="muted" Margin="0,6,0,0"
+                       Text="{x:Static res:Strings.DragHint}" TextWrapping="Wrap"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <ItemsControl x:Name="PoolList" ItemsSource="{Binding Pool}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:MemberOption">
+                    <Border Classes="minicard">
+                      <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" Margin="0,0,8,0"
+                               Source="{Binding ClassImagePath, Converter={x:Static views:ClassImageConverter.Instance}}"
+                               IsVisible="{Binding ClassImagePath, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+                        <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"/>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+        <!-- Group cards + in-flow new-group slot -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto"
+                      DragDrop.AllowDrop="True" DragDrop.DragOver="OnOuterDragOver">
+          <ItemsControl ItemsSource="{Binding GroupCardsView}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.DataTemplates>
+              <DataTemplate DataType="vm:GroupCard">
+                <Border x:Name="CardBorder" Classes="card" Width="290" Height="360" Margin="0,0,10,10"
+                        BorderBrush="{Binding IsDragOver, Converter={x:Static views:DragOverBorderConverter.Instance}}"
+                        DragDrop.AllowDrop="True" DragDrop.Drop="OnCardDrop" DragDrop.DragOver="OnCardDragOver">
+                  <DockPanel>
+                    <DockPanel DockPanel.Dock="Top">
+                      <Button x:Name="CardMenuButton" DockPanel.Dock="Right" Width="28" Height="28"
+                              FontFamily="{StaticResource IconFont}" FontSize="14"
+                              Content="&#xE712;" Click="OnCardMenuToggle"
+                              Classes="icon"/>
+                      <Button DockPanel.Dock="Right" Width="28" Height="28"
+                              FontFamily="{StaticResource IconFont}" FontSize="12"
+                              Content="&#xE740;"
+                              ToolTip.Tip="{Binding $parent[Window].DataContext.MinimizeText}"
+                              Command="{Binding $parent[Window].DataContext.MinimizeCardToMiniCommand}"
+                              CommandParameter="{Binding}"
+                              Classes="icon"/>
+                      <StackPanel>
+                        <TextBlock Text="{Binding Group.Name}" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                                   Foreground="{DynamicResource Brush.Foreground}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding Subtitle}" FontSize="{StaticResource Font.Size.Sm}"
+                                   Foreground="{DynamicResource Brush.MutedForeground}" TextTrimming="CharacterEllipsis"/>
+                      </StackPanel>
+                    </DockPanel>
+                    <Popup IsOpen="{Binding IsMenuOpen, Mode=TwoWay}"
+                           PlacementTarget="{Binding #CardMenuButton}"
+                           Placement="Bottom" Closed="OnCardMenuClosed">
+                      <Border Background="{DynamicResource Brush.Card}"
+                              BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1"
+                              CornerRadius="8" Padding="8" MinWidth="220">
+                        <StackPanel>
+                          <Button Content="{Binding $parent[Window].DataContext.RenameText}"
+                                  Command="{Binding $parent[Window].DataContext.RenameGroupCommand}"
+                                  CommandParameter="{Binding}"
+                                  Classes="ghost"/>
+                          <Button Content="{Binding $parent[Window].DataContext.DeleteText}"
+                                  Command="{Binding $parent[Window].DataContext.DeleteGroupCommand}"
+                                  CommandParameter="{Binding}"
+                                  Classes="ghost"/>
+                          <Button Content="{Binding $parent[Window].DataContext.DuplicateGroupText}"
+                                  Command="{Binding $parent[Window].DataContext.DuplicateGroupCommand}"
+                                  CommandParameter="{Binding}"
+                                  Classes="ghost"/>
+                          <Button Content="{Binding $parent[Window].DataContext.PresetsText}"
+                                  Command="{Binding $parent[Window].DataContext.OpenPresetsCommand}"
+                                  CommandParameter="{Binding}"
+                                  Classes="ghost"/>
+                          <Border Height="1" Margin="0,6" Background="{DynamicResource Brush.Border}"/>
+                          <Button Content="{Binding $parent[Window].DataContext.SaveFormationText}"
+                                  Command="{Binding $parent[Window].DataContext.SaveFormationCommand}"
+                                  CommandParameter="{Binding}"
+                                  Classes="ghost"/>
+                          <Button Content="{Binding $parent[Window].DataContext.LoadFormationText}"
+                                  Command="{Binding $parent[Window].DataContext.OpenFormationsCommand}"
+                                  CommandParameter="{Binding}"
+                                  Classes="ghost"/>
+                        </StackPanel>
+                      </Border>
+                    </Popup>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                      <ItemsControl ItemsSource="{Binding Members}"
+                                    DragDrop.AllowDrop="True"
+                                    DragDrop.DragOver="OnMembersDragOver"
+                                    DragDrop.Drop="OnMembersDrop">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:MemberOption">
+                            <Border Classes="minicard">
+                              <StackPanel Orientation="Horizontal">
+                                <Image Width="16" Height="16" Margin="0,0,8,0"
+                                       Source="{Binding ClassImagePath, Converter={x:Static views:ClassImageConverter.Instance}}"
+                                       IsVisible="{Binding ClassImagePath, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+                                <TextBlock Text="{Binding CharacterName}" VerticalAlignment="Center"/>
+                              </StackPanel>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </ScrollViewer>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+              <DataTemplate DataType="vm:NewGroupSlot">
+                <Grid Width="290" Height="360" Margin="0,0,10,10">
+                  <Rectangle Stroke="{DynamicResource Brush.Border}" StrokeThickness="1"
+                             StrokeDashArray="6,4" RadiusX="8" RadiusY="8"/>
+                  <Button Content="&#xE710;" ToolTip.Tip="{x:Static res:Strings.NewGroup}"
+                          Command="{Binding $parent[Window].DataContext.AddGroupCommand}"
+                          Classes="icon" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.DataTemplates>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+    </DockPanel>
+    <Grid x:Name="PresetTab" IsVisible="False" KeyDown="OnPresetTabKeyDown">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="1*"/>
+        <ColumnDefinition Width="5*"/>
+      </Grid.ColumnDefinitions>
+      <views:PresetListControl Grid.Column="0"/>
+      <ContentControl x:Name="PresetEditorHost" Grid.Column="1" Margin="8,0,0,0"/>
+    </Grid>
+    <views:ToastHost Margin="16,16,0,0"/>
+    <!-- Overlay order: content first, then ghost, then sheets with the
+         confirm sheet absolute last (a sheet opened from inside another
+         must land on top). Never add content after this block. -->
+    <Canvas x:Name="GhostLayer" IsHitTestVisible="False"/>
+    <views:FormationsSheet x:Name="FormationsSheetHost" IsVisible="False"/>
+    <views:PromptSheet x:Name="PromptSheetHost" IsVisible="False"/>
+    <views:ConfirmSheet x:Name="ConfirmSheetHost" IsVisible="False"/>
+  </Grid>
+</Window>
