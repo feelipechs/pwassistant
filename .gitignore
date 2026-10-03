@@ -26,9 +26,12 @@ coverage*.json
 .DS_Store
 Thumbs.db
 
-# Original user artwork (duplicates of src/PwAssistant.App/Resources/Classes)
+# Original user artwork (duplicates of src/PwAssistant.Avalonia/Resources/Classes)
 images/
 
 # Local analysis inputs (third-party decompiles, sibling-app logs)
 hexrays/
 logs/
+
+# User-provided debug screenshots (never committed)
+prints/

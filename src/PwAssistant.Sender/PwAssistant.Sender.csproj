@@ -10,7 +10,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Shipped next to PwAssistant.App.exe (same directory); the app spawns
+    <!-- Shipped next to PwAssistant.Avalonia.exe (same directory); the app spawns
          one instance per online account per fire. No UI, no hooks, and it
          never receives user input — that is the whole point: its lone
          SetForegroundWindow is denied on normal machines (background,
