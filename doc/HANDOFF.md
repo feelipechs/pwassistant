@@ -1,24 +1,30 @@
-# HANDOFF — estado em 2026-10-02, base 777a63b (+docs não commitados)
+# HANDOFF — estado em 2026-10-03, base 724d693 (+polimento visual não commitado)
 ## Pronto (validado)
-- Build 0 erros/0 warnings; testes 89/89. Commits C1–C10 verdes por construção.
-- Worker 9 contas em fundo sem troca (negado `setfg=0` + flash + `fired=9 skipped=0`).
-- Lock `LockSetForegroundWindow` com refcount + `[lock] ok win32` (falha em degradado).
-- Freeze UI: scan fora da thread da UI (snapshot no pool + apply na UI); open/Activated/timer convergem; `CleanseAllShortcuts` em STA dedicada; `[scan]` verbose >50 ms.
-- Settings enxutas: numpad, shift-tap, log (experimentais + forced removidos c/ código).
-- Sender smoke + parser harden; publish validado (App 147 MB + Sender 64 MB); vpk pack 1.2.0 OK (delta 29 MB); Releases limpos (~270 MB).
-- Incidentes fechados: `.dll` ausente (LocateExe agora só-exe + stderr no erro); App.xaml.cs stale no C3 (pego em revisão, C10 corrige, builds validam a árvore exata).
-- Latência (plano A): lote só-click pula SFW+settle (`setfg=-` no log) + warmup de sender ~10 s pós-startup; daemon estacionado fica p/ depois de medir no SEGUIR.
-- Daemon (validado headless): 4 workloads→4 RESULTs, JSON inválido sobrevivido, exit 0 no EOF; kill+respawn sem retry; fallback spawn-avulso.
-- Hide-cache mini+grupo (tick parado quando invisível, rascunho do editor preservado).
-- Single-instance (Mutex Local\, mensagem+sai, espera 10 s p/ restart do updater) + sync botão direito (gate removido; engine decide).
-- Publish fresco (App+Sender) validado; release 1.2.2 pendente (repack+tag+upload).
-- Clicks R2 sem foco; legado prime-falso executa sem trocar; Helper 2/2 bg aqui.
-- Descobertas lei nº 5: latch do último input; timeout volátil (`~1 ms`↔`INT_MAX`, registro intacto); fronteira de processo = mecanismo; 3 variantes Helper; sync one-shot; mouse-move não transfere; mini inocente + B4 default-ON é confound.
-## Pronto (código, pendente de jogo)
-- Nada pendente de código. Falta: validação final no jogo no build com settings limpas + release v1.2.0 (NOVA release, nunca editar a antiga; repack após estes commits — artefatos 1.2.0 atuais são pré-fix).
+- Build solution 0 erros/0 warnings; testes 116/116 (Core 92 + Avalonia 24).
+- Migração Avalonia + moldura nativa (sessões anteriores); boot estável 25 s.
+- Polimento visual desta sessão (pedidos do usuário, tudo validado em build):
+  - Editor de presets sem azul: `Classes` primary/outline/icon em Salvar,
+    Cancelar, Gravar atalho, Import/Export, adicionar, bulk e linhas.
+  - Ícones: revertidos 3 swaps preventivos meus (`E816` captura, `E838`
+    browse, `E740` mini-card voltaram ao original); carga de formação
+    `E73E→E768` (▶ comprovado); Formations ganhou `Classes="icon"`.
+    `E765/E962` mantidos — confirmar por print se algum segue quebrado.
+  - Toggles `Classes="Small"` (Mini header + pílulas); Mini compacto
+    (fileira padding 2, fire 9px/16px, cantos 6); tabs alinhadas
+    (`MinHeight` 28 + `VerticalAlignment` Center nos 3).
+  - Fontes presets menores: nomes da lista 11px, pílulas do Mini 9px.
+  - Cards: Main 1100px/cards 250 (3×262=786 na área útil, 3 por fileira);
+    Grupo 920px/cards 290 (2×300=600, sem sobra à direita).
+## Pronto (código, pendente de jogo/Windows)
+- Usuário valida por prints: azul fora dos presets, ícones formações +
+  captura + adds, toggles pequenos, pílulas compactas, tabs alinhadas,
+  fontes, 3 cards, grupo sem sobra.
 ## Próximo passo
-- `git push origin main` (3 commits) → republish → repack limpo → tag v1.2.0 → GitHub release (4 anexos + texto pronto).
+- Prints novos → finos restantes → commit por escopo (pedido explícito) →
+  release por `doc/release.md`.
 ## Backlog pós-validação (ponteiro p/ `doc/backlog.md`)
-- Daemon estacionado (vs spawn) se latência doer; hold adaptativo; B4 default-ON em revisão.
+- Inalterado. Dívidas: `DialogOwner.Own` no-op; `TrayManager.ShowBalloon`
+  no-op; sheets overlays (não dialogs Ursa); toggle/check template Semi
+  (só cores); `NoWarn AVLN3001`.
 ## Perguntas abertas
-- Quem reescreve o timeout em runtime (protocolo pendente, não bloqueia).
+- Nada. Commit só com pedido explícito (pendente).

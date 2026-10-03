@@ -6,10 +6,10 @@ Guia do mantenedor. Versão vem da tag (`vX.Y.Z`); `packId PwAssistant`
 ## 1. Publicar o app
 
 ```powershell
-dotnet publish src/PwAssistant.App -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ./publish
+dotnet publish src/PwAssistant.Avalonia -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ./publish
 dotnet publish src/PwAssistant.Sender -c Release -r win-x64 --self-contained /p:PublishSingleFile=true -o ./publish
 Remove-Item "publish\*.pdb"
-dnx vpk@1.0.1 pack --packId PwAssistant --packVersion X.Y.Z --packDir ./publish --mainExe PwAssistant.App.exe
+dnx vpk@1.0.1 pack --packId PwAssistant --packVersion X.Y.Z --packDir ./publish --mainExe PwAssistant.Avalonia.exe
 ```
 
 O sender (`PwAssistant.Sender.exe`) é obrigatório ao lado do app

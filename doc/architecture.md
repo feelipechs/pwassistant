@@ -13,8 +13,10 @@ motivou o modo com foco abaixo. Doc atualizado no mesmo passo (lei nº 5).
 pwassistant.sln
 ├─ src/PwAssistant.Core    → models, regras, MacroExecutor, SyncService, storage (SEM WinAPI)
 ├─ src/PwAssistant.WinApi  → TODO P/Invoke isolado (único projeto que referencia user32)
-└─ src/PwAssistant.App     → WPF + MVVM (depende de Core e WinApi)
+├─ src/PwAssistant.Avalonia → Avalonia UI 12 + MVVM (ex-WPF, migrado 2026-10-03; depende de Core e WinApi)
+└─ src/PwAssistant.Sender  → worker de disparo (spawnado por conta, nunca linkado)
 tests/PwAssistant.Core.Tests → xUnit, só lógica sem WinAPI/jogo
+tests/PwAssistant.Avalonia.Tests → xUnit, tokens de tema shadcn (contraste WCAG)
 ```
 
 Regras de dependência (valem para IA e revisões):
@@ -203,7 +205,23 @@ o `BringToFront` opt-in).
 - Campos de runtime (`ProcessId`, `Hwnd`, `Status`) nunca persistem.
 - Backup automático: fora do v1.
 
-## App / UI (WPF)
+## App / UI (Avalonia — ex-WPF, migração 2026-10-03)
+
+> Migração WPF → Avalonia UI 12 concluída em 2026-10-03 (paridade funcional,
+> `PwAssistant.App` deletado, histórico no git). O que mudou: `Semi.Avalonia`
+> + `Ursa` como base (sheets viraram overlays próprios sobre o mesmo
+> `IDialogService`), tokens shadcn Dark/Light + accents Neutral/Gold/Blue
+> (`ThemeManager` com persistência), DnD nativo async (`DoDragDropAsync` +
+> `DataTransferItem` in-process, `LiveMove` preservado), hotkeys via
+> `HotkeyMessageWindow` (message-only, sem `HwndSource`), tray via
+> `TrayIcon`, `MaximizeClamp`/`WindowChrome`/`AdornerLayer` aposentados
+> (chrome estendido + `BoxShadow` nativos). Moldura 2026-10-03 (2ª rodada):
+> `TitleBar` custom deletado — moldura 100% nativa em todas as janelas
+> (`ExtendClientArea` não escondia o frame; duplicava título/ações),
+> caption escura via `CaptionTheme` (`DwmSetWindowAttribute`, segue o tema),
+> Mini redimensionável e opaca. `Core`/`WinApi`/`Sender` intocados
+> (só adições: `HotkeyMessageWindow`, `CaptionTheme`). Notas WPF abaixo
+> preservadas como histórico.
 
 - **WPF (.NET 8) + MVVM** com `CommunityToolkit.Mvvm` (source generators:
   `[ObservableProperty]`, `[RelayCommand]` — padrão Microsoft, sem boilerplate).

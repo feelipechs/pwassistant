@@ -18,14 +18,17 @@ substituindo a do Windows, backup automático.
 
 ## Stack escolhida
 
-**C# / .NET 8 + WPF**
+**C# / .NET 8 + Avalonia UI 12** (migração do WPF concluída em 2026-10-03;
+histórico WPF preservado no git). Mesmos motivos do WPF original
+(data binding, MVVM) + temas Dark/Light com accents e toolkit
+Semi/Ursa em vez de XAML artesanal; `.exe` self-contained como antes.
 
 Motivos:
 
 - P/Invoke para WinAPI (`PostMessage`, `SendMessage`, `FindWindow`,
   `EnumWindows`, `GetWindowRect`, `ScreenToClient`) é maduro e tem grande
   volume de exemplos vindos de ferramentas de automação de MMORPG.
-- WPF permite GUI real (data binding, MVVM) sem gambiarra — importante
+- Avalonia permite GUI real (data binding, MVVM) sem gambiarra — importante
   porque o app tem bastante superfície de UI (cards de conta, grid de
   grupo, editor de presets).
 - Distribuição como `.exe` self-contained, sem depender de runtime externo
@@ -55,7 +58,7 @@ limitada para o CRUD/Modo Grupo e stacks com distribuição inferior a um
 ```
 PwAssistant.Core     → models, lógica de negócio, storage (sem dependência de WinAPI)
 PwAssistant.WinApi   → wrapper isolado de P/Invoke (FindWindow, PostMessage, etc.)
-PwAssistant.App      → WPF, telas, viewmodels (MVVM)
+PwAssistant.Avalonia → Avalonia UI + MVVM (ex-PwAssistant.App/WPF, migrado 2026-10-03)
 ```
 
 Separar `WinApi` do `Core` é proposital: se a estratégia de input mudar
