@@ -111,6 +111,11 @@ disparo, nunca cacheado.
   (pid 0, sem efeito) ~10 s após o startup paga CLR/JIT/disco de uma vez.
 - `[mode]` hoje: `worker|legacy-anomaly` + `timeoutMs`; verbose por
   envio (`[s]`) vem do sender (`setfg=-` = chamada pulada).
+- Daemon estacionado (padrão): 1 processo sender por sessão (`--daemon`,
+  1 JSON por linha até EOF); flushes serializados, kill+respawn no
+  cancel/crash (sem retry: entrega desconhecida não se repete), fallback
+  pro spawn-avulso se não subir. Mesma sequência de envios, mesma
+  atribuição por conta — só some o custo de spawn por flush.
 
 ## Disparo via worker (default desde 2026-10-02)
 
