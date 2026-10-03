@@ -10,6 +10,8 @@
 - Latência (plano A): lote só-click pula SFW+settle (`setfg=-` no log) + warmup de sender ~10 s pós-startup; daemon estacionado fica p/ depois de medir no SEGUIR.
 - Daemon (validado headless): 4 workloads→4 RESULTs, JSON inválido sobrevivido, exit 0 no EOF; kill+respawn sem retry; fallback spawn-avulso.
 - Hide-cache mini+grupo (tick parado quando invisível, rascunho do editor preservado).
+- Single-instance (Mutex Local\, mensagem+sai, espera 10 s p/ restart do updater) + sync botão direito (gate removido; engine decide).
+- Publish fresco (App+Sender) validado; release 1.2.2 pendente (repack+tag+upload).
 - Clicks R2 sem foco; legado prime-falso executa sem trocar; Helper 2/2 bg aqui.
 - Descobertas lei nº 5: latch do último input; timeout volátil (`~1 ms`↔`INT_MAX`, registro intacto); fronteira de processo = mecanismo; 3 variantes Helper; sync one-shot; mouse-move não transfere; mini inocente + B4 default-ON é confound.
 ## Pronto (código, pendente de jogo)
