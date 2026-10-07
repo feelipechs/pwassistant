@@ -127,6 +127,10 @@ public sealed class App : Application
             desktop.ShutdownRequested += (_, _) => AppShutdown.Request();
             desktop.Exit += (_, _) => DisposeServices();
             main.Show();
+            // Image decode off the critical path: class art warms on the
+            // pool in parallel with first paint (no dispatcher needed).
+            _ = Task.Run(() => ClassImageConverter.WarmCache(
+                ClassCatalog.All.Select(c => c.ImageFile)));
             _ = InitializeAndRegisterAsync(main);
         }
 
@@ -137,13 +141,21 @@ public sealed class App : Application
     /// Loads persisted data, then registers global preset hotkeys (which
     /// need the loaded preset list — registering earlier sees nothing).
     /// Observed fire-and-forget: startup failures are logged, never lost.
+    /// UI work runs at Background priority so first paint wins over data.
     /// </summary>
     private async Task InitializeAndRegisterAsync(MainWindow main)
     {
+        // Timed stages: startup feels heavy (also under dotnet-run rebuilds),
+        // so each stage reports its cost instead of guessing.
+        FileLogger? log = _provider?.GetService<FileLogger>();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             await main.ViewModel.InitializeAsync().ConfigureAwait(false);
-            await Dispatcher.UIThread.InvokeAsync(main.RegisterPresetHotkeys);
+            log?.Info($"Startup: viewmodel init ({sw.ElapsedMilliseconds} ms).");
+            await Dispatcher.UIThread.InvokeAsync(
+                main.RegisterPresetHotkeys, DispatcherPriority.Background);
+            log?.Info($"Startup: hotkeys registered ({sw.ElapsedMilliseconds} ms).");
             // Observed fire-and-forget: the updater logs and never throws.
             _ = _provider?.GetService<AppUpdater>()?.CheckAndPromptAsync();
             // Sender pre-warm (delayed past startup): pays process + CLR +

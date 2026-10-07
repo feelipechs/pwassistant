@@ -301,6 +301,9 @@ public sealed partial class MainViewModel : ObservableObject
         cleanseThread.IsBackground = true;
         cleanseThread.Start();
         (cleansed, cleanseError) = await cleanseDone.Task.ConfigureAwait(false);
+        // Fresh online state without blocking first paint: scan on the pool,
+        // populate + recount on the UI thread below.
+        await Task.Run(() => _state.RefreshOnlineStatus()).ConfigureAwait(false);
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             Servers.Clear();
@@ -427,10 +430,20 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void RefreshServerRows()
     {
-        _state.RefreshOnlineStatus();
         foreach (ServerRow row in Servers)
             row.Refresh();
         OnPropertyChanged(nameof(BulkActionText));
+    }
+
+    /// <summary>
+    /// Online scan on the pool, recount marshaled to the UI thread.
+    /// The scan enumerates processes/windows and can stall for seconds
+    /// (hanging game client), so it must never run on the UI thread.
+    /// </summary>
+    public async Task RefreshServerRowsAsync()
+    {
+        await Task.Run(() => _state.RefreshOnlineStatus()).ConfigureAwait(false);
+        await Dispatcher.UIThread.InvokeAsync(RefreshServerRows);
     }
 
     private async Task PersistSelectionAsync()
@@ -494,7 +507,7 @@ public sealed partial class MainViewModel : ObservableObject
         Servers.Remove(row);
         if (SelectedServer == row)
             SelectedServer = Servers.FirstOrDefault();
-        RefreshServerRows();
+        await RefreshServerRowsAsync();
         await _state.SaveAsync().ConfigureAwait(false);
         ToastService.Show(AppStrings.ToastRemoved(row.Model.Name));
     }
@@ -527,7 +540,7 @@ public sealed partial class MainViewModel : ObservableObject
             _state.SetPassword(account, draft.Password);
             SelectedServer.Model.Accounts.Add(account);
             RebuildAccounts();
-            RefreshServerRows();
+            await RefreshServerRowsAsync();
             await _state.SaveAsync().ConfigureAwait(false);
             ToastService.Show(AppStrings.ToastAdded(draft.Login));
         }
@@ -651,10 +664,10 @@ public sealed partial class MainViewModel : ObservableObject
             _log.Info($"Launched {card.Model.Login} pid={session.ProcessId}.");
             WatchSession(session, card);
             await _state.SaveAsync().ConfigureAwait(false);
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 card.Refresh();
-                RefreshServerRows();
+                await RefreshServerRowsAsync();
             });
             StatusMessage = string.Empty;
             ToastService.Show(AppStrings.ToastOpened(card.Model.Login));
@@ -739,12 +752,12 @@ public sealed partial class MainViewModel : ObservableObject
             _bulkClosing = false;
             _focus.SuppressFallback = false;
             // Single coalesced refresh for the whole batch.
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 foreach (AccountCard card in cards)
                     card.Refresh();
                 RebuildAccounts();
-                RefreshServerRows();
+                await RefreshServerRowsAsync();
             });
         }
     }
@@ -803,10 +816,10 @@ public sealed partial class MainViewModel : ObservableObject
         card.Model.ProcessId = null;
         card.Model.WindowHandle = IntPtr.Zero;
         if (_bulkClosing) return;
-        await Dispatcher.UIThread.InvokeAsync(() =>
+        await Dispatcher.UIThread.InvokeAsync(async () =>
         {
             card.Refresh();
-            RefreshServerRows();
+            await RefreshServerRowsAsync();
         });
     }
 
@@ -837,10 +850,10 @@ public sealed partial class MainViewModel : ObservableObject
                 // During bulk the finally pass refreshes once and stays silent.
                 if (_bulkClosing) return;
                 ToastService.Show(AppStrings.ToastClosed(card.Model.Login));
-                _ = Dispatcher.UIThread.InvokeAsync(() =>
+                _ = Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     card.Refresh();
-                    RefreshServerRows();
+                    await RefreshServerRowsAsync();
                 });
             };
         }
@@ -898,10 +911,10 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (Preset preset in _state.Data.Presets)
             preset.Actions.RemoveAll(a => a.AccountId == id);
         await _state.SaveAsync().ConfigureAwait(false);
-        await Dispatcher.UIThread.InvokeAsync(() =>
+        await Dispatcher.UIThread.InvokeAsync(async () =>
         {
             RebuildAccounts();
-            RefreshServerRows();
+            await RefreshServerRowsAsync();
         });
         ToastService.Show(AppStrings.ToastRemoved(displayName));
     }
@@ -969,9 +982,9 @@ public sealed partial class MainViewModel : ObservableObject
     private void OpenGroupMode() => _dialogs.ShowGroupWindow();
 
     [RelayCommand]
-    private void RefreshStatus()
+    private async Task RefreshStatusAsync()
     {
-        RefreshServerRows();
+        await RefreshServerRowsAsync();
         foreach (AccountCard card in Accounts)
             card.Refresh();
     }

@@ -30,6 +30,24 @@ public sealed class ClassImageConverter : IValueConverter
         return Cache.GetOrAdd(path, Load);
     }
 
+    /// <summary>
+    /// Decodes every bundled class image off the UI thread (startup warm):
+    /// Bitmap creation needs no dispatcher, and a warm cache keeps the
+    /// first paint (37 cards) from decoding on the UI thread. Best effort.
+    /// </summary>
+    public static void WarmCache(IEnumerable<string> imageFiles)
+    {
+        foreach (string file in imageFiles)
+        {
+            try { Instance.Convert(file, typeof(object), null, CultureInfo.InvariantCulture); }
+            catch
+            {
+                // One bad file never breaks startup (Convert never throws
+                // anyway; this guards the enumeration itself).
+            }
+        }
+    }
+
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 

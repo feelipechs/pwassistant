@@ -321,7 +321,12 @@ public sealed partial class GroupViewModel : ObservableObject
         _sync.SetSyncExcluded(_syncExcluded);
     }
 
-    /// <summary>Rebuilds cards, pool and the active selection (Mini/sync path).</summary>
+    /// <summary>
+    /// Rebuilds cards, pool and the active selection (Mini/sync path).
+    /// Cards are reconciled by group id (reused, not recreated) so open,
+    /// Activated and poll refreshes don't re-realize every container;
+    /// SyncOptions already reuses the member instances inside each card.
+    /// </summary>
     public void RebuildAll()
     {
         // Cache-only by design (no process scan): freshness comes from the
@@ -330,15 +335,25 @@ public sealed partial class GroupViewModel : ObservableObject
             .SelectMany(s => s.Accounts)
             .ToDictionary(a => a.Id);
 
-        GroupCards.Clear();
+        Guid? activeId = ActiveCard?.Group.Id;
+        var wantedIds = new HashSet<Guid>(_state.Data.Groups.Select(g => g.Id));
+        for (int i = GroupCards.Count - 1; i >= 0; i--)
+            if (!wantedIds.Contains(GroupCards[i].Group.Id))
+                GroupCards.RemoveAt(i);
+        var cardsById = GroupCards.ToDictionary(c => c.Group.Id);
         foreach (Group group in _state.Data.Groups)
         {
-            var card = new GroupCard(group) { IsActive = false };
+            if (!cardsById.TryGetValue(group.Id, out GroupCard? card))
+            {
+                card = new GroupCard(group);
+                GroupCards.Add(card);
+                cardsById[group.Id] = card;
+            }
+            card.IsActive = false;
             SyncOptions(card.Members, group.AccountIds
                 .Select(id => byId.GetValueOrDefault(id))
                 .OfType<Account>());
             card.RefreshCounts(_state.Data.Presets.Count(p => p.GroupId == group.Id));
-            GroupCards.Add(card);
         }
 
         var grouped = new HashSet<Guid>(_state.Data.Groups.SelectMany(g => g.AccountIds));
@@ -346,10 +361,15 @@ public sealed partial class GroupViewModel : ObservableObject
             .Where(a => !grouped.Contains(a.Id))
             .OrderBy(a => a.Role));
 
-        if (ActiveCard is not null && !_state.Data.Groups.Contains(ActiveCard.Group))
-            ActiveCard = null;
-        if (ActiveCard is not null)
-            ActiveCard = GroupCards.FirstOrDefault(c => c.Group == ActiveCard.Group);
+        ActiveCard = activeId.HasValue
+            ? GroupCards.FirstOrDefault(c => c.Group.Id == activeId.Value)
+            : null;
+        for (int i = 0; i < _state.Data.Groups.Count && i < GroupCards.Count; i++)
+        {
+            GroupCard? at = GroupCards.FirstOrDefault(c => c.Group.Id == _state.Data.Groups[i].Id);
+            if (at is not null && GroupCards.IndexOf(at) != i)
+                GroupCards.Move(GroupCards.IndexOf(at), i);
+        }
         foreach (GroupCard card in GroupCards)
             card.IsActive = card == ActiveCard;
         Rebuild(SelectedGroup);
@@ -390,7 +410,10 @@ public sealed partial class GroupViewModel : ObservableObject
             Dictionary<Guid, (int? ProcessId, IntPtr WindowHandle)> snapshot =
                 await Task.Run(() => _state.ComputeOnlineSnapshot()).ConfigureAwait(true);
             sw.Stop();
-            if (sw.ElapsedMilliseconds > 50 && _state.VerboseFireLog)
+            // Slow scans (>250 ms) always log: they are the UI-freeze
+            // smoking gun (hanging game client stalls EnumWindows).
+            if (sw.ElapsedMilliseconds > 250
+                || (sw.ElapsedMilliseconds > 50 && _state.VerboseFireLog))
                 _log.Info($"  [scan] online snapshot {sw.ElapsedMilliseconds} ms");
             _state.ApplyOnlineSnapshot(snapshot);
             HashSet<Guid> live = OnlineIds();
@@ -601,7 +624,9 @@ public sealed partial class GroupViewModel : ObservableObject
         {
             StatusMessage = "...";
             // Fresh handles: closes the stale/recycled HWND race for clicks.
-            _state.RefreshOnlineStatus();
+            // Scan on the pool: it enumerates processes/windows and can stall
+            // for seconds on a hanging client — never on the UI thread.
+            await Task.Run(() => _state.RefreshOnlineStatus()).ConfigureAwait(false);
             var countdown = new Progress<int>(left => StatusMessage = left.ToString());
             var names = _state.Data.Servers
                 .SelectMany(s => s.Accounts)
