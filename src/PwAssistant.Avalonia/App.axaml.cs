@@ -41,7 +41,13 @@ public sealed class App : Application
         services.AddSingleton<ISecretProtector, DpapiSecretProtector>();
         services.AddSingleton<IAccountStore, JsonFileAccountStore>();
         services.AddSingleton<IWindowResolver, WindowResolver>();
-        services.AddSingleton<PostMessageBackgroundStrategy>();
+        // Legacy in-process sends (Sync clicks, out-of-batch fallbacks) run
+        // WITHOUT the WA_INACTIVE hygiene tail (2026-10-07): the tail
+        // freezes unfocused game clients until a real activation, while the
+        // priming alone keeps them working unfocused. Reversible in one
+        // line (default is applyHygiene: true). Worker/sender path untouched
+        // (bare sends never had hygiene).
+        services.AddSingleton(_ => new PostMessageBackgroundStrategy(applyHygiene: false));
         // Parked sender daemon (one process per session) + per-flush routing.
         // Disposed automatically with the provider at app exit.
         services.AddSingleton<SenderDaemon>();
