@@ -35,3 +35,6 @@ logs/
 
 # User-provided debug screenshots (never committed)
 prints/
+
+# Slim code-only copy for external analysis (never committed)
+codigo-teste/
