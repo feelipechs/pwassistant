@@ -124,15 +124,18 @@ public sealed class LoopController : IDisposable
 
         try
         {
+            int iteration = 0;
             while (!cts.Token.IsCancellationRequested)
             {
+                iteration++;
                 PresetExecutionResult result = await _dispatcher
                     .FireAsync(preset, 0, null, null, cts.Token).ConfigureAwait(false);
                 Progressed?.Invoke(preset.Id, result);
-                // Clean iterations stay on screen only (Progressed); the file
-                // log gets cancels, errors-with-skips, and the start line.
-                if (result.Canceled || result.Accounts.Any(r => r.Skipped))
-                    LogIteration(preset, result);
+                // Every iteration is logged (same format as manual fires,
+                // plus the iteration counter): silent loops are undebuggable.
+                // FileLogger writes synchronously, so these lines survive
+                // even if the app dies mid-loop.
+                LogIteration(preset, result, iteration);
                 await Task.Delay(IterationGap, cts.Token).ConfigureAwait(false);
             }
         }
@@ -157,12 +160,12 @@ public sealed class LoopController : IDisposable
         }
     }
 
-    private void LogIteration(Preset preset, PresetExecutionResult result)
+    private void LogIteration(Preset preset, PresetExecutionResult result, int iteration)
     {
         var byId = _state.Data.Servers
             .SelectMany(s => s.Accounts)
             .ToDictionary(a => a.Id);
-        PresetFireLog.Log(_log, _resolver, preset, result, "loop", id =>
+        PresetFireLog.Log(_log, _resolver, preset, result, $"loop iter={iteration}", id =>
             byId.TryGetValue(id, out Account? a)
                 ? ((string.IsNullOrWhiteSpace(a.Role) ? a.Login : a.Role), a.ProcessId)
                 : ("?", null), _state.VerboseFireLog);
