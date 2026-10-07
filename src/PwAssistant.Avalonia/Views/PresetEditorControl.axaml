@@ -123,7 +123,7 @@
                   </ComboBox.ItemTemplate>
                 </ComboBox>
                 <TextBox Width="60" Margin="0,0,4,0" ToolTip.Tip="{x:Static res:Strings.DelayMs}"
-                         Text="{Binding DelayBeforeMs, Mode=TwoWay}" />
+                         Text="{Binding DelayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Text="ms" VerticalAlignment="Center" Margin="0,0,8,0"
                            FontSize="{StaticResource Font.Size.Sm}"
                            Foreground="{DynamicResource Brush.MutedForeground}" />

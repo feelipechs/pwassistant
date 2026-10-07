@@ -53,6 +53,43 @@ public sealed partial class PresetActionRow : ObservableObject
     [ObservableProperty]
     private int delayBeforeMs = 100;
 
+    /// <summary>
+    /// Text proxy for the ms box: empty/invalid never throws (binding
+    /// int&lt;-&gt;string fails on "" and reverts the keystroke). Empty maps
+    /// to 0 without rewriting the box; invalid keeps the last valid value.
+    /// </summary>
+    [ObservableProperty]
+    private string delayText = "100";
+
+    private bool _syncDelay;
+
+    partial void OnDelayBeforeMsChanged(int value)
+    {
+        if (_syncDelay) return;
+        _syncDelay = true;
+        try { DelayText = value.ToString(); }
+        finally { _syncDelay = false; }
+    }
+
+    partial void OnDelayTextChanged(string value)
+    {
+        if (_syncDelay) return;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _syncDelay = true;
+            try { DelayBeforeMs = 0; }
+            finally { _syncDelay = false; }
+            return;
+        }
+        if (int.TryParse(value.Trim(), out int parsed) && parsed >= 0)
+        {
+            _syncDelay = true;
+            try { DelayBeforeMs = parsed; }
+            finally { _syncDelay = false; }
+        }
+        // Invalid text: keep last valid DelayBeforeMs, no exception.
+    }
+
     partial void OnSelectedAccountChanged(MemberOption? value)
     {
         AccountId = value?.Account.Id ?? Guid.Empty;
@@ -107,18 +144,23 @@ public sealed partial class PresetActionRow : ObservableObject
     [ObservableProperty]
     private int repeatIntervalMs;
 
-    public PresetActionRow Duplicate() => new()
+    public PresetActionRow Duplicate()
     {
-        SelectedAccount = SelectedAccount,
-        HasMissingAccount = HasMissingAccount && SelectedAccount is null,
-        Type = Type,
-        Key = Key,
-        Position = Position,
-        Button = Button,
-        DelayBeforeMs = DelayBeforeMs,
-        RepeatTimes = RepeatTimes,
-        RepeatIntervalMs = RepeatIntervalMs,
-    };
+        var copy = new PresetActionRow
+        {
+            SelectedAccount = SelectedAccount,
+            HasMissingAccount = HasMissingAccount && SelectedAccount is null,
+            Type = Type,
+            Key = Key,
+            Position = Position,
+            Button = Button,
+            DelayBeforeMs = DelayBeforeMs,
+            RepeatTimes = RepeatTimes,
+            RepeatIntervalMs = RepeatIntervalMs,
+        };
+        copy.DelayText = DelayText;
+        return copy;
+    }
 }
 
 /// <summary>In-tab preset editor (migrated from the PresetEditor window):
@@ -819,6 +861,12 @@ public partial class PresetEditorControl : UserControl
             if (row.SelectedAccount is null)
             {
                 Error(Strings.RowWithoutAccount(line));
+                return;
+            }
+            if (!string.IsNullOrWhiteSpace(row.DelayText)
+                && (!int.TryParse(row.DelayText.Trim(), out int parsedMs) || parsedMs < 0))
+            {
+                Error(Strings.InvalidDelay);
                 return;
             }
             if (row.DelayBeforeMs < 0)
