@@ -1,44 +1,40 @@
-# HANDOFF — estado em 2026-10-07, base 724d693 (+fix foco não commitado)
+# HANDOFF — estado em 2026-10-07, base 43093a8 (+lote UI não commitado)
 ## Pronto (validado)
 - Build solution 0 erros/0 warnings; testes 121/121 (Core 92 + Avalonia 29).
-- **Freeze do jogo resolvido (causa raiz provada por intervenção):**
-  1. Disparos sobrepostos (3 loops BAU + manual) compartilhavam
-     `_batchActive`/`_worker` no singleton `FocusedInputStrategy` — o
-     `EndBatch` de um jogava o outro no caminho legado (priming +
-     higiene `WA_INACTIVE`) = client "congelado". Fix: escopo por
-     disparo via `AsyncLocal<BatchScope>` (só esse arquivo; loops,
-     dispatcher e sender intactos). `fires=N` no log `[mode]` prova a
-     sobreposição (visto até 4).
-  2. Sync click usava o legado com higiene e congelava as desfocadas
-     (EA/SK, HWNDs confirmadas no log; WR focada intacta). Fix: 1 linha
-     no DI — `PostMessageBackgroundStrategy(applyHygiene: false)`
-     (priming mantido, só a cauda `WA_INACTIVE` removida; worker/sender
-     intocados, sender nunca teve higiene — correção ao CONTEXTO antigo).
-  3. Prova: loops + sync com **zero `HYGIENE`** no log + zero freeze
-     (antes: `HYGIENE` em alvos de loop durante loops).
-- Testes novos `FocusedInputStrategyTests` (5): sobreposição isolada
-  (falha no código antigo com o vazamento exato), sync fora de batch
-  imediato, buffer-silencioso-até-flush, `EndBatch` sem `Begin` no-op,
-  modo `legacy-anomaly`. Mutação verificada (antigo falha, novo passa).
-- Descoberta no caminho: `GetForegroundLockTimeoutMs()` é volátil
-  (launchers reescrevem em runtime) — testes fixam via seam interno
-  `TestLockTimeoutMs` + `InternalsVisibleTo` (sem mudança de
-  comportamento; produção segue amostrando por disparo).
-- `LoopController`: log por iteração (`loop iter=N` + estado por conta)
-  reaplicado — foi o que permitiu o diagnóstico; manter.
+- Lote UI aplicado, **não commitado** (usuário valida por prints/uso antes):
+  - Wheel-guard: `ComboBox` fechado não troca seleção, repassa ao
+    `ScrollViewer` (`App.axaml.cs`).
+  - Ícones cortados: `MinWidth/MinHeight 28` + conteúdo centralizado no
+    estilo `Button.icon` (`Styles/Shadcn.axaml`).
+  - Rename grupo: proxy `GroupCard.GroupName` + re-raise `MiniGroupTitle`
+    (`GroupViewModel.cs`, `GroupWindow.axaml`).
+  - Campo ms: proxy `DelayText` (vazio→0, inválido mantém + `InvalidDelay`
+    no save) + blink `Opacity` do loop (`MiniWindow.axaml`).
+  - Loading: arco geométrico (`Ellipse` + `StrokeDashArray`, gira no lugar
+    por construção) dentro do botão Play (`MainWindow.axaml`). Lição do
+    erro anterior: glifo em caixa menor que a fonte orbita; sem fonte,
+    sem órbita. `StrokeDashArray` exige vírgula (`8,28`), e o Toolkit
+    stripa sufixo `Async` (`RefreshStatusCommand` mantido).
+  - Sheets: `ClassBox`/`TagBox` com stretch + ícones (`ClassImageConverter`
+    aceita nome de arquivo; cards com URI inalterados).
+  - Mini compacto: fileira padding 1, sem margem, imagem 12px, fonte 11px,
+    ellipsis + tooltip; `ListBoxItem` padding/margin 0.
+  - Aba Todas: `RebuildAccounts` reconcilia por id (reutiliza cards,
+    preserva spinner/senha, `RefreshIdentity` p/ edição) — fim do lag.
+  - Freezes: scan online no pool (`RefreshServerRowsAsync`,
+    `FirePreset`, startup), `RebuildAll` reconcilia `GroupCard` por id,
+    scan >250 ms sempre loga, `OnClosed` com dispose isolado + log.
+  - Save: `PersistPresetAsync` com `Saving…` (resx EN+pt-BR), save no pool,
+    pós-save na UI, navegação antecipada no editor.
 ## Pronto (código, pendente de jogo/Windows)
-- Teste 100% do baú (F7/Y, F8/Y e teclas longas) — usuário fará depois.
-- Passo 2 de reserva (só se o freeze voltar): sync pelo click limpo
-  `SendUiClickCleanAsync` (sem priming). Higiene-off já provado basta.
-- Lote visual revertido segue pendente (spinner-arco, blink, rename,
-  wheel-guard, ms, mini compacto) — usuário prepara a lista.
+- Tudo acima: usuário valida por prints/uso (spinner, blink, rename, ms,
+  sheets, mini, tabs, freezes, save). Commit só após validação explícita.
+- Teste 100% do baú (F7/Y, F8/Y) segue pendente.
 ## Próximo passo
-- Usuário: lista de ajustes de UI → lote visual. Commit do fix de foco
-  só com pedido explícito (pendente).
+- Validação do usuário → ajustes → commits atômicos por bloco (pedido
+  explícito) → passo 2 do sync só se o freeze voltar.
 ## Backlog pós-validação (ponteiro p/ `doc/backlog.md`)
-- Inalterado. Dívida nova: `logs/FocusedInputStrategy.cs` + `.patch`
-  do agente externo (gitignored, apagar após incorporar de vez).
-- `codigo-teste/CONTEXTO.md` atualizado com o desfecho (sender bare,
-  patch, decisão da higiene).
+- Inalterado. Taskbar pausada; conta-pós-crash ignorado (pedido);
+  "loop em muitas contas" era skip de conta fechada (documentar).
 ## Perguntas abertas
 - Nada. Sem commit (pedido explícito pendente).
