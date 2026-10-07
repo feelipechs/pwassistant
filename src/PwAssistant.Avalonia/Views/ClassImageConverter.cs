@@ -23,6 +23,10 @@ public sealed class ClassImageConverter : IValueConverter
     {
         if (value is not string path || string.IsNullOrWhiteSpace(path))
             return null;
+        // Bare filenames (e.g. ClassInfo.ImageFile) resolve to the bundled
+        // class art; full URIs pass through untouched (cards keep working).
+        if (!path.Contains("://", StringComparison.Ordinal))
+            path = "avares://PwAssistant.Avalonia/Resources/Classes/" + path;
         return Cache.GetOrAdd(path, Load);
     }
 
