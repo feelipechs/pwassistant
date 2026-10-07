@@ -35,6 +35,14 @@ public sealed partial class AccountCard : ObservableObject
     [NotifyPropertyChangedFor(nameof(PlayGlyph))]
     private bool isLaunching;
 
+    /// <summary>
+    /// Tab filter flag (SPA-like cache): Accounts always holds every card of
+    /// the server exactly once; the container collapses when false, so tab
+    /// switches never re-realize anything. Set only by RebuildAccounts.
+    /// </summary>
+    [ObservableProperty]
+    private bool isVisibleInTab = true;
+
     private string? _revealedPassword;
 
     public AccountCard(Account model)
@@ -94,6 +102,15 @@ public sealed partial class AccountCard : ObservableObject
     }
 
     public void Refresh() => Status = Model.Status;
+
+    /// <summary>Refreshes Model-derived bindings after an edit (cards are
+    /// now reused across rebuilds instead of recreated).</summary>
+    public void RefreshIdentity()
+    {
+        OnPropertyChanged(nameof(DisplayName));
+        OnPropertyChanged(nameof(ClassImagePath));
+        OnPropertyChanged(nameof(ClassBadgeText));
+    }
 }
 
 /// <summary>Sidebar row: server name plus live account/online counts.</summary>
@@ -185,16 +202,20 @@ public sealed partial class MainViewModel : ObservableObject
     private bool isBulkRunning;
 
     /// <summary>Bulk toggle label for the selected tab (never "All"):
-    /// cancel while running, close when all online, open otherwise.</summary>
+    /// cancel while running, close when all online, open otherwise.
+    /// Only tab-visible cards count (Accounts always holds every card).</summary>
     public string BulkActionText
     {
         get
         {
             if (IsBulkRunning)
                 return AppStrings.CancelDialog;
-            if (SelectedServer is null || SelectedTab is null || Accounts.Count == 0)
+            if (SelectedServer is null || SelectedTab is null)
                 return AppStrings.OpenAll;
-            return Accounts.All(c => c.Model.Status == AccountStatus.Online)
+            List<AccountCard> cards = Accounts.Where(c => c.IsVisibleInTab).ToList();
+            if (cards.Count == 0)
+                return AppStrings.OpenAll;
+            return cards.All(c => c.Model.Status == AccountStatus.Online)
                 ? AppStrings.CloseAll
                 : AppStrings.OpenAll;
         }
@@ -361,20 +382,46 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Membership reconcile (add/remove/reorder, containers realized once)
+    /// plus the tab filter as a visibility flag: switching tabs only flips
+    /// booleans, never touches the collection — the "All" tab lag is gone.
+    /// Session state (launching spinner, revealed password) always survives.
+    /// </summary>
     private void RebuildAccounts()
     {
-        Accounts.Clear();
         if (SelectedServer is null)
         {
+            Accounts.Clear();
             OnPropertyChanged(nameof(BulkActionText));
             return;
         }
-        IEnumerable<Account> scope = SelectedTab is null
-            ? SelectedServer.Model.Accounts
-            : SelectedServer.Model.Accounts.Where(a =>
-                string.Equals(a.Tag, SelectedTab.Name, StringComparison.OrdinalIgnoreCase));
-        foreach (Account account in scope)
-            Accounts.Add(new AccountCard(account));
+        List<Account> wanted = SelectedServer.Model.Accounts.ToList();
+        var wantedIds = new HashSet<Guid>(wanted.Select(a => a.Id));
+        for (int i = Accounts.Count - 1; i >= 0; i--)
+            if (!wantedIds.Contains(Accounts[i].Model.Id))
+                Accounts.RemoveAt(i);
+        var byId = Accounts.ToDictionary(c => c.Model.Id);
+        for (int i = 0; i < wanted.Count; i++)
+        {
+            if (byId.TryGetValue(wanted[i].Id, out AccountCard? existing))
+            {
+                int old = Accounts.IndexOf(existing);
+                if (old != i)
+                    Accounts.Move(old, i);
+                existing.Refresh();
+                existing.RefreshIdentity();
+            }
+            else
+            {
+                var card = new AccountCard(wanted[i]);
+                Accounts.Insert(i, card);
+                byId[wanted[i].Id] = card;
+            }
+        }
+        foreach (AccountCard card in Accounts)
+            card.IsVisibleInTab = SelectedTab is null || string.Equals(
+                card.Model.Tag, SelectedTab.Name, StringComparison.OrdinalIgnoreCase);
         OnPropertyChanged(nameof(BulkActionText));
     }
 
@@ -643,7 +690,7 @@ public sealed partial class MainViewModel : ObservableObject
             return;
         }
         if (SelectedServer is null || SelectedTab is null) return;
-        List<AccountCard> cards = Accounts.ToList();
+        List<AccountCard> cards = Accounts.Where(c => c.IsVisibleInTab).ToList();
         if (cards.Count == 0) return;
 
         _state.RefreshOnlineStatus();

@@ -179,7 +179,9 @@
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:AccountCard">
-              <Border Classes="squarecard">
+              <!-- Tab filter without re-realization: the card collapses per
+                   flag while its container stays alive (see IsVisibleInTab). -->
+              <Border Classes="squarecard" IsVisible="{Binding IsVisibleInTab}">
                 <StackPanel>
                   <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="&#xE711;"
