@@ -26,9 +26,31 @@ public sealed class FocusedInputStrategy : IInputStrategy
     private readonly FileLogger _log;
     private readonly Func<Guid, int?> _pidResolver;
     private readonly SenderRunner _senderRunner;
-    private bool _batchActive;
-    private uint _lockTimeoutMs = uint.MaxValue;
-    private readonly Dictionary<Guid, WorkerBatch?> _worker = new();
+
+    /// <summary>
+    /// Per-fire batch state. The strategy is a singleton but fires overlap
+    /// (several loops + manual fires), so mode, buffers and lock ownership
+    /// must belong to the fire, never to the strategy: otherwise one fire
+    /// ending flips another one mid-flight onto the legacy in-process path
+    /// (fake prime + WA_INACTIVE hygiene), clears its buffers, or unlocks
+    /// under it. Flows through the async call chain of FireAsync only.
+    /// </summary>
+    private sealed class BatchScope
+    {
+        public bool Worker { get; init; }
+        public bool HoldsLock { get; set; }
+        public Dictionary<Guid, WorkerBatch?> Batches { get; } = new();
+    }
+
+    private readonly AsyncLocal<BatchScope?> _scope = new();
+    private int _activeFires;
+
+    /// <summary>
+    /// Test seam: pins the volatile OS foreground-lock timeout sample so
+    /// worker/legacy routing is deterministic under test. Null (default)
+    /// reads the live OS value. Set once before any batch, never per fire.
+    /// </summary>
+    internal uint? TestLockTimeoutMs { get; set; }
 
     /// <summary>
     /// System-wide foreground lock nesting: LockSetForegroundWindow is a
@@ -36,8 +58,6 @@ public sealed class FocusedInputStrategy : IInputStrategy
     /// manual) must not let the first EndBatch unlock under the second.
     /// </summary>
     private int _lockHolds;
-
-    private int _lockWin32;
 
     public event Action<SendTrace>? Traced
     {
@@ -62,16 +82,17 @@ public sealed class FocusedInputStrategy : IInputStrategy
     /// live mirror clicks bypass buffering and stay immediate). Never on
     /// lock-disabled machines (where every call is granted: legacy
     /// in-process sends with no focus call at all are the only
-    /// switch-free option).
+    /// switch-free option). Calls made outside a fire (SyncController's
+    /// live mirror clicks) have no scope and are always immediate.
     /// </summary>
-    private bool WorkerActive =>
-        _batchActive && !WindowDiagnostics.IsForegroundLockDisabled(_lockTimeoutMs);
+    private BatchScope? ActiveScope => _scope.Value is { Worker: true } scope ? scope : null;
 
     public Task SendKeyAsync(IWindowTarget target, int virtualKey, CancellationToken cancellationToken = default)
     {
-        if (!WorkerActive)
+        BatchScope? scope = ActiveScope;
+        if (scope is null)
             return _inner.SendKeyAsync(target, virtualKey, cancellationToken);
-        WorkerBatch? batch = EnsureWorkerBatch(target);
+        WorkerBatch? batch = EnsureWorkerBatch(scope, target);
         if (batch is null)
             return _inner.SendKeyAsync(target, virtualKey, cancellationToken);
         batch.AddKey(virtualKey);
@@ -82,9 +103,10 @@ public sealed class FocusedInputStrategy : IInputStrategy
         IWindowTarget target, double relativeX, double relativeY,
         MouseButton button = MouseButton.Left, CancellationToken cancellationToken = default)
     {
-        if (!WorkerActive)
+        BatchScope? scope = ActiveScope;
+        if (scope is null)
             return _inner.SendUiClickAsync(target, relativeX, relativeY, button, cancellationToken);
-        WorkerBatch? batch = EnsureWorkerBatch(target);
+        WorkerBatch? batch = EnsureWorkerBatch(scope, target);
         if (batch is null)
             return _inner.SendUiClickAsync(target, relativeX, relativeY, button, cancellationToken);
         batch.AddClick(relativeX, relativeY, button);
@@ -97,12 +119,12 @@ public sealed class FocusedInputStrategy : IInputStrategy
     /// Accounts with no known PID fall back to immediate legacy sends
     /// (same as the pre-worker default path).
     /// </summary>
-    private WorkerBatch? EnsureWorkerBatch(IWindowTarget target)
+    private WorkerBatch? EnsureWorkerBatch(BatchScope scope, IWindowTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
-        lock (_worker)
+        lock (scope.Batches)
         {
-            if (_worker.TryGetValue(target.AccountId, out WorkerBatch? existing))
+            if (scope.Batches.TryGetValue(target.AccountId, out WorkerBatch? existing))
                 return existing;
             int? pid = null;
             try
@@ -114,7 +136,7 @@ public sealed class FocusedInputStrategy : IInputStrategy
                 // PID lookup is best effort; unknown falls back to legacy.
             }
             WorkerBatch? batch = pid.HasValue ? new WorkerBatch(pid.Value) : null;
-            _worker[target.AccountId] = batch;
+            scope.Batches[target.AccountId] = batch;
             return batch;
         }
     }
@@ -122,9 +144,10 @@ public sealed class FocusedInputStrategy : IInputStrategy
     public Task SleepAsync(IWindowTarget target, int millisecondsDelay, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(target);
-        if (WorkerActive)
+        BatchScope? scope = ActiveScope;
+        if (scope is not null)
         {
-            WorkerBatch? batch = EnsureWorkerBatch(target);
+            WorkerBatch? batch = EnsureWorkerBatch(scope, target);
             if (batch is not null)
             {
                 batch.AddSleep(millisecondsDelay);
@@ -137,15 +160,16 @@ public sealed class FocusedInputStrategy : IInputStrategy
     public async Task FlushAsync(IWindowTarget target, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(target);
-        if (!WorkerActive)
+        BatchScope? scope = ActiveScope;
+        if (scope is null)
             return;
         WorkerBatch? batch;
-        lock (_worker)
+        lock (scope.Batches)
         {
-            if (!_worker.TryGetValue(target.AccountId, out batch) || batch is null || batch.IsEmpty)
+            if (!scope.Batches.TryGetValue(target.AccountId, out batch) || batch is null || batch.IsEmpty)
                 return;
         }
-        await FlushBatchAsync(target.AccountId, batch, cancellationToken).ConfigureAwait(false);
+        await FlushBatchAsync(scope, target.AccountId, batch, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -155,7 +179,7 @@ public sealed class FocusedInputStrategy : IInputStrategy
     /// failure (never double-sent). Spawn cost doubles as the
     /// inter-account gap, so no extra delay here.
     /// </summary>
-    private async Task FlushBatchAsync(Guid accountId, WorkerBatch batch, CancellationToken cancellationToken)
+    private async Task FlushBatchAsync(BatchScope scope, Guid accountId, WorkerBatch batch, CancellationToken cancellationToken)
     {
         // Never spawn a sender just to kill it: a canceled batch stays
         // unflushed (the fire is already tearing down).
@@ -170,48 +194,55 @@ public sealed class FocusedInputStrategy : IInputStrategy
         }
         finally
         {
-            lock (_worker)
+            lock (scope.Batches)
             {
-                _worker.Remove(accountId);
+                scope.Batches.Remove(accountId);
             }
         }
     }
 
+    /// <summary>
+    /// Opens this fire's own batch scope (call from the fire's async flow;
+    /// the scope never leaks to the caller's context nor to other fires).
+    /// </summary>
     public void BeginBatch()
     {
-        lock (_worker)
-        {
-            _worker.Clear();
-        }
-        _batchActive = true;
         // Fresh per fire: the lock timeout is volatile by design (any
         // process may rewrite it at runtime), so a startup sample would lie.
-        _lockTimeoutMs = WindowDiagnostics.GetForegroundLockTimeoutMs();
-        string mode = WindowDiagnostics.IsForegroundLockDisabled(_lockTimeoutMs) ? "legacy-anomaly" : "worker";
-        _log.Info($"  [mode] {mode} timeoutMs={_lockTimeoutMs}");
-        if (mode == "worker" && AcquireForegroundLock())
-            _log.Info($"  [lock] ok=1 win32=0");
-        else if (mode == "worker")
-            _log.Info($"  [lock] ok=0 win32={_lockWin32}");
+        // Tests pin it via TestLockTimeoutMs for deterministic routing.
+        uint timeoutMs = TestLockTimeoutMs ?? WindowDiagnostics.GetForegroundLockTimeoutMs();
+        bool worker = !WindowDiagnostics.IsForegroundLockDisabled(timeoutMs);
+        var scope = new BatchScope { Worker = worker };
+        _scope.Value = scope;
+
+        int fires = Interlocked.Increment(ref _activeFires);
+        _log.Info($"  [mode] {(worker ? "worker" : "legacy-anomaly")} timeoutMs={timeoutMs} fires={fires}");
+        if (!worker)
+            return;
+        scope.HoldsLock = AcquireForegroundLock(out int win32);
+        _log.Info($"  [lock] ok={(scope.HoldsLock ? 1 : 0)} win32={win32}");
     }
 
     /// <summary>
-    /// Flushes any leftover worker batches (normally empty: the executor
-    /// flushes per account) and releases the foreground lock. Never
-    /// restores the previous foreground: the restore call itself comes
-    /// from our input-latched process and would visibly yank focus back,
-    /// which is exactly what background parity forbids (the Helper has no
-    /// restore either).
+    /// Flushes any leftover worker batches of THIS fire (normally empty:
+    /// the executor flushes per account) and releases the foreground lock
+    /// this fire took. Never restores the previous foreground: the restore
+    /// call itself comes from our input-latched process and would visibly
+    /// yank focus back, which is exactly what background parity forbids
+    /// (the Helper has no restore either).
     /// </summary>
     public async Task EndBatchAsync(CancellationToken cancellationToken = default)
     {
+        BatchScope? scope = _scope.Value;
+        if (scope is null)
+            return;
         try
         {
             List<KeyValuePair<Guid, WorkerBatch?>> leftovers;
-            lock (_worker)
+            lock (scope.Batches)
             {
-                leftovers = new List<KeyValuePair<Guid, WorkerBatch?>>(_worker);
-                _worker.Clear();
+                leftovers = new List<KeyValuePair<Guid, WorkerBatch?>>(scope.Batches);
+                scope.Batches.Clear();
             }
             foreach (KeyValuePair<Guid, WorkerBatch?> entry in leftovers)
             {
@@ -219,7 +250,7 @@ public sealed class FocusedInputStrategy : IInputStrategy
                     continue;
                 try
                 {
-                    await FlushBatchAsync(entry.Key, batch, cancellationToken).ConfigureAwait(false);
+                    await FlushBatchAsync(scope, entry.Key, batch, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -236,9 +267,15 @@ public sealed class FocusedInputStrategy : IInputStrategy
         }
         finally
         {
-            _batchActive = false;
-            // Release AFTER leftover flushes ran under it.
-            ReleaseForegroundLock();
+            _scope.Value = null;
+            Interlocked.Decrement(ref _activeFires);
+            // Release AFTER leftover flushes ran under it, and only the
+            // hold this fire actually took.
+            if (scope.HoldsLock)
+            {
+                scope.HoldsLock = false;
+                ReleaseForegroundLock();
+            }
         }
     }
 
@@ -247,15 +284,12 @@ public sealed class FocusedInputStrategy : IInputStrategy
     /// the OS; nested fires share it). A failed take releases its slot
     /// immediately: degraded mode is today's behavior, never an abort.
     /// </summary>
-    private bool AcquireForegroundLock()
+    private bool AcquireForegroundLock(out int win32Error)
     {
+        win32Error = 0;
         if (Interlocked.Increment(ref _lockHolds) > 1)
-        {
-            _lockWin32 = 0;
             return true;
-        }
-        bool ok = WindowFocus.TryLockForeground(out int win32);
-        _lockWin32 = win32;
+        bool ok = WindowFocus.TryLockForeground(out win32Error);
         if (!ok)
             Interlocked.Decrement(ref _lockHolds);
         return ok;
