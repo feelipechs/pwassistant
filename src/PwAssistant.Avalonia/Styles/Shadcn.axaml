@@ -44,11 +44,17 @@
     <Setter Property="Background" Value="{DynamicResource Brush.PrimaryHover}" />
   </Style>
 
-  <!-- Icon: transparent glyph button (MDL2 set per-button via FontFamily). -->
+  <!-- Icon: transparent glyph button (MDL2 set per-button via FontFamily).
+       Min size keeps glyphs from clipping when no explicit size is set
+       (explicit Width/Height on the button still win). -->
   <Style Selector="Button.icon">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource Brush.MutedForeground}" />
     <Setter Property="Padding" Value="4" />
+    <Setter Property="MinWidth" Value="28" />
+    <Setter Property="MinHeight" Value="28" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <!-- Literal (not {StaticResource IconFont}): app-level Styles cannot see
          Application.Resources at load; windows resolve it fine locally. -->
     <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
@@ -61,6 +67,30 @@
   <Style Selector="Button.icon.close:pointerover">
     <Setter Property="Background" Value="{DynamicResource Brush.DestructiveSolid}" />
     <Setter Property="Foreground" Value="{DynamicResource Brush.OnDestructiveSolid}" />
+  </Style>
+
+  <!-- Popup menus (incl. the managed tray menu): compact, native-like,
+       arrow cursor instead of the button hand. -->
+  <Style Selector="MenuItem">
+    <Setter Property="Cursor" Value="Arrow" />
+    <Setter Property="Padding" Value="8,4" />
+  </Style>
+
+  <!-- Small: compact toggle for dense rows (Mini header + pills).
+       The track shrinks to 26px via the Semi Small variant; the template's
+       empty On/Off presenters (visible with Margin 8,4 even without content)
+       are hidden so they don't push labels away. -->
+  <Style Selector="ToggleSwitch.Small">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Height" Value="16" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="ToggleSwitch.Small /template/ ContentPresenter#PART_OnContentPresenter">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ToggleSwitch.Small /template/ ContentPresenter#PART_OffContentPresenter">
+    <Setter Property="IsVisible" Value="False" />
   </Style>
 
   <!-- Outline: bordered ghost button. -->

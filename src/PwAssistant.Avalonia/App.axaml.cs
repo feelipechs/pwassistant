@@ -1,7 +1,10 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
 using PwAssistant.Avalonia.Services;
 using PwAssistant.Avalonia.ViewModels;
@@ -28,8 +31,18 @@ public sealed class App : Application
         ThemeManager.Restore();
         ActualThemeVariantChanged += (_, _) => ThemeManager.RefreshAccent();
 
-        // Avalonia handles nested scrolling natively: the WPF wheel-forwarding
-        // class handlers (ComboBox/ScrollViewer) are intentionally not ported.
+        // Closed ComboBoxes never change selection on wheel: the gesture
+        // belongs to the surrounding ScrollViewer (WPF parity). Open
+        // dropdowns keep the native wheel behavior.
+        InputElement.PointerWheelChangedEvent.AddClassHandler<ComboBox>((box, e) =>
+        {
+            if (box.IsDropDownOpen) return;
+            e.Handled = true;
+            ScrollViewer? scroller = box.FindAncestorOfType<ScrollViewer>();
+            if (scroller is null) return;
+            if (e.Delta.Y > 0) scroller.LineUp();
+            else if (e.Delta.Y < 0) scroller.LineDown();
+        });
 
         var services = new ServiceCollection();
         var log = new FileLogger(FileLogger.DefaultDirectory());

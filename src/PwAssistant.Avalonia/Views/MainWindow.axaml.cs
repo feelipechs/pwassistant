@@ -67,6 +67,7 @@ public partial class MainWindow : Window
         _tray.OpenRequested += (_, _) => RestoreFromBackground();
         _tray.ExitRequested += (_, _) =>
         {
+            _log.Info("Shutdown: exit requested from tray.");
             _allowClose = true;
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 desktop.Shutdown();
@@ -144,6 +145,7 @@ public partial class MainWindow : Window
         _sink.MessageReceived += OnSinkMessage;
         _hotkeys ??= new GlobalHotKeyManager(_sink.Handle);
 
+        int registered = 0;
         foreach (Preset preset in _state.Data.Presets.Where(p => !string.IsNullOrWhiteSpace(p.Hotkey)))
         {
             try
@@ -151,6 +153,7 @@ public partial class MainWindow : Window
                 (uint modifiers, uint vk) = ParseHotkey(preset.Hotkey!);
                 Preset captured = preset;
                 _hotkeys.Register(modifiers, vk, () => FireFromHotkey(captured));
+                registered++;
                 _log.Info($"Hotkey registered '{preset.Hotkey}' for preset {preset.Name}.");
             }
             catch (Exception ex)
@@ -160,6 +163,7 @@ public partial class MainWindow : Window
             }
         }
         _hotkeysRegistered = true;
+        _log.Info($"Hotkeys registered: {registered} of {_state.Data.Presets.Count} presets.");
     }
 
     private void OnSinkMessage(uint msg, IntPtr wParam, IntPtr lParam)
@@ -236,14 +240,24 @@ public partial class MainWindow : Window
             SendToBackground();
             return;
         }
+        _log.Info("Shutdown: main window closing.");
         base.OnClosing(e);
     }
 
     protected override void OnClosed(EventArgs e)
     {
-        _sink?.Dispose();
-        _hotkeys?.Dispose();
-        _tray.Dispose();
+        // One failing dispose must never skip the rest (or base.OnClosed):
+        // a fault here used to surface as a close-time crash with no log.
+        // Timed per dispose: the tray-exit delay lives in this teardown
+        // (measured ~2 s with all provider stages at ~0 ms).
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        try { _sink?.Dispose(); } catch (Exception ex) { _log.Warn($"Close: sink dispose failed: {ex.Message}"); }
+        _log.Info($"Shutdown: sink disposed ({sw.ElapsedMilliseconds} ms).");
+        try { _hotkeys?.Dispose(); } catch (Exception ex) { _log.Warn($"Close: hotkeys dispose failed: {ex.Message}"); }
+        _log.Info($"Shutdown: hotkeys disposed ({sw.ElapsedMilliseconds} ms).");
+        try { _tray.Dispose(); } catch (Exception ex) { _log.Warn($"Close: tray dispose failed: {ex.Message}"); }
+        sw.Stop();
+        _log.Info($"Shutdown: main window closed ({sw.ElapsedMilliseconds} ms).");
         base.OnClosed(e);
     }
 }
