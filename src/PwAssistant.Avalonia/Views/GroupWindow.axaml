@@ -82,7 +82,7 @@
                               CommandParameter="{Binding}"
                               Classes="icon"/>
                       <StackPanel>
-                        <TextBlock Text="{Binding Group.Name}" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
+                        <TextBlock Text="{Binding GroupName}" FontWeight="SemiBold" FontSize="{StaticResource Font.Size.Md}"
                                    Foreground="{DynamicResource Brush.Foreground}" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="{Binding Subtitle}" FontSize="{StaticResource Font.Size.Sm}"
                                    Foreground="{DynamicResource Brush.MutedForeground}" TextTrimming="CharacterEllipsis"/>

@@ -118,6 +118,9 @@ public sealed partial class GroupCard : ObservableObject
 
     public int MemberCount => Members.Count;
 
+    /// <summary>Bindable group name (Group itself is a POCO without INPC).</summary>
+    public string GroupName => Group.Name;
+
     /// <summary>"N membros • M online • K presets".</summary>
     public string Subtitle => string.Format(
         AppStrings.GroupCardStats, MemberCount, OnlineCount, PresetCount);
@@ -129,7 +132,12 @@ public sealed partial class GroupCard : ObservableObject
         OnPropertyChanged(nameof(MemberCount));
     }
 
-    public void NotifyRenamed() => OnPropertyChanged(nameof(Group));
+    public void NotifyRenamed()
+    {
+        OnPropertyChanged(nameof(Group));
+        OnPropertyChanged(nameof(GroupName));
+        OnPropertyChanged("Group.Name");
+    }
 }
 
 public sealed partial class GroupViewModel : ObservableObject
@@ -497,6 +505,7 @@ public sealed partial class GroupViewModel : ObservableObject
             Groups.Insert(index, card.Group);
         }
         card.NotifyRenamed();
+        OnPropertyChanged(nameof(MiniGroupTitle));
         await _state.SaveAsync().ConfigureAwait(false);
         ToastService.Show(AppStrings.ToastSaved(name));
     }
