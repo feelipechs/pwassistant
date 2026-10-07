@@ -17,6 +17,7 @@ public sealed class HotkeyMessageWindow : IDisposable
     private readonly NativeMethods.WindowProc _proc;
     private readonly Thread _pump;
     private IntPtr _handle;
+    private uint _pumpThreadId;
     private bool _disposed;
 
     public event Action<uint, IntPtr, IntPtr>? MessageReceived;
@@ -52,6 +53,7 @@ public sealed class HotkeyMessageWindow : IDisposable
 
     private void Pump()
     {
+        _pumpThreadId = NativeMethods.GetCurrentThreadId();
         while (NativeMethods.GetMessageW(out NativeMethods.MSG msg, IntPtr.Zero, 0, 0) > 0)
         {
             NativeMethods.TranslateMessage(ref msg);
@@ -81,6 +83,8 @@ public sealed class HotkeyMessageWindow : IDisposable
         return NativeMethods.DefWindowProcW(hWnd, msg, wParam, lParam);
     }
 
+    private const uint WM_QUIT = 0x0012;
+
     public void Dispose()
     {
         if (_disposed) return;
@@ -89,9 +93,15 @@ public sealed class HotkeyMessageWindow : IDisposable
         IntPtr handle = Interlocked.Exchange(ref _handle, IntPtr.Zero);
         if (handle != IntPtr.Zero)
         {
+            // Wake the pump two ways: WM_CLOSE tears the window down on the
+            // healthy path; WM_QUIT straight to the pump thread unblocks
+            // GetMessage even when dispatch is stuck. Teardown never waits
+            // long: the 2 s tray-exit stall was this Join expiring.
             NativeMethods.PostMessageW(handle, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-            // WM_CLOSE stops the pump; never block teardown long.
-            _pump.Join(TimeSpan.FromSeconds(2));
+            uint threadId = _pumpThreadId;
+            if (threadId != 0)
+                NativeMethods.PostThreadMessageW(threadId, WM_QUIT, IntPtr.Zero, IntPtr.Zero);
+            _pump.Join(TimeSpan.FromMilliseconds(500));
         }
         GC.SuppressFinalize(this);
     }
