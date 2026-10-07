@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PwAssistant.Avalonia.Services;
@@ -762,7 +763,11 @@ public sealed partial class GroupViewModel : ObservableObject
         _dialogs.LoadPresetInTab(this, preset, isNew: false);
     }
 
-    /// <summary>Commits an editor save (new presets join the collections).</summary>
+    /// <summary>
+    /// Commits an editor save (new presets join the collections). Shows a
+    /// saving indicator first: disk + refresh + hotkey re-register take a
+    /// moment, and the UI must never look frozen meanwhile.
+    /// </summary>
     public async Task PersistPresetAsync(Preset preset, bool isNew)
     {
         if (isNew && !_state.Data.Presets.Contains(preset))
@@ -770,12 +775,24 @@ public sealed partial class GroupViewModel : ObservableObject
             _state.Data.Presets.Add(preset);
             Presets.Add(preset);
         }
-        await _state.SaveAsync();
-        RefreshMiniRows();
-        Refresh();
-        HotkeysChanged?.Invoke();
-        _state.NotifyHotkeysChanged();
-        ToastService.Show(AppStrings.ToastSaved(preset.Name));
+        StatusMessage = AppStrings.Saving;
+        try
+        {
+            await _state.SaveAsync().ConfigureAwait(false);
+            // Back on UI: bound collections, hotkeys and toast (as before).
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                RefreshMiniRows();
+                Refresh();
+                HotkeysChanged?.Invoke();
+                _state.NotifyHotkeysChanged();
+                ToastService.Show(AppStrings.ToastSaved(preset.Name));
+            });
+        }
+        finally
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => StatusMessage = string.Empty);
+        }
     }
 
     [RelayCommand]

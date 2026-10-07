@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -99,8 +101,11 @@ public sealed partial class PresetActionRow : ObservableObject
         }
     }
 
-    public int RepeatTimes { get; set; } = 1;
-    public int RepeatIntervalMs { get; set; }
+    [ObservableProperty]
+    private int repeatTimes = 1;
+
+    [ObservableProperty]
+    private int repeatIntervalMs;
 
     public PresetActionRow Duplicate() => new()
     {
@@ -136,6 +141,20 @@ public partial class PresetEditorControl : UserControl
 
     private Preset? _editing;
     private bool _isNew;
+
+    /// <summary>
+    /// True while a save persist runs in the host: further Save clicks are
+    /// ignored (same preset object mutated twice would race the serializer).
+    /// Cleared by <see cref="NotifySaveCompleted"/>.
+    /// </summary>
+    private bool _saving;
+
+    /// <summary>Called by the host when the persist it was notified of ends.</summary>
+    public void NotifySaveCompleted()
+    {
+        _saving = false;
+        RefreshDirtyState();
+    }
 
     public ObservableCollection<PresetActionRow> Rows { get; } = new();
     public ObservableCollection<MemberOption> MemberAccounts { get; } = new();
@@ -173,7 +192,32 @@ public partial class PresetEditorControl : UserControl
         RecordHotkeyButton.Content = Strings.RecordHotkey;
         HotkeyHintLabel.Text = Strings.HotkeyHint;
         EmptyHintLabel.Text = Strings.SelectPresetHint;
+        Rows.CollectionChanged += OnRowsChanged;
+        NameBox.TextChanged += (_, _) => RefreshDirtyState();
         ClearView();
+    }
+
+    /// <summary>
+    /// Live dirty tracking for the conditional Save button: any row, name,
+    /// hotkey or list change re-evaluates the snapshot comparison.
+    /// </summary>
+    private void OnRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+            foreach (PresetActionRow row in e.OldItems.OfType<PresetActionRow>())
+                row.PropertyChanged -= OnRowChanged;
+        if (e.NewItems is not null)
+            foreach (PresetActionRow row in e.NewItems.OfType<PresetActionRow>())
+                row.PropertyChanged += OnRowChanged;
+        RefreshDirtyState();
+    }
+
+    private void OnRowChanged(object? sender, PropertyChangedEventArgs e) => RefreshDirtyState();
+
+    private void RefreshDirtyState()
+    {
+        if (SaveButton is null) return;
+        SaveButton.IsVisible = _editing is not null && !_saving && IsDirty();
     }
 
     /// <summary>Loads a preset for editing (replaces any current content).</summary>
@@ -181,6 +225,9 @@ public partial class PresetEditorControl : UserControl
     {
         _editing = preset;
         _isNew = isNew;
+        // A new draft owns its own save lifecycle (the previous preset
+        // object, if still persisting, is untouched by this editor now).
+        _saving = false;
         ErrorLabel.Text = string.Empty;
         MemberAccounts.Clear();
         var optionsById = new Dictionary<Guid, MemberOption>();
@@ -215,6 +262,7 @@ public partial class PresetEditorControl : UserControl
         EmptyState.IsVisible = false;
         ImportPresetButton.IsEnabled = true;
         ExportPresetButton.IsEnabled = true;
+        RefreshDirtyState();
     }
 
     /// <summary>Member scope for a group (all accounts when unknown).</summary>
@@ -263,6 +311,7 @@ public partial class PresetEditorControl : UserControl
     {
         _editing = null;
         _isNew = false;
+        _saving = false;
         Rows.Clear();
         MemberAccounts.Clear();
         NameBox.Text = string.Empty;
@@ -273,6 +322,7 @@ public partial class PresetEditorControl : UserControl
         EmptyState.IsVisible = true;
         ImportPresetButton.IsEnabled = false;
         ExportPresetButton.IsEnabled = false;
+        RefreshDirtyState();
     }
 
     private string _recordedHotkey = string.Empty;
@@ -347,8 +397,11 @@ public partial class PresetEditorControl : UserControl
         e.Handled = true;
     }
 
-    private void UpdateHotkeyLabel() =>
+    private void UpdateHotkeyLabel()
+    {
         HotkeyValueLabel.Text = string.IsNullOrEmpty(_recordedHotkey) ? Strings.NoHotkey : _recordedHotkey;
+        RefreshDirtyState();
+    }
 
     private static string? MapHotkeyKey(Key key)
     {
@@ -736,7 +789,7 @@ public partial class PresetEditorControl : UserControl
 
     private void OnSave(object? sender, RoutedEventArgs e)
     {
-        if (_editing is null) return;
+        if (_editing is null || _saving) return;
         ErrorLabel.Text = string.Empty;
         string name = NameBox.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(name))
@@ -805,8 +858,11 @@ public partial class PresetEditorControl : UserControl
         _editing.Actions.Clear();
         _editing.Actions.AddRange(rebuilt);
         // Saved state is the new clean baseline (else every later
-        // navigation asks to discard).
+        // navigation asks to discard). The host persists in background and
+        // calls back NotifySaveCompleted; until then Save stays hidden.
         _initial = TakeSnapshot();
+        _saving = true;
+        RefreshDirtyState();
         Saved?.Invoke(_editing, _isNew);
     }
 

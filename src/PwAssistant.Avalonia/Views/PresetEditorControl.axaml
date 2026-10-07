@@ -8,8 +8,8 @@
   <Grid>
     <DockPanel Margin="16,12,16,12">
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0" Spacing="8">
-        <Button Content="{x:Static res:Strings.CancelDialog}" Click="OnCancel" MinWidth="110" Classes="outline" />
-        <Button Content="{x:Static res:Strings.Save}" Click="OnSave" MinWidth="110" Classes="primary" />
+        <Button Content="{x:Static res:Strings.Close}" Click="OnCancel" MinWidth="110" Classes="outline" />
+        <Button x:Name="SaveButton" Content="{x:Static res:Strings.Save}" Click="OnSave" MinWidth="110" Classes="primary" IsVisible="False" />
       </StackPanel>
       <Border DockPanel.Dock="Top" Background="{DynamicResource Brush.Card}" BorderBrush="{DynamicResource Brush.Border}"
               BorderThickness="1" CornerRadius="8" Padding="12">

@@ -132,6 +132,7 @@
   <data name="ToastAdded" xml:space="preserve"><value>{0} Added</value></data>
   <data name="ToastRemoved" xml:space="preserve"><value>{0} Removed</value></data>
   <data name="ToastSaved" xml:space="preserve"><value>{0} Saved</value></data>
+  <data name="Saving" xml:space="preserve"><value>Saving…</value></data>
   <data name="ToastOpened" xml:space="preserve"><value>{0} Started</value></data>
   <data name="ToastClosed" xml:space="preserve"><value>{0} Stopped</value></data>
   <data name="ToastFailed" xml:space="preserve"><value>{0} Failed: {1}</value></data>

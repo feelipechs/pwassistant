@@ -129,17 +129,31 @@ public partial class GroupWindow : Window
         ShowCardsTab();
     }
 
-    /// <summary>Loads a preset into the tab editor.</summary>
-    public void LoadPresetInTab(Preset preset, bool isNew)
+    /// <summary>
+    /// Loads a preset into the tab editor, guarding unsaved edits first
+    /// (same discard question as leaving the tab).
+    /// </summary>
+    public async void LoadPresetInTab(Preset preset, bool isNew)
     {
+        if (_editor.HasUnsavedChanges() && !await _editor.ConfirmDiscardAsync())
+            return;
         _editor.LoadPreset(preset, isNew);
         ShowPresetsTab();
     }
 
     private async void OnPresetEditorSaved(Preset preset, bool isNew)
     {
-        await ViewModel.PersistPresetAsync(preset, isNew);
-        ShowCardsTab();
+        // Stay in the editor for continuous editing: the persist reports
+        // progress through StatusMessage/toast instead of holding the tab.
+        // The editor re-arms Save via NotifySaveCompleted below.
+        try
+        {
+            await ViewModel.PersistPresetAsync(preset, isNew);
+        }
+        finally
+        {
+            _editor.NotifySaveCompleted();
+        }
     }
 
     private void OnPresetEditorCancelled() => ShowCardsTab();

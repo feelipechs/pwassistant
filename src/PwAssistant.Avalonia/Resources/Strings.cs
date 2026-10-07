@@ -155,6 +155,7 @@ public static class Strings
         string.Format(Get(nameof(ToastRemoved)), name);
     public static string ToastSaved(string name) =>
         string.Format(Get(nameof(ToastSaved)), name);
+    public static string Saving => Get(nameof(Saving));
     public static string ToastOpened(string name) =>
         string.Format(Get(nameof(ToastOpened)), name);
     public static string ToastClosed(string name) =>
