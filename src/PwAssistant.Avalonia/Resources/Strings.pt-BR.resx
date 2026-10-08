@@ -23,7 +23,7 @@
   <data name="Password" xml:space="preserve"><value>Senha</value></data>
   <data name="Role" xml:space="preserve"><value>Personagem (role)</value></data>
   <data name="ServerName" xml:space="preserve"><value>Nome do servidor</value></data>
-  <data name="ClientPath" xml:space="preserve"><value>Caminho do client (elementclient.exe)</value></data>
+  <data name="ClientPath" xml:space="preserve"><value>Selecione o elementclient.exe dentro da pasta {0}</value></data>
   <data name="GroupName" xml:space="preserve"><value>Nome do grupo</value></data>
   <data name="PresetName" xml:space="preserve"><value>Nome do preset</value></data>
   <data name="SyncEnabled" xml:space="preserve"><value>Sincronizar cliques</value></data>
@@ -92,7 +92,6 @@
   <data name="UpdateAvailableTitle" xml:space="preserve"><value>Atualização disponível</value></data>
   <data name="UpdateAvailableConfirm" xml:space="preserve"><value>Versão {0} disponível. Baixar, aplicar e reiniciar agora?</value></data>
   <data name="UpdateApply" xml:space="preserve"><value>Atualizar e reiniciar</value></data>
-  <data name="ServerPathHint" xml:space="preserve"><value>Selecione o elementclient.exe dentro da pasta x64</value></data>
   <data name="NewGroup" xml:space="preserve"><value>Novo grupo</value></data>
   <data name="DeleteGroupTitle" xml:space="preserve"><value>Excluir grupo</value></data>
   <data name="DuplicateGroup" xml:space="preserve"><value>Duplicar grupo</value></data>

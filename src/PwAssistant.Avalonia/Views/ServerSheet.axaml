@@ -10,14 +10,13 @@
       <StackPanel>
         <TextBlock x:Name="NameLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,0,0,2" />
         <TextBox x:Name="NameBox" />
-        <TextBlock x:Name="PathLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2" />
+        <TextBlock x:Name="PathLabel" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,8,0,2"
+                   TextWrapping="Wrap" />
         <DockPanel>
           <Button x:Name="BrowseButton" Content="&#xE838;" DockPanel.Dock="Right" Click="OnBrowse"
                   FontFamily="Segoe MDL2 Assets" FontSize="14" Width="36" Classes="icon" />
           <TextBox x:Name="PathBox" />
         </DockPanel>
-        <TextBlock x:Name="PathHint" Foreground="{DynamicResource Brush.MutedForeground}" Margin="0,2,0,0"
-                   TextWrapping="Wrap" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0" Spacing="8">
           <Button x:Name="CancelButton" Click="OnCancel" Classes="outline" />
           <Button x:Name="SaveButton" Click="OnSave" MinWidth="110" Classes="primary" />

@@ -23,7 +23,7 @@
   <data name="Password" xml:space="preserve"><value>Password</value></data>
   <data name="Role" xml:space="preserve"><value>Character (role)</value></data>
   <data name="ServerName" xml:space="preserve"><value>Server name</value></data>
-  <data name="ClientPath" xml:space="preserve"><value>Client path (elementclient.exe)</value></data>
+  <data name="ClientPath" xml:space="preserve"><value>Select the elementclient.exe inside the {0} folder</value></data>
   <data name="GroupName" xml:space="preserve"><value>Group name</value></data>
   <data name="PresetName" xml:space="preserve"><value>Preset name</value></data>
   <data name="SyncEnabled" xml:space="preserve"><value>Sync clicks</value></data>
@@ -92,7 +92,6 @@
   <data name="UpdateAvailableTitle" xml:space="preserve"><value>Update available</value></data>
   <data name="UpdateAvailableConfirm" xml:space="preserve"><value>Version {0} is available. Download, apply and restart now?</value></data>
   <data name="UpdateApply" xml:space="preserve"><value>Update and restart</value></data>
-  <data name="ServerPathHint" xml:space="preserve"><value>Select the elementclient.exe inside the x64 folder</value></data>
   <data name="NewGroup" xml:space="preserve"><value>New group</value></data>
   <data name="DeleteGroupTitle" xml:space="preserve"><value>Delete group</value></data>
   <data name="DuplicateGroup" xml:space="preserve"><value>Duplicate group</value></data>

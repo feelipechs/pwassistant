@@ -1,6 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using PwAssistant.Avalonia.Resources;
@@ -17,10 +19,26 @@ public partial class ServerSheet : UserControl
     {
         InitializeComponent();
         NameLabel.Text = Strings.ServerName;
-        PathLabel.Text = Strings.ClientPath;
-        PathHint.Text = Strings.ServerPathHint;
+        SetClientPathLabel();
         SaveButton.Content = Strings.Save;
         CancelButton.Content = Strings.CancelDialog;
+    }
+
+    /// <summary>Single hint above the path input with the x64 folder in bold.
+    /// ClientPath is a "{0}" format so word order stays translatable.</summary>
+    private void SetClientPathLabel()
+    {
+        TextBlock? label = PathLabel;
+        if (label is null) return;
+        string[] parts = Strings.ClientPath.Split(["{0}"], StringSplitOptions.None);
+        var inlines = new InlineCollection
+        {
+            new Run(parts[0]),
+            new Run("x64") { FontWeight = FontWeight.Bold },
+        };
+        if (parts.Length > 1)
+            inlines.Add(new Run(parts[1]));
+        label.Inlines = inlines;
     }
 
     public Task<(bool Ok, string Name, string Path)> AskAsync(string? name, string? path)
@@ -50,7 +68,7 @@ public partial class ServerSheet : UserControl
             return;
         IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = Strings.ClientPath,
+            Title = string.Format(Strings.ClientPath, "x64"),
             AllowMultiple = false,
             FileTypeFilter =
             [
