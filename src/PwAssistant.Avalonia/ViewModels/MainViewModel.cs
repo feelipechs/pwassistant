@@ -197,6 +197,10 @@ public sealed partial class MainViewModel : ObservableObject
     /// Play on a fresh card must not fork a duplicate client).</summary>
     private readonly HashSet<Guid> _launching = new();
 
+    /// <summary>Pending password auto-hides keyed by account id: cancelling
+    /// never blocks the shared toggle command (which stays synchronous).</summary>
+    private readonly Dictionary<Guid, CancellationTokenSource> _passwordHide = new();
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BulkActionText))]
     private bool isBulkRunning;
@@ -944,22 +948,68 @@ public sealed partial class MainViewModel : ObservableObject
         ClearClipboardAfter(TimeSpan.FromSeconds(30), password);
     }
 
+    /// <summary>Synchronous on purpose: the old async version awaited the
+    /// 15 s auto-hide inside the command, so the shared AsyncRelayCommand
+    /// stayed busy and every eye button (this card and all others) ignored
+    /// clicks until the delay elapsed. Toggling now applies instantly; the
+    /// auto-hide runs fire-and-forget per card with its own cancellation.
+    /// </summary>
     [RelayCommand]
-    private async Task TogglePasswordVisibility(AccountCard? card)
+    private void TogglePasswordVisibility(AccountCard? card)
     {
         if (card is null) return;
         if (card.IsPasswordRevealed)
         {
+            CancelPasswordAutoHide(card);
             card.HidePassword();
             return;
         }
         // Same exposure class as copy-at-dispatch: user-initiated, in-memory
         // only, never logged. Auto-hides so it does not linger on screen.
         card.RevealPassword(_state.RevealPassword(card.Model));
-        string? shown = card.RevealedPassword;
-        await Task.Delay(TimeSpan.FromSeconds(15));
-        if (card.IsPasswordRevealed && card.RevealedPassword == shown)
-            card.HidePassword();
+        SchedulePasswordAutoHide(card, card.RevealedPassword);
+    }
+
+    private void CancelPasswordAutoHide(AccountCard card)
+    {
+        if (_passwordHide.Remove(card.Model.Id, out CancellationTokenSource? cts))
+        {
+            try { cts.Cancel(); }
+            catch (ObjectDisposedException) { }
+            cts.Dispose();
+        }
+    }
+
+    private void SchedulePasswordAutoHide(AccountCard card, string? shown)
+    {
+        CancelPasswordAutoHide(card);
+        var cts = new CancellationTokenSource();
+        _passwordHide[card.Model.Id] = cts;
+        _ = AutoHidePasswordAsync(card, shown, cts);
+    }
+
+    private async Task AutoHidePasswordAsync(AccountCard card, string? shown, CancellationTokenSource cts)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(15), cts.Token).ConfigureAwait(false);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (card.IsPasswordRevealed && card.RevealedPassword == shown)
+                {
+                    CancelPasswordAutoHide(card);
+                    card.HidePassword();
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            // Manual hide or a newer reveal won: nothing to do.
+        }
+        catch
+        {
+            // Auto-hide is best effort; the password simply stays visible.
+        }
     }
 
     private static async void ClearClipboardAfter(TimeSpan delay, string expected)
